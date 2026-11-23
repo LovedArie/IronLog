@@ -42,6 +42,9 @@
 | **Constraint stage** | How far a lifter may progress on a constrained area (e.g. knee stage 1–3). Caps exercise choice. | integer | — | — |
 | **Progression gate** | A condition to unlock a harder exercise (e.g. 3 pain-free weeks of step-ups → reverse lunge). | rule | — | unlock |
 | **Pain check** | Reporting sharp pain, pinching or next-day swelling on an exercise; drops it one stage for 2 weeks. | UC-18 | — | — |
+| **Why? sheet** | Bottom sheet that explains any number or plan choice (formula, rule, inputs). Reused on every screen. | UI | — | — |
+| **Mini bar** | Strip above the tab bar showing a running session; tap to return to it. | UI | — | — |
+| **Lighter weeks** | The game-off name for a Pause. | UI | — | pause |
 | **Game mode** | Per-user checkbox. Off: game hidden, decay paused, plans and safety rules unchanged. | `GameModeChange` | — | gamification |
 | **Skill** | One of 8 character stats: Arms, Shoulders, Chest, Back, Core, Legs, Stamina, Mobility. | enum | — | — |
 | **XP** | Experience points earned per set, cardio minute or stretch minute. | integer | ≥ 0 | — |

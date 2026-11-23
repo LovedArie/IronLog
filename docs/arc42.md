@@ -122,7 +122,7 @@ vision: [01_Vision.md](01_Vision.md). Use cases: [02_UseCaseModel.md](02_UseCase
 |---|---|---|---|
 | `core/` | Pure C++17 | All training knowledge: log, catalog, stats, planner, game, sync merge | ✅ log, catalog, stats |
 | `services/` | Qt Core + Network | Controller (every write), JSON store, sync, auth, view models | ✅ controller, store |
-| `ui-qml/` | Qt Quick | Phone-first screens | planned |
+| `ui-qml/` | Qt Quick | Phone-first screens: tabs **Today · Log · Progress · You** (ADR-023); Train now wizard, guided session + mini bar, "How was it?", Why? sheet | planned |
 | `ui/` | Qt Widgets | v0.1 desktop UI; retired when QML reaches parity | ✅ |
 | `server/` | Qt Core + HttpServer | Accounts, sessions, revisioned log storage | planned |
 
@@ -510,6 +510,7 @@ Older, longer reasoning for ADR-001 to 009 is also in
 | [020](adr/ADR-020-photo-envelope-encryption.md) | Progress photos: envelope encryption | Accepted | 2026-11-23 |
 | [021](adr/ADR-021-optional-game.md) | Game layer is optional per user | Accepted | 2026-11-23 |
 | [022](adr/ADR-022-game-rules-v2.md) | Game rules v2 (evidence-based) | Accepted | 2026-11-23 |
+| [023](adr/ADR-023-four-tab-navigation.md) | Four-tab navigation (Today · Log · Progress · You) | Accepted | 2026-11-23 |
 
 **Proposed** decisions are waiting for evidence: ADR-012 (QML) on the I4
 spike, ADR-016 (QHttpServer) on F15.

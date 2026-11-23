@@ -47,7 +47,8 @@ Same rules as TickTimer's backlog, because they worked:
 ## Infrastructure
 
 - **I4** Spike in `prototypes/`: one QML screen + one C++ view model, built
-  as an Android APK and a WASM page, run on the owner's phone. Decides ADR-012. Also proves **camera capture** works on the phone (for F21). *(M)* 👤
+  as an Android APK and a WASM page, run on the owner's phone, using a
+  `Theme.qml` token singleton (design system v1, ui-research.md). Decides ADR-012. Also proves **camera capture** works on the phone (for F21). *(M)* 👤
 - **I5** 👤 VPS: `ironlog.<domain>` DNS record, Caddy block, `ironlog.service`,
   backup timer, `ufw` allowing 22/80/443 only. *(S)*
 - **I6** CD deploy: copy server + web files over SSH, restart, then fail the
@@ -80,7 +81,9 @@ Same rules as TickTimer's backlog, because they worked:
 - **F7** Planner v1: `planner::buildSession()` with rules P1–P5 and a reason
   per item; property test "never exceeds the user's knee stage". *(L)*
 - **F8** *Train now* flow (QML): time → situation → gym/home or nearby
-  equipment → plan with XP preview; *Sore* asks which body parts. *(M)*
+  equipment → plan with XP preview; *Sore* asks which body parts; "Same as
+  last time" skips the wizard; reusable **Why?** sheet on every number;
+  after 3 cramming days in a week Today offers "Start a pause?". *(M)*
 - **F9** Guided session: step through the plan, log each set inline (one tap
   "repeat last set", +/− steppers), hold timer for timed sets, rest timer. *(M)*
 - **F10** End-of-session **"How was it?"** check-in: quick-tap chips for overall,
@@ -102,7 +105,9 @@ Same rules as TickTimer's backlog, because they worked:
 - **F14** Weekly quest → **rest token** (bank max 2, protects the streak) +
   **your own reward** text; level-up and quest-complete moments; **weekly
   streak** (rest days count, pauses keep it, back-dated logs restore a week)
-  + training heat map. *(M)*
+  + training heat map; quest card lists the week's planned sessions; *You*
+  tab has a game-off version (program, this week, calendar, "New exercises",
+  "Lighter weeks" = pause). *(M)*
 
 ## Features — online
 
@@ -114,8 +119,8 @@ Same rules as TickTimer's backlog, because they worked:
 - **F16** Sync client: dirty flag on `logChanged()`, push/pull, `sync::merge`
   by record id on 409; status shown in the UI; decide whether the log blob
   is encrypted too (arc42 §8.14). *(L)*
-- **F17** Partner flow: invite → register → onboarding → her own plans and
-  levels, fully separate data. *(S)*
+- **F17** Partner flow: invite (server admin command) → register → onboarding
+  → her own plans and levels, fully separate data. *(S)*
 
 ## Features — progress
 
@@ -129,7 +134,7 @@ Same rules as TickTimer's backlog, because they worked:
   side-by-side compare (week 1 vs now) with a pose-alignment overlay;
   stored on the device, synced with **envelope encryption** (ADR-020):
   random photo key locked by the password-derived lock key and by a
-  **recovery code** shown when photo sync is turned on; encrypted previews;
+  **recovery code** prompted at the first photo (and in settings); encrypted previews;
   password change re-locks one envelope. Never in exports or the repo. *(L)*
 - **F22** Stall detection: e1RM falling over several sessions or sets above
   the target → planner suggests a deload week. *(M)*

@@ -618,3 +618,18 @@ on your own, or to pull from when you *ask* to be quizzed.
 **V44 🟢 Which ADRs are still "Proposed", and what evidence will settle them?**
 > ADR-012 (Qt Quick for the UI) — the I4 spike on a real phone and browser.
 > ADR-016 (QHttpServer behind Caddy) — building and live-testing the server (F15).
+
+**V45 🟡 Why is *Train now* a button on Today and not a tab?**
+> Tabs are for navigation, actions are buttons (Apple HIG). It's the one
+> primary action, so it sits big and fixed at the bottom of Today; "Same as
+> last time" gives repeat users a 1-tap path (ADR-023).
+
+**V46 🔴 With the game off, where do pauses and unlocks go — and why must they still exist?**
+> "Lighter weeks" on *You* (a pause also lowers the planner's weekly target)
+> and a "New exercises" card + NEW tag on the plan (gates are safety rules).
+> Both still affect the plan, so hiding them with the game would break it.
+
+**V47 🟡 What is the purpose of the HTML prototype, given the real UI will be QML?**
+> To test whether the 4-tab layout houses every feature without clutter —
+> on a real phone, cheaply — before writing QML. It's throwaway
+> (`prototypes/`): it answers a question, then gets deleted.

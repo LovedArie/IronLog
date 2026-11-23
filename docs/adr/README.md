@@ -49,3 +49,4 @@ table; the **reasoning lives here**.
 | [020](ADR-020-photo-envelope-encryption.md) | Progress photos: envelope encryption | Accepted | 2026-11-23 |
 | [021](ADR-021-optional-game.md) | Game layer is optional per user | Accepted | 2026-11-23 |
 | [022](ADR-022-game-rules-v2.md) | Game rules v2 (evidence-based) | Accepted | 2026-11-23 |
+| [023](ADR-023-four-tab-navigation.md) | Four-tab navigation (Today · Log · Progress · You) | Accepted | 2026-11-23 |
