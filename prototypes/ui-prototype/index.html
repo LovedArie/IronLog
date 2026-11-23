@@ -913,7 +913,9 @@ function viewTabs() {
 }
 function render() {
   const app = document.getElementById("app");
-  const dark = S.theme === "dark" || (S.theme === "system" && matchMedia("(prefers-color-scheme: dark)").matches);
+  // "System" follows the host page's data-theme if it sets one, else the OS setting.
+  const host = document.documentElement.dataset.theme;
+  const dark = S.theme === "dark" || (S.theme === "system" && (host ? host === "dark" : matchMedia("(prefers-color-scheme: dark)").matches));
   app.className = `app${dark ? " dark" : ""}${S.reduceMotion ? " rm" : ""}`;
   const scrolls = {}; app.querySelectorAll("[data-scroll]").forEach(el => scrolls[el.dataset.scroll] = el.scrollTop);
   const top = S.overlay[S.overlay.length - 1];
@@ -1122,6 +1124,7 @@ document.addEventListener("input", ev => {
   else if (k === "cmpPos") { S.cmp.pos = +v; const b = document.querySelector('[data-t="cmpB"]'), l = document.querySelector('[data-t="cmpLine"]'); if (b) b.style.clipPath = `inset(0 0 0 ${v}%)`; if (l) l.style.left = v + "%"; }
 });
 matchMedia("(prefers-color-scheme: dark)").addEventListener("change", render);
+new MutationObserver(render).observe(document.documentElement, { attributes: true, attributeFilter: ["data-theme"] });
 
 /* =====================================================================
    Clock: timers come from stored timestamps, so they survive app switches
