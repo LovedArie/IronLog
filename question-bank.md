@@ -794,3 +794,23 @@ on your own, or to pull from when you *ask* to be quizzed.
 > That's the colour *key*, meant for the code only. Shown to users, it would
 > break the colour-blind rule and say nothing about level. On screen: one
 > purple hue, darker = higher, stripes = fading, plus the level as text.
+
+**M24 🟢 Why is the morning stretch static, but the warm-up before badminton dynamic?**
+> Static holds can lower power for about 10–15 minutes after, so they go in
+> the morning, the cool-down or the evening (rule P8). Before play, moving
+> stretches that get faster (RAMP) prepare the body without that cost.
+
+**M25 🟡 Why does the stretch player move on by itself after the second side?**
+> Hands are busy holding the stretch. A beep + buzz says "switch sides", and
+> the next stretch starts on its own, so the phone is touched only to pause
+> or skip. Timers store an end time, like the rest timer, so switching apps
+> doesn't break them.
+
+**M26 🟡 Why isn't the morning stretch a weekly-quest item?**
+> Missing one morning should never cost the streak; the quest stays about
+> training sessions. Stretching still pays: Mobility XP per minute, and the
+> reach test shows the real goal (hands closer behind the back).
+
+**M27 🔴 Spot the issue: the cool-down always picks the same 3 stretches.**
+> Some areas (wrists, inner thighs, shins, feet) would never be stretched.
+> P8 picks add-ons for areas not stretched yet this week (body coverage).

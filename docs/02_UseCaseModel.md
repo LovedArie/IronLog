@@ -47,6 +47,7 @@
 | UC-26 | Take and Compare Progress Photos | Lifter | | Planned | F21 |
 | UC-27 | View an Exercise's How-To Pictures | Lifter | | Planned | F23 |
 | UC-28 | Answer "How Was It?" (session review) | Lifter | | Planned | F10 |
+| UC-29 | Do the Morning Stretch (and the weekly reach test) | Lifter | | Planned | F24 |
 
 **Key:** ⭐ = written out in full below ("fully dressed": every step plus
 what can go wrong). Steps like "6a" are what-can-go-wrong branches of step 6.

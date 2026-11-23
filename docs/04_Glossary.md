@@ -44,6 +44,9 @@
 | **Constraint stage** | How far a lifter may progress on a constrained area (e.g. knee stage 1–3). Caps exercise choice. | integer | — | — |
 | **Progression gate** | A condition to unlock a harder exercise (e.g. 3 pain-free weeks of step-ups → reverse lunge). | rule | — | unlock |
 | **Pain check** | Reporting sharp pain, pinching or next-day swelling on an exercise; drops it one stage for 2 weeks. If it happens again or doesn't settle, the app suggests stopping that exercise and seeing a health professional. General guidance, not medical advice. | UC-18 | — | — |
+| **Morning stretch** | The daily guided routine: 12 static stretches, ~12 min, hold timer per side. | `StretchRoutine` | holds 30–60 s | morning routine |
+| **Add-on stretch** | One of 12 extra stretches done after a session or in the evening, picked for areas not stretched yet this week. | stretch id | — | cool-down stretch |
+| **Reach test** | Weekly check after the towel stretch: how far apart the hands are behind the back, per side. | `MobilityEntry.reach` | cm per side, 0 = touching | towel test |
 | **Why? sheet** | Bottom sheet that explains any number or plan choice (formula, rule, inputs). Reused on every screen. | UI | — | — |
 | **Mini bar** | Strip above the tab bar showing a running session; tap to return to it. | UI | — | — |
 | **Lighter weeks** | The label of the Pause row on *You* when the game is off. Same thing as Pause. | UI | — | pause |
@@ -120,6 +123,8 @@ Short meanings for words the other docs use without explaining.
 | KDF | Makes sub-keys from one key |
 | Salt | Random extra input per user |
 | Zone 2 | Easy cardio; you can still talk |
+| Static stretch | Hold one position 15–60 s |
+| Dynamic warm-up | Moving stretches, getting faster |
 | Compound / isolation | Multi-joint / one-joint exercise |
 | RAMP | Warm-up: raise, activate, mobilise, potentiate |
 | Hypertrophy | Muscle growth |

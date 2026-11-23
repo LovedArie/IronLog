@@ -2,7 +2,7 @@
 
 > **What this is**: The 3-minute summary of the project — goals, users,
 > scope, constraints. (Larman, *Applying UML and Patterns*, Ch. 4 §4.3,
-> Table 4.1; written first per Ch. 7.) Version 2 (now v2.5) replaces the v0.1 "desktop
+> Table 4.1; written first per Ch. 7.) Version 2 (now v2.6) replaces the v0.1 "desktop
 > logbook" vision after the 2026-11-23 planning session.
 
 ---
@@ -48,7 +48,7 @@ part by part, and rewards consistency — synced to your own server.
 
 | Module | What it does |
 |---|---|
-| **Coach** | **Goal programs** (Badminton singles · Lean & toned, upper focus · Lean & toned, lower focus · General fitness). **Train now**: asks time → today's situation → gym or home / what's nearby, then builds a session. **Guided session**: follow the plan, log as you go, rest timer. **Session review ("How was it?")** at the end: quick-tap answers pre-picked from the session (overall, energy, joints) + a voice-friendly note. Progression and pain checks. **Exercise pictures**: every exercise shows a how-to picture (the IronLog anime character, start pose → end pose) and a muscle diagram (main muscles red, helpers orange), plus a short clip made from the two. |
+| **Coach** | **Goal programs** (Badminton singles · Lean & toned, upper focus · Lean & toned, lower focus · General fitness). **Train now**: asks time → today's situation → gym or home / what's nearby, then builds a session. **Guided session**: follow the plan, log as you go, rest timer. **Session review ("How was it?")** at the end: quick-tap answers pre-picked from the session (overall, energy, joints) + a voice-friendly note. Progression and pain checks. **Exercise pictures**: every exercise shows a how-to picture (the IronLog anime character, start pose → end pose) and a muscle diagram (main muscles dark blue, helpers light blue), plus a short clip made from the two. **Daily stretch**: a guided morning routine (12 stretches, ~12 min, hold timer per side) every day, plus add-on stretches after a session or in the evening; a weekly reach test tracks the behind-the-back reach. |
 | **Game** *(optional — a checkbox)* | **Character sheet** (a **body map** that lights up by level) with 8 skills: Arms, Shoulders, Chest, Back, Core, Legs, Stamina, Mobility. XP from every set, minute of cardio and stretch; "sets to next level" always shown. **Gentle decay** (warned first) after 2 weeks off a skill, stopped by a **Pause** (exams, sick, injured, travel); a **Comeback bonus** doubles XP while you climb back. **Weekly quest** → **rest token** (protects your streak) + **your own reward**, written by you. **Unlocks**: harder exercises open when progression gates are passed. **Weekly streak + heat map** (rest days count; a pause never breaks it). |
 | **Log** | Strength sets (weight, reps, RIR, set type, note), **timed holds** (plank, wall sit, balance), cardio (treadmill time/speed/incline), badminton, stretching. One-tap "repeat last set". Edit + undo. |
 | **Progress** | PRs, estimated-1RM charts, weekly sets per muscle, weekly body weight + waist trend, **progress photos** (private, encrypted) with side-by-side compare, stall → deload hint. |
@@ -122,3 +122,4 @@ Train now
 | v2.3 | 2026-11-23 | Game mode is optional: a per-user checkbox; off hides the game and pauses decay, nothing is lost | Claude (pairing) with owner |
 | v2.4 | 2026-11-23 | Game rules v2 from research round 2: gentler decay, Pause with a reason, weekly streak, rest token + user-written reward (replaces cheat-meal token) | Claude (pairing) with owner |
 | v2.5 | 2026-11-23 | Exercise pictures: how-to picture + muscle diagram per exercise, made with ChatGPT (ADR-025) | Claude (pairing) with owner |
+| v2.6 | 2026-11-23 | Daily stretch (F24): guided morning routine + add-ons + weekly reach test, from the owner's fitness plan | Claude (pairing) with owner |

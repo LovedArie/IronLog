@@ -246,7 +246,7 @@ Here the verification is part of the pipeline.
 |---|---|---|
 | `StrengthSet` | `id`, `at` (date+time), `exerciseId`, `weight`, `unit`, `reps`, `rir?`, `type` (working / warm-up / drop / failure), `note?` | Weight kept **as entered** with its unit |
 | `CardioEntry` | `id`, `at`, `kind` (treadmill / walk / run / bike / badminton), `minutes`, `speed?`, `incline?`, `zone?` | Feeds Stamina |
-| `MobilityEntry` | `id`, `at`, `routineId`, `minutes` | Feeds Mobility |
+| `MobilityEntry` | `id`, `at`, `routineId` (morning / add-ons / session cool-down), `minutes`, `holds` (stretch id → seconds per side), `reach?` (towel-stretch hand gap in cm, per side) | Feeds Mobility; `reach` feeds the reach chart (§8.17) |
 | `BodyCheckIn` | `id`, `date`, `bodyweight`, `unit`, `waist?` | "Lean" trend |
 | `ProgressPhoto` | `id`, `date`, `pose` (front / side / back), `fileRef`, `previewRef`, `checkInId?` | Image + preview stored beside the JSON, encrypted (§8.14) |
 | `SessionReview` | `id`, `date`, `overall` (great / good / ok / rough), `energy` (high / normal / low), `joints` (fine / twinge / pain), `note?`, `prefilled` (which answers the app suggested) | Planner input; `joints = pain` → pain check |
@@ -256,6 +256,7 @@ Here the verification is part of the pipeline.
 | `RestTokenUse` | `id`, `week` | A rest token spent to keep a missed week in the streak |
 | `UserReward` | `id`, `text`, `since` | The reward the user writes for completing a weekly quest (free text, optional) |
 | `Profile` | goal program, units, equipment sets per place, constraints (knee stage …), weekly availability | Per user |
+| `StretchRoutine` | `id`, name, ordered stretch ids, default hold (s) | Data file, like goal programs (§8.17) |
 | `Exercise` | stable `id` slug, name, primary + secondary muscles, equipment set, movement pattern, knee stress (low/med/high), stage, default rep range | Catalog |
 
 Every record also carries `updatedAt` and `deleted` (tombstone) for sync.
@@ -305,6 +306,7 @@ game is a code change that re-scores history; two devices always agree.
 | P5 Situation | **Cramming**: shorter, compound-only, no PR attempts, weekly target = exam minimum (2 strength + 1 cardio). **Sore/tired**: mobility + easy zone 2 + light core | Decision report C8 |
 | P6 Gates | Harder variations unlock only after their gate (e.g. reverse lunge after 3–4 pain-free weeks of step-ups; stability stage after 2 clean weeks) | Decision report D3, D7 |
 | P7 Pain check | "Sharp pain, pinching, or swelling next day" → that exercise drops one stage for 2 weeks. Again, or not settling → suggest stopping it and seeing a health professional (§8.9) | Owner's plan: pain rule |
+| P8 Stretch timing | Static holds only in the morning routine, the session cool-down or the evening — never in a warm-up or right before badminton (warm-ups are dynamic, RAMP). The cool-down picks add-on stretches for areas not stretched yet this week | Decision report D4, D9 |
 
 *Compound = a multi-joint exercise. C8, D3, D7 = sections of the owner's
 private Decision Report (kept out of the repo, ADR-019).*
@@ -531,6 +533,34 @@ for the app) and `bodymap-paths.json` (SVG outlines, for the prototype). The
 app repaints each area by level (one purple `xp` hue, darker = higher;
 stripes = fading — the UI research's sequential rule). Tapping an area shows
 its level and sets to the next one. See [`assets/game/README.md`](../assets/game/README.md).
+
+
+### 8.17 Daily stretch (F24)
+
+From the owner's fitness plan (Part 1 and 1b) and Decision Report D4
+(private, ADR-019). Static stretching is for range of motion, not injury
+prevention, so it sits away from explosive play.
+
+| Part | When | Content |
+|---|---|---|
+| Morning routine | every day, ~12 min; kept in an exams pause | 12 stretches: neck tilt, cross-body shoulder, towel stretch, doorway chest, cat-cow, child's pose, kneeling hip flexor, figure-four glute, seated hamstring, standing quad, calf on the slant board, arm circles |
+| Add-ons | after a session (cool-down) or evening | 12 more for areas badminton loads: wrist flexors and extensors, overhead triceps/lat, sleeper, butterfly, side lunge, open book, side bend, knees-to-chest, child's pose side reach, kneeling shin, foot roll |
+| Reach test | weekly, after the towel stretch | Hand gap behind the back, per side, in cm (0 = touching); pre-filled from last week, ± to change |
+
+**Player rules.** One stretch per screen. Holds are per side, 30 s by
+default; tight spots (towel, hip flexor, hamstring) are marked and grow
+with ±15 s up to 60 s, remembered per stretch. A beep + buzz says "switch
+sides"; the player moves on by itself after the second side, so hands stay
+free. Rep-based items (cat-cow, arm circles, open book) show a count and a
+Done button instead of a timer. Timers use stored end times, like the rest
+timer (§8.12).
+
+**Body coverage.** Each stretch names its body area. The cool-down picks
+add-ons whose areas have no stretch yet this week (planner rule P8), so
+every area gets covered over a week.
+
+**Game.** Stretch minutes give Mobility XP (+2 per minute, §8.6). The
+routine is not a quest item, so missing a morning never costs a streak.
 
 ---
 

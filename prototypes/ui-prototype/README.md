@@ -24,10 +24,11 @@ reload to start over.
    how-to sheet (clip, how-to picture, muscle diagram, form cues). **Start session**. Log sets
    with ±, watch the rest timer, do the plank hold. **Finish** → *How was it?* → Save.
 2. **You**: the body map — darker = higher level, the striped back is fading. Tap a part. Then **⚙ Settings** → turn *Play it like a game* off. Look at Today and You.
-3. **Train now → Cramming** (the 3rd this week) → back on Today: the pause offer.
-4. **Progress → Photos** → unlock → *Take photos* (recovery-code prompt) → Compare.
-5. **Log** → Sun 22 → Strength B → delete a set → **Undo**.
-6. Settings → Theme *Dark*, *Reduce motion*, units *kg*.
+3. **Today → Morning stretch → Start**: hold timer per side, a beep to switch sides, then it moves on by itself. Try +15 s on the towel stretch. At the end: the weekly reach test (hand gap in cm). See it in **Progress → Body**.
+4. **Train now → Cramming** (the 3rd this week) → back on Today: the pause offer.
+5. **Progress → Photos** → unlock → *Take photos* (recovery-code prompt) → Compare.
+6. **Log** → Sun 22 → Strength B → delete a set → **Undo**.
+7. Settings → Theme *Dark*, *Reduce motion*, units *kg*.
 
 ## What's real, what's fake
 
@@ -49,6 +50,7 @@ reload to start over.
 | Timers | `restEnds` | Store an end time, not a countdown. A 250 ms tick updates only the numbers |
 | Exercise pictures | `PIC`, `howImg()`, `clipVideo()`, `muscleImg()` | `PIC` is the folder: `assets/exercises/` when published, `../../assets/exercises/` in the repo |
 | Clip | `<video autoplay muted loop playsinline>` | Muted, so phones allow autoplay. Reduce motion → still, with a play button |
+| Daily stretch | `STRETCH`, `ROUTINE`, `viewStretch()` | Phases ready → hold → switch → hold → next; a second 250 ms timer moves between them. ±15 s is kept in `holdSec` |
 | Body map | `BODY`, `bodyMap()` | Outlines from `assets/game/bodymap-paths.json`; fill = level shade, or stripes when fading; tap → `skillTap` snackbar |
 | Missing diagram | `NO_DIAGRAM` | Plank and dead bug show a box; the muscle names below still say it all |
 

@@ -148,7 +148,7 @@ button, input, textarea { font:inherit; color:inherit; }
 .switch.on::after { left:23px; background:var(--onPrimary); }
 .stepper { display:flex; align-items:center; gap:var(--s); }
 .stepper .btn { width:var(--tapPrimary); height:var(--tapPrimary); font-size:24px; padding:0; }
-.stepper .val { flex:1; text-align:center; }
+.stepper .val { flex:1; text-align:center; white-space:nowrap; }
 input[type=range] { width:100%; height:var(--tap); accent-color:var(--primary); }
 textarea, input[type=text] { width:100%; min-height:var(--tap); border-radius:var(--radius); border:1px solid var(--outline);
            background:var(--surface); padding:var(--m); font-size:16px; resize:none; }
@@ -231,6 +231,9 @@ textarea, input[type=text] { width:100%; min-height:var(--tap); border-radius:va
 .thumbbtn img { width:100%; height:100%; object-fit:cover; display:block; }
 .howto-clip video { width:100%; max-width:300px; aspect-ratio:3/4; margin:0 auto; display:block; border-radius:var(--radius); background:#fff; }
 .bodybar { width:100%; gap:var(--s); align-items:center; min-height:40px; background:none; border:0; padding:0; color:inherit; font:inherit; text-align:left; cursor:pointer; }
+.sday { width:20px; height:20px; border-radius:50%; display:inline-flex; align-items:center; justify-content:center; font-size:11px; font-weight:700;
+        background:var(--surfaceVar); color:var(--onVar); }
+.sday.on { background:var(--primary); color:var(--onPrimary); }
 .howto-map .nodiagram { max-width:320px; margin:0 auto; }
 :focus-visible { outline:3px solid var(--primary); outline-offset:2px; }
 </style>
@@ -288,7 +291,11 @@ const S = {
   pause: null, crammingThisWeek: 2, pauseOfferDismissed: false,
   last: { time: 30, situation: "normal", place: "home", nearby: ["Dumbbells", "Mat"] },
   wiz: null, plan: null, session: null, review: null, reveal: null,
-  doneToday: [{ name: "Morning stretch", meta: "10 min", xp: "+20 Mobility" }],
+  doneToday: [],
+  // Daily stretch (F24): last 7 days ending today (Tue … Mon), remembered holds, weekly reach test (cm gap, lower = better)
+  stretchWeek: [true, true, false, true, true, true, false], stretchDone: { morning: false, addons: false },
+  holdSec: {},   // per-stretch hold in seconds, once changed with ±15 s (default 30)
+  reach: { right: [18, 17, 15, 14, 13, 12, 10, 9], left: [24, 23, 22, 21, 19, 18, 17, 16] }, stretch: null,
   skills: [
     { n: "Chest", lvl: 6, xp: 180 }, { n: "Back", lvl: 4, xp: 140, fading: 3 }, { n: "Legs", lvl: 5, xp: 180, comeback: true },
     { n: "Shoulders", lvl: 5, xp: 120 }, { n: "Arms", lvl: 4, xp: 90 }, { n: "Core", lvl: 5, xp: 200 },
@@ -307,7 +314,7 @@ const S = {
     "Sat 21": [{ t: "Stretch routine", meta: "12 min" }],
     "Sun 22": [{ t: "Strength B", meta: "42 min · 8 sets", sets: [["DB row", 25, 10], ["DB row", 25, 10], ["DB row", 25, 9], ["Romanian deadlift", 20, 12], ["Romanian deadlift", 20, 12], ["Low step-up", 15, 10], ["Low step-up", 15, 10], ["Side plank", 0, 20, "s"]] },
                { t: "Badminton", meta: "60 min · hard" }],
-    "Mon 23": [{ t: "Morning stretch", meta: "10 min" }],
+    "Mon 23": [],
   },
   checkin: { weight: [182, 181.5, 181, 180.2, 179.8, 179], waist: [86, 85.6, 85.1, 84.7, 84.4, 84.0], nw: 179, nwaist: 84 },
   equip: {
@@ -470,6 +477,8 @@ const totalLevel = () => S.skills.reduce((a, s) => a + s.lvl, 0);
    Why? sheet — every number explains itself (ADR-023 fix #4)
    ===================================================================== */
 const WHY = {
+  "reach": ["Weekly reach test", ["Measures the real goal of the towel stretch: getting your hands closer behind your back.", "Once a week is enough — day-to-day changes are noise.", "Each side is tracked on its own; one side is usually tighter.", "The chart is in Progress → Body. Lower = better."]],
+  "stretch": ["Why stretch in the morning?", ["Daily static holds bring back range of motion (like reaching behind your back). Most people notice a change in 2–4 weeks.", "Holds can lower power for 10–15 minutes, so they're never right before badminton. Before play, the warm-up uses moving stretches instead.", "30 s per side. Tight spots (towel, hip flexor, hamstring): work up to 45–60 s with +15 s.", "Mild tension, never pain. An exams pause keeps the morning stretch.", "Source: your fitness plan (Part 1) and Decision Report D4."]],
   "xp": ["How XP works", ["Each working set: +10 XP to its main muscle, +5 to helper muscles.", "Cardio and stretching: +2 XP per minute (+3 for intervals or badminton).", "A personal record: +25 XP.", "Level L → L+1 costs 50 × L XP.", "Game rules v2 — the numbers can be tuned; the app tells you when they change."]],
   "decay": ["Why Back is fading", ["Back hasn't been trained for 11 days.", "After 14 days a skill loses 0.5 % of its XP per day, never below 50 % of its best.", "A Pause (exams, sick, injured, travel) stops this.", "When you come back, the Comeback bonus doubles XP until you reach your best again."]],
   "plan-fading": ["Why this exercise", ["Your Back skill starts fading in 3 days.", "Train now adds a back move when a skill is close to fading.", "Weight: last time 25 lb × 10, 10, 9 → same weight until all sets reach 10 (double progression)."]],
@@ -511,6 +520,50 @@ function figure(w, { ghost = false, dashed = false, opacity = 1, color = "var(--
 }
 
 /* Body map for the character sheet: one hue, darker = higher level; stripes = fading. */
+/* =====================================================================
+   Daily stretch (F24, arc42 §8.17) — from the owner's fitness plan.
+   Static holds per side; tight spots work up toward 60 s (±15 s is
+   remembered). "reps" items have no timer: a count and a Done button.
+   ===================================================================== */
+const LR = ["Right side", "Left side"];
+const STRETCH = {
+  neck:       { name: "Neck side tilt", area: "Neck", how: "Ear toward the shoulder. Keep both shoulders down.", sides: LR },
+  crossbody:  { name: "Cross-body shoulder", area: "Shoulders", how: "Arm straight across your chest. Hug it in at the elbow.", sides: LR },
+  towel:      { name: "Towel stretch", area: "Shoulders", how: "Top hand pulls up, bottom hand pulls down. Walk the hands closer each week.", sides: ["Right hand on top", "Left hand on top"], tight: true },
+  doorway:    { name: "Doorway chest", area: "Chest", how: "Forearm on the door frame at shoulder height. Turn your chest away.", sides: LR },
+  catcow:     { name: "Cat-cow", area: "Spine", how: "Hands and knees. Breathe in: belly down. Breathe out: round up.", reps: "8–10 slow rounds" },
+  child:      { name: "Child's pose", area: "Lower back", how: "Hips back to the heels, arms long. Knee unhappy? A pillow under the hips.", sides: ["Hold"] },
+  hipflex:    { name: "Kneeling hip flexor", area: "Hip flexors", how: "Back knee on a pad. Squeeze that glute, hips forward, chest up.", sides: LR, tight: true },
+  fig4:       { name: "Figure-four glute", area: "Glutes", how: "On your back, ankle over the other knee. Pull the thigh in.", sides: LR },
+  hamstring:  { name: "Seated hamstring", area: "Hamstrings", how: "Long back. Hinge from the hips toward the toes — don't round to reach.", sides: LR, tight: true },
+  quad:       { name: "Standing quad", area: "Quads", how: "Hold on for balance. Heel to your butt, knees together. Towel if the knee strains.", sides: LR },
+  calf:       { name: "Calf on the slant board", area: "Calves", how: "Heels low, hold on. Legs straight first, then knees slightly bent.", sides: ["Legs straight", "Knees bent"] },
+  armcircle:  { name: "Arm circles", area: "Shoulders", how: "Arms out to the sides. Small circles, growing bigger.", reps: "10 forward · 10 back" },
+  wristflex:  { name: "Wrist flexor", area: "Forearms", how: "Arm out, palm up. Gently pull the fingers down and back.", sides: LR },
+  wristext:   { name: "Wrist extensor", area: "Forearms", how: "Arm out, palm down. Gently pull the back of the hand toward you.", sides: LR },
+  overhead:   { name: "Overhead triceps + lat", area: "Triceps & lats", how: "Hand behind your head. Pull the elbow back, lean away a little.", sides: LR },
+  sleeper:    { name: "Sleeper stretch", area: "Back of shoulder", how: "On your side, elbow at 90°. Press the forearm down gently. Mild only.", sides: LR },
+  butterfly:  { name: "Butterfly", area: "Inner thighs", how: "Soles together, knees out. Let the knees drop.", sides: ["Hold"] },
+  sidelunge:  { name: "Side lunge stretch", area: "Inner thighs", how: "Feet wide. Shift to one side; bent knee over the toes.", sides: LR },
+  openbook:   { name: "Open book", area: "Spine rotation", how: "On your side, knees stacked. Sweep the top arm over, eyes follow.", reps: "5 slow per side" },
+  sidebend:   { name: "Standing side bend", area: "Obliques", how: "Reach one arm overhead and lean gently away.", sides: LR },
+  kneeschest: { name: "Knees to chest", area: "Lower back", how: "On your back, hug both knees. Rock gently side to side.", sides: ["Hold"] },
+  childreach: { name: "Child's pose side reach", area: "Lats", how: "In child's pose, walk both hands to one side.", sides: ["Hands right", "Hands left"] },
+  shin:       { name: "Kneeling shin", area: "Shins & ankles", how: "Tops of the feet flat, sit back gently. Knee unhappy? Ankle circles instead.", sides: ["Hold"] },
+  footroll:   { name: "Foot roll", area: "Feet", how: "Seated, roll the sole over a ball or bottle.", sides: ["Right foot", "Left foot"] },
+};
+const ROUTINE = {
+  morning: { title: "Morning stretch", ids: ["neck", "crossbody", "towel", "doorway", "catcow", "child", "hipflex", "fig4", "hamstring", "quad", "calf", "armcircle"] },
+  addons:  { title: "Add-on stretches", ids: ["wristflex", "wristext", "overhead", "sleeper", "butterfly", "sidelunge", "openbook", "sidebend", "kneeschest", "childreach", "shin", "footroll"] },
+};
+const SWITCH_MS = 5000, NEXT_MS = 3000;           // time to change sides / get into the next stretch
+const holdOf = id => S.holdSec[id] || 30;
+const stretchSec = id => { const x = STRETCH[id]; return x.reps ? 45 : x.sides.length * holdOf(id) + (x.sides.length - 1) * SWITCH_MS / 1000; };
+const routineMin = r => Math.round(ROUTINE[r].ids.reduce((a, id) => a + stretchSec(id) + NEXT_MS / 1000, 0) / 60);
+// Cool-down picks add-ons for areas not stretched yet this week (planner rule P8). Prototype: fixed "covered" set.
+const COVERED_THIS_WEEK = ["Neck", "Shoulders", "Chest", "Spine", "Lower back", "Hip flexors", "Glutes", "Hamstrings", "Quads", "Calves", "Obliques"];
+const coolDownPicks = () => ROUTINE.addons.ids.filter(id => !COVERED_THIS_WEEK.includes(STRETCH[id].area)).slice(0, 4);
+
 /* Body map (game on). Outlines come from the exercise muscle diagram, so the
    game and the pictures share one body: tools/make_bodymap.py writes them to
    assets/game/bodymap-paths.json (and the colour key PNG the app will use).
@@ -545,10 +598,10 @@ function bodyMap() {
 }
 
 /* One-series line chart (design system: one series, one axis). */
-function lineChart(values, { h = 150, label = "" } = {}) {
+function lineChart(values, { h = 150, label = "", lowerIsBetter = false } = {}) {
   const W = 320, pad = 28, min = Math.min(...values), max = Math.max(...values), span = (max - min) || 1;
   const pts = values.map((v, i) => [pad + i * (W - pad - 8) / (values.length - 1), h - 18 - (v - min) / span * (h - 40)]);
-  const best = values.indexOf(max);
+  const best = lowerIsBetter ? values.lastIndexOf(min) : values.indexOf(max);
   return `<svg viewBox="0 0 ${W} ${h}" width="100%" role="img" aria-label="${esc(label)}">
      <line x1="${pad}" y1="${h - 18}" x2="${W - 4}" y2="${h - 18}" stroke="var(--surfaceVar)"/>
      <text x="0" y="${h - 18}" font-size="11" fill="var(--onVar)">${min.toFixed(0)}</text>
@@ -594,8 +647,16 @@ function viewToday() {
     if (back.fading) cards.push(`<div class="card warn"><div class="row"><span class="grow">${S.game ? `<b>Back starts fading in ${back.fading} days.</b>` : "<b>Back not trained for 11 days.</b>"} Train now will add a back move.</span>
         <button class="whybtn" data-a="why" data-v="decay" aria-label="Why?">Why?</button></div></div>`);
   }
-  // Card 3: done today
-  cards.push(`<div class="card"><div class="over">Done today</div>${S.doneToday.map(d => `<div class="listrow" style="cursor:default"><span class="grow">${esc(d.name)} <span class="muted t-label">· ${esc(d.meta)}</span></span>${S.game && d.xp ? `<span class="badge xp">${esc(d.xp)}</span>` : ""}</div>`).join("")}</div>`);
+  // Card 3: today — the daily stretch first (F24), then what's done
+  const days = ["T", "W", "T", "F", "S", "S", "M"], week = [...S.stretchWeek.slice(0, 6), S.stretchDone.morning];
+  const stretchRow = r => S.stretchDone[r] ? "" : `<div class="listrow" style="cursor:default"><span class="grow"><b>${ROUTINE[r].title}</b> <span class="muted t-label">· ~${routineMin(r)} min · ${ROUTINE[r].ids.length} stretches${r === "addons" ? " · evening or after training" : ""}</span></span>
+      <button class="btn ${r === "morning" ? "tonal" : ""}" data-a="startStretch" data-v="${r}">Start</button></div>`;
+  cards.push(`<div class="card"><div class="row between"><span class="over">Today</span>
+      <span class="row" style="gap:4px" role="img" aria-label="Morning stretch on ${week.filter(Boolean).length} of the last 7 days">${week.map((d, i) => `<span class="sday ${d ? "on" : ""}">${days[i]}</span>`).join("")}</span></div>
+    ${stretchRow("morning")}
+    ${S.doneToday.map(d => `<div class="listrow" style="cursor:default"><span class="grow">✓ ${esc(d.name)} <span class="muted t-label">· ${esc(d.meta)}</span></span>${S.game && d.xp ? `<span class="badge xp">${esc(d.xp)}</span>` : ""}</div>`).join("")}
+    ${stretchRow("addons")}
+    <button class="btn text" data-a="why" data-v="stretch">Why stretch in the morning?</button></div>`);
   const L = S.last;
   return `<div class="top"><h1>Today</h1><span class="t-label muted">Mon 23 Nov · <span style="color:var(--ok)">●</span> Synced</span></div>
     <div class="scroll" data-scroll="today">${cards.slice(0, 3).join("")}</div>
@@ -646,6 +707,9 @@ function viewProgress() {
         <button class="btn tonal mt" data-a="openCheckin">Log weight + waist</button></div>
       <div class="card"><div class="row between"><span class="over">Weight · 6 weeks</span><span class="t-label num">${dw.toFixed(1)} ${S.units}</span></div>${lineChart(wv, { h: 120, label: "Weight trend" })}</div>
       <div class="card"><div class="row between"><span class="over">Waist · 6 weeks</span><span class="t-label num">${dwaist.toFixed(1)} cm</span></div>${lineChart(c.waist, { h: 120, label: "Waist trend" })}</div>
+      <div class="card"><div class="row between"><span class="over">Behind-the-back reach · 8 weeks</span><span class="t-label muted">lower = better</span></div>
+        ${lineChart(S.reach.left, { h: 120, label: "Towel stretch hand gap, left hand on top, centimetres", lowerIsBetter: true })}
+        <div class="t-label">Hand gap · left on top <b class="num">${S.reach.left.at(-1)} cm</b> (${S.reach.left.at(-1) - S.reach.left[0]}) · right on top <b class="num">${S.reach.right.at(-1)} cm</b> (${S.reach.right.at(-1) - S.reach.right[0]})</div></div>
       <button class="card listrow chev" data-a="seg" data-v="photos" style="width:100%"><span class="grow"><b>Progress photos</b><br><span class="muted t-label">last: 1 week ago</span></span></button>`;
   } else {
     if (!S.photosUnlocked) {
@@ -704,6 +768,66 @@ function viewYou() {
 /* =====================================================================
    Views — full-screen flows (overlays)
    ===================================================================== */
+/* Daily stretch player (F24). One stretch per screen; the timer runs from a
+   stored end time, so it keeps going if you switch apps. After the last side
+   it moves on by itself — hands stay on the stretch, not the phone. */
+function viewStretch() {
+  const st = S.stretch, R = ROUTINE[st.r], n = R.ids.length;
+  const top = `<div class="top"><button class="btn icon" data-a="stClose" aria-label="Stop">✕</button><h1>${R.title}</h1>
+      <span class="t-label num">${st.phase === "done" ? `${n} of ${n}` : `${st.i + 1} of ${n}`}</span></div>`;
+  if (st.phase === "done") {
+    const min = Math.max(1, Math.round((st.endAt - st.start) / 60000)), xp = min * 2;
+    const reach = st.r === "morning" ? `<div class="card"><div class="row between"><span class="over">Weekly reach test</span><button class="whybtn" data-a="why" data-v="reach">Why?</button></div>
+        <p class="muted t-label">After the towel stretch: the gap between your hands behind your back. Filled in from last week — adjust if it changed.</p>
+        ${[["right", "Right hand on top"], ["left", "Left hand on top"]].map(([k, lab]) => `<div class="row between mt"><b>${lab}</b>
+          <div class="stepper"><button class="btn" data-a="stReach" data-v="${k}:-1" aria-label="Smaller gap">−</button>
+            <span class="val t-number">${st.reachPick[k] === 0 ? "Touching" : st.reachPick[k] + " cm"}</span>
+            <button class="btn" data-a="stReach" data-v="${k}:1" aria-label="Bigger gap">+</button></div></div>
+          <div class="t-caption muted">last week ${S.reach[k].at(-1)} cm</div>`).join("")}
+        <button class="btn text mt" data-a="stReachSkip">${st.reachSkip ? "✓ Skipping this week" : "Skip the test this week"}</button></div>` : "";
+    return `${top}<div class="scroll" data-scroll="stretch-done">
+        <div class="card" style="text-align:center"><div class="t-title">${R.title} done</div>
+          <div class="muted">${min} min · ${st.doneIds.length} of ${n} stretches${S.game ? ` · <b>+${xp} Mobility XP</b>` : ""}</div></div>
+        ${reach}</div>
+      <div class="bottom"><button class="primary" data-a="stSave">SAVE</button></div>`;
+  }
+  const id = R.ids[st.i], x = STRETCH[id], now = Date.now();
+  const hold = holdOf(id) * 1000, phase = st.phase === "paused" ? st.prev : st.phase;
+  const left = st.phase === "paused" ? st.pausedLeft : Math.max(0, (st.endsAt || now) - now);
+  const C = 2 * Math.PI * 90;
+  let ring = "", label = "";
+  if (x.reps) {
+    ring = `<div class="t-number" style="margin:var(--xl) 0">${esc(x.reps)}</div>`;
+    label = "Slow and smooth — tap Done when finished";
+  } else {
+    const total = phase === "hold" ? hold : phase === "switch" ? SWITCH_MS : phase === "next" ? NEXT_MS : hold;
+    const shown = phase === "ready" ? hold : left;
+    const big = phase === "hold" || phase === "ready" ? mmss(shown) : String(Math.ceil(shown / 1000));
+    const sideTxt = phase === "switch" ? `Switch → ${x.sides[st.side + 1]}` : phase === "next" ? "Get into position" : x.sides[st.side];
+    ring = `<svg class="ring" width="220" height="220" viewBox="0 0 220 220" aria-hidden="true">
+        <circle cx="110" cy="110" r="90" fill="none" stroke="var(--surfaceVar)" stroke-width="14"/>
+        <circle data-t="sring" cx="110" cy="110" r="90" fill="none" stroke="${phase === "hold" ? "var(--primary)" : "var(--outline)"}" stroke-width="14" stroke-linecap="round"
+          stroke-dasharray="${C}" stroke-dashoffset="${C * (1 - (phase === "ready" ? 1 : left / total))}" transform="rotate(-90 110 110)"/>
+        <text data-t="sbig" x="110" y="118" text-anchor="middle" font-size="48" font-weight="700" fill="var(--on)" style="font-variant-numeric:tabular-nums">${big}</text></svg>`;
+    label = `<div class="t-title" data-t="sside">${esc(sideTxt)}</div><div class="muted t-label">${x.sides.length > 1 ? `side ${Math.min(st.side + 1, x.sides.length)} of ${x.sides.length} · ` : ""}hold ${holdOf(id)} s${x.tight ? " · tight spot: work up to 60 s" : ""}</div>`;
+  }
+  const paused = st.phase === "paused";
+  const primary = x.reps ? `<button class="primary" data-a="stNext">DONE  ›</button>`
+    : phase === "ready" ? `<button class="primary" data-a="stStart">START</button>`
+    : `<button class="primary" data-a="${paused ? "stResume" : "stPause"}">${paused ? "RESUME" : "PAUSE"}</button>`;
+  return `${top}
+    <div class="bar" style="margin:0 var(--l)"><i style="width:${st.i / n * 100}%"></i></div>
+    <div class="scroll" data-scroll="stretch">
+      <div class="card"><div class="row between"><span class="over">${esc(x.area)}</span>${x.tight ? '<span class="badge new">TIGHT SPOT</span>' : ""}</div>
+        <div class="t-title mt">${esc(x.name)}</div><p class="muted" style="margin:6px 0 0">${esc(x.how)}</p></div>
+      <div class="card" style="text-align:center">${ring}${label}
+        ${x.reps ? "" : `<div class="row mt" style="justify-content:center"><button class="btn" data-a="stAdj" data-v="-15">−15 s</button><button class="btn" data-a="stAdj" data-v="15">+15 s</button><button class="btn text" data-a="stNext">Skip ›</button></div>`}
+        <p class="t-caption muted">Mild tension, never pain · beep + buzz to switch sides</p></div>
+      ${st.i < n - 1 ? `<div class="t-label muted" style="padding:0 var(--l)">Next: ${esc(STRETCH[R.ids[st.i + 1]].name)}</div>` : ""}
+    </div>
+    <div class="bottom">${primary}</div>`;
+}
+
 function viewWizard() {
   const w = S.wiz, L = S.last, step = w.step;
   const dots = `<div class="stepdots" aria-label="Step ${step} of 3">${[1, 2, 3].map(i => `<i class="${i <= step ? "on" : ""}"></i>`).join("")}</div>`;
@@ -752,7 +876,8 @@ function viewPlan() {
       ${p.notes.map(n => `<div class="card info t-label">${esc(n)}</div>`).join("")}
       <div class="card"><div class="row between"><span class="over">Warm-up</span><span class="t-label">${p.warmMin} min</span></div><div class="muted">${esc(p.warm)}</div></div>
       <div class="card"><div class="row between"><span class="over">Main</span><span class="t-label">${p.time - p.warmMin - p.stretchMin} min</span></div>${p.main.map(exRow).join("")}</div>
-      <div class="card"><div class="row between"><span class="over">Stretch</span><span class="t-label">${p.stretchMin} min</span></div><div class="muted">Static holds after the session</div></div>
+      <div class="card"><div class="row between"><span class="over">Stretch</span><span class="t-label">${p.stretchMin} min</span></div><div class="muted">Static holds after the session — areas not stretched yet this week:</div>
+        <div class="chips mt">${coolDownPicks().map(id => `<span class="chip" style="min-height:36px;pointer-events:none">${esc(STRETCH[id].name)}</span>`).join("")}</div></div>
       <p class="t-caption muted mt">ⓘ General guidance, not medical advice. Stop on sharp pain.</p>
     </div>
     <div class="bottom"><button class="primary" data-a="startSession">START SESSION</button></div>`;
@@ -1040,7 +1165,7 @@ function render() {
   app.className = `app${dark ? " dark" : ""}${S.reduceMotion ? " rm" : ""}`;
   const scrolls = {}; app.querySelectorAll("[data-scroll]").forEach(el => scrolls[el.dataset.scroll] = el.scrollTop);
   const top = S.overlay[S.overlay.length - 1];
-  const OV = { wizard: viewWizard, plan: viewPlan, session: viewSession, review: viewReview, pain: viewPain, settings: viewSettings, equip: viewEquip, recovery: viewRecovery, capture: viewCapture, compare: viewCompare };
+  const OV = { wizard: viewWizard, plan: viewPlan, session: viewSession, review: viewReview, pain: viewPain, settings: viewSettings, equip: viewEquip, recovery: viewRecovery, capture: viewCapture, compare: viewCompare, stretch: viewStretch };
   let html = top ? `<div class="screen ${S.fresh ? "enter" : ""}">${OV[top]()}</div>` : viewTabs();
   html += viewSheet();
   if (S.reveal) html += viewReveal();
@@ -1084,6 +1209,39 @@ async function keepAwake(on) {
    Actions (event delegation: data-a = action, data-v = value)
    ===================================================================== */
 const A = {
+  /* Daily stretch (F24) */
+  startStretch: r => { const id0 = ROUTINE[r].ids[0];
+    S.stretch = { r, i: 0, side: 0, phase: STRETCH[id0].reps ? "reps" : "ready", start: Date.now(), doneIds: [],
+      reachPick: { right: S.reach.right.at(-1), left: S.reach.left.at(-1) }, reachSkip: false };
+    keepAwake(true); go(() => S.overlay.push("stretch")); },
+  stStart: () => { const st = S.stretch; st.phase = "hold"; st.side = 0; st.endsAt = Date.now() + holdOf(ROUTINE[st.r].ids[st.i]) * 1000; beep(990); buzz(60); render(); },
+  stPause: () => { const st = S.stretch; st.prev = st.phase; st.pausedLeft = Math.max(0, st.endsAt - Date.now()); st.phase = "paused"; render(); },
+  stResume: () => { const st = S.stretch; st.phase = st.prev; st.endsAt = Date.now() + st.pausedLeft; render(); },
+  stAdj: v => { const st = S.stretch, id = ROUTINE[st.r].ids[st.i], d = +v, nv = Math.max(15, Math.min(60, holdOf(id) + d));
+    if (nv === holdOf(id)) { snack(d > 0 ? "60 s is the longest hold" : "15 s is the shortest hold"); return; }
+    S.holdSec[id] = nv;
+    if (st.phase === "hold") st.endsAt = Math.max(Date.now() + 1000, st.endsAt + d * 1000);
+    if (st.phase === "paused" && st.prev === "hold") st.pausedLeft = Math.max(1000, st.pausedLeft + d * 1000);
+    snack(`${STRETCH[id].name}: ${nv} s per side — remembered`); },
+  stNext: () => A._stAdvance(true),
+  _stAdvance: (skipped = false) => { const st = S.stretch, ids = ROUTINE[st.r].ids;
+    if (!skipped || STRETCH[ids[st.i]].reps) st.doneIds.push(ids[st.i]);
+    if (st.i >= ids.length - 1) { st.phase = "done"; st.endAt = Date.now(); beep(1175); buzz(300); keepAwake(false); render(); return; }
+    st.i++; st.side = 0;
+    if (STRETCH[ids[st.i]].reps) st.phase = "reps"; else { st.phase = "next"; st.endsAt = Date.now() + NEXT_MS; }
+    render(); },
+  stReach: v => { const [k, d] = v.split(":"), p = S.stretch.reachPick; p[k] = Math.max(0, Math.min(40, p[k] + +d)); S.stretch.reachSkip = false; render(); },
+  stReachSkip: () => { S.stretch.reachSkip = !S.stretch.reachSkip; render(); },
+  stSave: () => { const st = S.stretch, R = ROUTINE[st.r], min = Math.max(1, Math.round((st.endAt - st.start) / 60000)), xp = min * 2;
+    if (st.r === "morning" && !st.reachSkip) { S.reach.right.push(st.reachPick.right); S.reach.left.push(st.reachPick.left); S.reach.right.shift(); S.reach.left.shift(); }
+    S.stretchDone[st.r] = true;
+    const meta = `${min} min · ${st.doneIds.length} stretches`;
+    S.doneToday.push({ name: R.title, meta, xp: `+${xp} Mobility` }); (S.log["Mon 23"] ||= []).push({ t: R.title, meta });
+    const mob = S.skills.find(s => s.n === "Mobility"); mob.xp = Math.min(need(mob) - 1, mob.xp + xp);
+    S.stretch = null; go(() => S.overlay.pop()); snack(`${R.title} saved${S.game ? ` · +${xp} Mobility XP` : ""}`); },
+  stClose: () => { const st = S.stretch, R = ROUTINE[st.r];
+    if (st.phase === "done") return A.stSave();
+    S.stretch = null; keepAwake(false); go(() => S.overlay.pop()); snack(`${R.title} stopped · ${st.doneIds.length} of ${R.ids.length} done`); },
   skillTap: v => { const s = S.skills.find(x => x.n === v); if (!s) return;
     snack(`${v}: level ${s.lvl} · ${s.fading ? "fading — train it this week to keep it" : setsToGo(s) + " sets to level " + (s.lvl + 1)}${s.comeback ? " · comeback ×2" : ""}`); },
   tab: v => go(() => { S.tab = v; }),
@@ -1275,6 +1433,23 @@ setInterval(() => {
     set("hold", mmss(left)); set("holdbtn", mmss(now - h.startedAt));
     const ring = document.querySelector('[data-t="ring"]'); if (ring) ring.setAttribute("stroke-dashoffset", C * (1 - left / (e.cur.sec * 1000)));
   }
+}, 250);
+
+/* Stretch timer: same idea as the hold timer — numbers update every 250 ms,
+   a full render only when the phase changes (hold → switch → hold → next). */
+setInterval(() => {
+  const st = S.stretch; if (!st || !["hold", "switch", "next"].includes(st.phase)) return;
+  const now = Date.now(), id = ROUTINE[st.r].ids[st.i], x = STRETCH[id], left = st.endsAt - now;
+  if (left <= 0) {
+    if (st.phase === "hold" && st.side < x.sides.length - 1) { st.phase = "switch"; st.endsAt = now + SWITCH_MS; beep(660); buzz(250); }
+    else if (st.phase === "hold") { beep(880); buzz(300); return A._stAdvance(); }
+    else if (st.phase === "switch") { st.side++; st.phase = "hold"; st.endsAt = now + holdOf(id) * 1000; beep(990); buzz(60); }
+    else { st.phase = "hold"; st.side = 0; st.endsAt = now + holdOf(id) * 1000; beep(990); buzz(60); }
+    return render();
+  }
+  const total = st.phase === "hold" ? holdOf(id) * 1000 : st.phase === "switch" ? SWITCH_MS : NEXT_MS, C = 2 * Math.PI * 90;
+  const big = document.querySelector('[data-t="sbig"]'); if (big) big.textContent = st.phase === "hold" ? mmss(left) : String(Math.ceil(left / 1000));
+  const ring = document.querySelector('[data-t="sring"]'); if (ring) ring.setAttribute("stroke-dashoffset", C * (1 - left / total));
 }, 250);
 
 render();
