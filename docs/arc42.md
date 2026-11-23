@@ -481,56 +481,38 @@ their own per-muscle targets.
 
 ## 9. Architecture decisions
 
-Format: context → decision → consequence. **A** = accepted, **P** = proposed.
-Full reasoning for ADR-001 to 009: [archive/design-notes-v0.1.md](archive/design-notes-v0.1.md) §4.
+Each decision has its own record in [`docs/adr/`](adr/README.md) — context,
+decision, consequences, alternatives, sources. This table is the summary.
+Older, longer reasoning for ADR-001 to 009 is also in
+[archive/design-notes-v0.1.md](archive/design-notes-v0.1.md) §4.
 
-| ADR | Decision | Status |
-|---|---|---|
-| 001 | Three layers as three CMake targets; downward deps only | A (v0.1) |
-| 002 | Own `Date` type in core instead of `QDate` | A (v0.1) |
-| 003 | `SetEntry` invariant via private ctor + `std::optional` factory | A (v0.1) |
-| 004 | Analysis as free functions (`stats::`) | A (v0.1) |
-| 005 | Persistence as a Pure Fabrication (`JsonStore`) | A (v0.1) |
-| 006 | All writes through one `TrainingController` + signals | A (v0.1) |
-| 007 | Atomic save; never overwrite an unreadable file | A (v0.1) |
-| 008 | Hand-painted chart (no QtCharts) | A (v0.1) |
-| 009 | App name only (no org) → no doubled data folder | A (v0.1) |
-| 010 | **Schema v2**: ids, tombstones, units, RIR, set types, notes, cardio/mobility/body records — **one** migration | A |
-| 011 | **Phone-first**, Android + WebAssembly + Windows (TickTimer's channels) | A |
-| 012 | **Qt Quick (QML) for the new UI**; keep Widgets UI until parity | P |
-| 013 | **Rule-based planner**, pure function, rules from written training decisions; AI later on top | A |
-| 014 | **Game state derived** from the log, never stored | A |
-| 015 | **Record-level merge** on top of TickTimer's revisioned protocol | A |
-| 016 | **QHttpServer** behind Caddy on loopback (not a hand-written parser) | P |
-| 017 | **systemd, no Docker**, same VPS as TickTimer | A |
-| 018 | **Risk-driven milestones**: platform spike + data v2 first; server after the planner | A |
-| 019 | Personal training documents stay out of the public repo | A |
-| 020 | **Progress photos: envelope encryption** — random photo key locked twice (password-derived lock key, recovery code); server never sees the password; encrypted previews | A |
-| 021 | **Game layer is optional** per user: off hides it and pauses decay; safety rules independent of it | A |
-| 022 | **Game rules v2** (evidence-based): gentler decay, Pause with reasons, weekly forgiving streak, rest token + user-written reward instead of a cheat-meal token; rules versioned | A |
+| # | Decision | Status | Date |
+|---|---|---|---|
+| [001](adr/ADR-001-three-layers.md) | Three layers as three CMake targets | Accepted | 2026-11-23 |
+| [002](adr/ADR-002-own-date-type.md) | Own `Date` type in core instead of `QDate` | Accepted | 2026-11-23 |
+| [003](adr/ADR-003-setentry-invariant.md) | `SetEntry` invariant via private constructor + `std::optional` factory | Accepted | 2026-11-23 |
+| [004](adr/ADR-004-stats-free-functions.md) | Analysis as free functions (`stats::`) | Accepted | 2026-11-23 |
+| [005](adr/ADR-005-jsonstore-pure-fabrication.md) | Persistence as a Pure Fabrication (`JsonStore`) | Accepted | 2026-11-23 |
+| [006](adr/ADR-006-single-controller.md) | All writes through one `TrainingController` + signals | Accepted | 2026-11-23 |
+| [007](adr/ADR-007-atomic-save.md) | Atomic saves; never overwrite an unreadable file | Accepted | 2026-11-23 |
+| [008](adr/ADR-008-hand-painted-chart.md) | Hand-painted chart (no QtCharts) | Accepted | 2026-11-23 |
+| [009](adr/ADR-009-app-name-only.md) | Set only the application name (no organization name) | Accepted | 2026-11-23 |
+| [010](adr/ADR-010-schema-v2-one-migration.md) | Schema v2 in one migration | Accepted | 2026-11-23 |
+| [011](adr/ADR-011-phone-first.md) | Phone-first: Android, web (WASM) and Windows | Accepted | 2026-11-23 |
+| [012](adr/ADR-012-qml-ui.md) | Qt Quick (QML) for the new UI | Proposed | 2026-11-23 |
+| [013](adr/ADR-013-rule-based-planner.md) | Rule-based planner; AI later on top | Accepted | 2026-11-23 |
+| [014](adr/ADR-014-derived-game-state.md) | Game state derived from the log | Accepted | 2026-11-23 |
+| [015](adr/ADR-015-record-level-merge.md) | Record-level merge on top of TickTimer's revisioned protocol | Accepted | 2026-11-23 |
+| [016](adr/ADR-016-qhttpserver-behind-caddy.md) | QHttpServer behind Caddy on loopback | Proposed | 2026-11-23 |
+| [017](adr/ADR-017-systemd-no-docker.md) | systemd, no Docker, on the existing VPS | Accepted | 2026-11-23 |
+| [018](adr/ADR-018-risk-driven-order.md) | Risk-driven milestone order | Accepted | 2026-11-23 |
+| [019](adr/ADR-019-personal-docs-out-of-repo.md) | Personal training documents stay out of the public repo | Accepted | 2026-11-23 |
+| [020](adr/ADR-020-photo-envelope-encryption.md) | Progress photos: envelope encryption | Accepted | 2026-11-23 |
+| [021](adr/ADR-021-optional-game.md) | Game layer is optional per user | Accepted | 2026-11-23 |
+| [022](adr/ADR-022-game-rules-v2.md) | Game rules v2 (evidence-based) | Accepted | 2026-11-23 |
 
-### Notes on the new decisions
-
-- **ADR-012 QML.** *Context*: phone-first, touch, animated level-ups.
-  *Decision*: Qt Quick for screens; C++ view models expose data. *Why not
-  Widgets*: TickTimer made Widgets work on phones, at the cost of a long
-  responsive-layout effort (`design-addendum-responsive.md`). QML is built
-  for touch and runs on Android, WASM and desktop. *Cost*: a new UI layer;
-  `core/` and `services/` stay unchanged — the payoff of ADR-001.
-- **ADR-013 Rules, not AI.** *Why*: plans must be safe (QG1), explainable
-  (QG4) and testable. The owner's decision report is already a rule set.
-  An LLM could later *explain* or *tune* plans inside the rules.
-- **ADR-014 Derived game state.** *Why*: no sync conflicts on XP; game
-  can be rebalanced and history re-scored; impossible to "corrupt" a level.
-  *Cost*: recompute on open — trivial for years of data.
-- **ADR-015 Merge.** *Why*: union of appended sets is always right; TickTimer
-  asks a human because a planner is edited, not appended.
-- **ADR-016 QHttpServer.** *Why*: TickTimer's hand-written parser needed
-  hardening and caused bugs (empty reason phrase, connection reuse). Qt's
-  module handles HTTP; its docs require it to stay on local/trusted networks,
-  which loopback + Caddy satisfies. *Revisit if* the module misbehaves in 6.11.
-- **ADR-018 Order.** Unknowns first (UP, Larman Ch. 8): Android/WASM with
-  QML and the planner rules are new; the server is proven tech from TickTimer.
+**Proposed** decisions are waiting for evidence: ADR-012 (QML) on the I4
+spike, ADR-016 (QHttpServer) on F15.
 
 ---
 

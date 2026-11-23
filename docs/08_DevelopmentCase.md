@@ -19,6 +19,7 @@
 | Requirements | Glossary | s | r | r | |
 | Design | Design Model (`diagrams/`, `arc42.md` §5–§6) | | s | r | |
 | Design | SW Architecture Document (`arc42.md`) | | s | r | |
+| Design | Architecture Decision Records (`adr/`, one file per decision) | s | r | r | r |
 | Design | Data Model (`arc42.md` §8.1–§8.2) | | s | r | |
 | Project management | Risk List | s | r | r | r |
 | Project management | Iteration Plan | s | r | r | r |

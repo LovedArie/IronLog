@@ -609,3 +609,12 @@ on your own, or to pull from when you *ask* to be quizzed.
 > The client needs the salt before it can derive the login key. Returning
 > "no such user" would let anyone check who has an account; a stable fake
 > salt makes known and unknown names look the same.
+
+**V43 🟡 Why one file per ADR, and why never rewrite an accepted one?**
+> A decision is a moment in time. One file each gives every decision its own
+> git history; superseding (new ADR, old one marked "Superseded by ADR-0NN")
+> keeps the record of *why* we once chose otherwise — rewriting would erase it.
+
+**V44 🟢 Which ADRs are still "Proposed", and what evidence will settle them?**
+> ADR-012 (Qt Quick for the UI) — the I4 spike on a real phone and browser.
+> ADR-016 (QHttpServer behind Caddy) — building and live-testing the server (F15).

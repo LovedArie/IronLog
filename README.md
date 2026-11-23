@@ -139,7 +139,7 @@ IronLog/
 
 ## Key design choices
 
-Details and reasoning: **[docs/arc42.md](docs/arc42.md)** §9 (decision log).
+Details and reasoning: **[docs/adr/](docs/adr/README.md)** — one record per decision (summary in [arc42](docs/arc42.md) §9).
 
 1. **Three layers, arrows point down.** `ui → services → core`. The core has
    no Qt at all, so it's fast to test and reusable (e.g. a future mobile UI).
@@ -183,6 +183,7 @@ Details and reasoning: **[docs/arc42.md](docs/arc42.md)** §9 (decision log).
 | [07_PhasePlan](docs/07_PhasePlan.md) | Rough roadmap |
 | [08_DevelopmentCase](docs/08_DevelopmentCase.md) | Which artifacts and practices this project uses |
 | [arc42](docs/arc42.md) | Architecture: context, building blocks, deployment, concepts, decisions |
+| [adr/](docs/adr/README.md) | One record per architecture decision (ADR-001 …) |
 | [BACKLOG](docs/BACKLOG.md) | What's next, ranked, with milestones v0.2–v0.6 |
 | [research/feature-research](docs/research/feature-research.md) | What other lifting apps do, what users love and hate |
 | [TROUBLESHOOTING](docs/TROUBLESHOOTING.md) | Symptom → cause → fix |
