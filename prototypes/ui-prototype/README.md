@@ -45,6 +45,10 @@ start over.
 - **Buttons carry `data-a` (action) and `data-v` (value).** One click handler
   looks up `A[action](value)`. This is *event delegation*: one listener for
   the whole app instead of one per button.
+- **Picture styles**: `drawSimple()` and `drawAnime()` draw the same joints;
+  Settings → *Exercise pictures* switches. `drawAnime()` adds cel shading
+  (`cap()` = outline + fill + shade strip), a profile head drawn in a local
+  frame and rotated to the spine, and effects from joint velocity.
 - **Exercise pictures** (`MEDIA`, `joints()`, `ik()`): each exercise is 2–3
   key poses; `ik()` finds knees and elbows with the law of cosines;
   `poseAt()` eases between poses; one `requestAnimationFrame` loop redraws

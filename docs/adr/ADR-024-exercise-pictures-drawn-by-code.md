@@ -37,6 +37,13 @@ Draw both pictures in code, from data in the exercise catalog (F2):
 2. **Muscle map** — front + back body, one shape per muscle group; main
    muscles solid, helpers light, plus a text legend (never colour alone).
 
+**Picture style is a renderer, not data.** The same poses can be drawn in
+more than one style. Default: **Anime** — an original cel-shaded character
+(ink outline, flat colour + one shade, spiky hair, headband, big eye) with
+manga effects: speed lines from joint velocity, a sweat drop on holds, a
+sparkle when a rep is done, focus lines behind. *Simple* (plain figure) stays
+as a setting. A new style = one new draw function; all exercises get it.
+
 Shown as a thumbnail on each plan row, a card in the guided session, and a
 full how-to sheet with 3 form cues.
 
@@ -50,8 +57,10 @@ Demo: `prototypes/ui-prototype/` (17 exercises).
   drawing). Poses must be checked by eye once (a gallery test renders them all).
 - Side view only: sideways movements (lateral raise, side plank) need a
   front-view figure later.
-- Less realistic than photos or video. Motivation must come from the
-  movement, the muscle highlight and progress — not from a model's physique.
+- Less realistic than photos or video, and not hand-drawn anime art:
+  code can do clean cel-style characters, not an illustrator's detail.
+- Video files are possible (frames → ffmpeg; a demo MP4 was made) but the
+  app draws live instead: smaller, themeable, follows Reduce motion.
 - In QML: `Shape`/`Canvas` + a C++ `PoseAnimator` view model; the IK and
   pose maths can live in `core/` and be unit-tested.
 

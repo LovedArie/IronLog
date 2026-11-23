@@ -712,3 +712,18 @@ on your own, or to pull from when you *ask* to be quizzed.
 **M7 🟡 Why does the muscle map always have a text legend?**
 > Colour alone fails for colour-blind users and in sunlight. "Main: Quads,
 > Glutes · Helps: Hamstrings" says the same thing in words.
+
+**M8 🟡 How can the same 17 exercises switch between a simple and an anime style with no new pose data?**
+> The pose data (key poses → joints by IK) is separate from drawing.
+> `drawSimple()` and `drawAnime()` take the same joints; a setting picks the
+> renderer. That's the Strategy pattern: one interface, swappable algorithms.
+
+**M9 🔴 Why draw the anime head in its own local frame (forward = +x, up = −y) and then `rotate()` it?**
+> The head must follow the spine (standing, lying, upside-down in a push-up).
+> Drawing it once in a fixed frame and rotating by `spine angle + 90°`
+> (plus a mirror for face-up poses) is far simpler than recomputing every
+> eye and hair point for each angle.
+
+**M10 🟢 Where do the anime speed lines come from?**
+> The pose a moment ago (t − 0.09 s) vs now: the joint that moved furthest
+> gets three short lines behind it, opposite its direction of motion.

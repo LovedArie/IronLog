@@ -23,7 +23,7 @@
   --inv:#2A2D32; --onInv:#FFFFFF; --invAction:#9DB6FF;
   /* exercise pictures */
   --figNear:#2E3440; --figBody:#4C5566; --figFar:#A3AAB6; --prop:#8A919C; --propFill:#DDE1E7; --mat:#E3E7EE;
-  --mBase:#D3D8E0; --mSkin:#E9ECF0;
+  --mBase:#D3D8E0; --mSkin:#E9ECF0; --animeBg:#FFF4E8; --animeRay:rgba(242,102,90,.10);
   --xs:4px; --s:8px; --m:12px; --l:16px; --xl:24px; --xxl:32px;
   --tap:48px; --tapPrimary:56px; --radius:12px;
   --dur-press:100ms; --dur-value:200ms; --dur-screen:250ms;
@@ -37,7 +37,7 @@
   --xp:#B868A2; --fading:#9A9EA7; --scrim:rgba(0,0,0,.6);
   --inv:#E4E5E9; --onInv:#1B1D21; --invAction:#2F5BD0;
   --figNear:#E4E6EB; --figBody:#B9BFCA; --figFar:#6A707B; --prop:#8B919B; --propFill:#33373E; --mat:#24272C;
-  --mBase:#3B4048; --mSkin:#2C3036;
+  --mBase:#3B4048; --mSkin:#2C3036; --animeBg:#2A2433; --animeRay:rgba(242,102,90,.14);
 }
 /* Reduce motion: no slides, no count-ups (design system "Motion") */
 .app.rm *, .app.rm *::before, .app.rm *::after { transition:none !important; animation:none !important; }
@@ -316,6 +316,7 @@ const S = {
     limited: { dumbbells: [], other: ["Mat"] },
   },
   equipPlace: "home", smallSpace: false, quietOnly: false,
+  picStyle: "anime",   // exercise pictures: "anime" | "simple" (ADR-024)
 };
 const OTHER_ITEMS = ["Bands", "Mat", "Treadmill", "Bench", "Pull-up bar", "Box", "Kettlebell", "Barbell", "Cables", "Machines"];
 
@@ -429,7 +430,7 @@ function poseAt(m, t) {
   const n = m.keys.length - 1, u = ph[i][1] ? r / ph[i][1] : 1;
   let pos = i === 0 ? ease(u) * n : i === 1 ? n : i === 2 ? (1 - ease(u)) * n : 0;
   const k = Math.min(Math.floor(pos), n - 1);
-  return { pose: lerpPose(m.keys[k], m.keys[k + 1], pos - k), label: ph[i][0] };
+  return { pose: lerpPose(m.keys[k], m.keys[k + 1], pos - k), label: ph[i][0], i, u };
 }
 
 /* Drawing helpers */
@@ -442,7 +443,7 @@ const mat = `<rect x="6" y="157" width="228" height="4" rx="2" fill="var(--mat)"
 const rect = (x, y, w, h, extra = "") => `<rect x="${x}" y="${y}" width="${w}" height="${h}" rx="3" fill="var(--propFill)" stroke="var(--prop)" stroke-width="1.5" ${extra}/>`;
 const benchAt = (x1, x2, top) => rect(x1, top, x2 - x1, 7) + ln([x1 + 10, top + 7], [x1 + 10, 160], 3, "var(--prop)") + ln([x2 - 10, top + 7], [x2 - 10, 160], 3, "var(--prop)");
 
-function drawFigure(m, p) {
+function drawSimple(m, p) {
   const J = joints(p), FAR = "var(--figFar)", NEAR = "var(--figNear)", BODY = "var(--figBody)";
   const foot = (ank, a, c, halo) => limb(ank, addv(ank, dirv(a ?? 0, 10)), 6, c, halo);
   const hand = (h, c) => `<circle cx="${f1(h[0])}" cy="${f1(h[1])}" r="4.5" fill="${c}"/>`;
@@ -457,6 +458,107 @@ function drawFigure(m, p) {
     + limb(J.neck, J.elbN, 9, NEAR, true) + limb(J.elbN, J.handN, 8, NEAR, true) + hand(J.handN, NEAR)
     + (att.front || "");
 }
+
+
+/* ---- Anime style (Settings → Picture style) ----
+   Same skeleton and poses; only the drawing changes. Cel look: ink outline,
+   flat colour + one shade tone, clothes as overlapping capsules, a profile
+   head drawn in its own local frame (forward = +x, up = −y) and rotated to
+   the spine. Effects: speed lines from joint velocity, a sweat drop on holds,
+   a sparkle when a rep is done, focus lines in the background. */
+const AC = { ink: "#1E1B2E", skin: "#FFD9C2", skinS: "#EDB096", hair: "#2B2D5C", hairH: "#6670C4", shirt: "#F2665A",
+             shirtS: "#CC4A4C", shorts: "#2E3A59", shortsS: "#1E2740", shoe: "#FFFFFF", band: "#FFFFFF", iris: "#2F6BE0" };
+const AF = { ...AC, skin: "#E6BBA4", skinS: "#CF9A82", shirt: "#CC4A4C", shirtS: "#A93B3E", shorts: "#1E2740", shortsS: "#151C30", shoe: "#D3D6E2" };
+const lerpP = (a, b, u) => [a[0] + (b[0] - a[0]) * u, a[1] + (b[1] - a[1]) * u];
+/* Outlined capsule with a shade strip on the side away from the light (top-left). */
+function cap(a, b, w, fill, shade) {
+  const d = [b[0] - a[0], b[1] - a[1]], L = Math.hypot(d[0], d[1]) || 1;
+  let n = [-d[1] / L, d[0] / L]; if (n[0] + n[1] < 0) n = [-n[0], -n[1]];
+  const o = [n[0] * w * .22, n[1] * w * .22];
+  return ln(a, b, w + 3.2, AC.ink) + ln(a, b, w, fill) + (shade ? ln(addv(a, o), addv(b, o), w * .4, shade) : "");
+}
+const animeShoe = (ank, a, C) => { const toe = addv(ank, dirv(a ?? 0, 10)); return cap(ank, toe, 8, C.shoe) + ln(lerpP(ank, toe, .3), lerpP(ank, toe, .75), 2, AC.shirt); };
+function animeLeg(hip, knee, ank, ft, C) {
+  return cap(knee, ank, 10, C.skin, C.skinS) + animeShoe(ank, ft, C)
+    + cap(hip, knee, 12.5, C.skin, C.skinS) + cap(hip, lerpP(hip, knee, .6), 14.5, C.shorts, C.shortsS);
+}
+function animeArm(sh, elb, hand, C) {
+  return cap(elb, hand, 8, C.skin, C.skinS) + `<circle cx="${f1(hand[0])}" cy="${f1(hand[1])}" r="4.6" fill="${C.skin}" stroke="${AC.ink}" stroke-width="1.6"/>`
+    + cap(sh, elb, 9, C.skin, C.skinS) + cap(sh, lerpP(sh, elb, .45), 11, C.shirt, C.shirtS);
+}
+function animeHead(J, p, m, t) {
+  const ang = p.sp + (p.hd || 0) + 90, flip = m.face || 1, w = Math.sin(t * 9) * 2.2, w2 = Math.sin(t * 9 + 1.3) * 2.2;
+  const hc = addv(J.neck, dirv(p.sp + (p.hd || 0), 16));   // bigger anime head sits a little further out
+  return `<g transform="translate(${f1(hc[0])},${f1(hc[1])}) rotate(${f1(ang)}) scale(${flip * 1.3},1.3)" stroke="${AC.ink}" stroke-width="1.6" stroke-linejoin="round">
+    <path d="M-9.5 -4.6 Q-15 ${f1(-7 + w)} -21 ${f1(-4 + w)} L-20 ${f1(-1 + w)} Q-14 ${f1(-3 + w * .6)} -9.6 -2.2 Z" fill="${AC.band}"/>
+    <path d="M-9.4 -3 Q-14 ${f1(-2 + w2)} -19 ${f1(2 + w2)} L-17 ${f1(4 + w2)} Q-13 ${f1(1 + w2 * .6)} -9.2 -.6 Z" fill="${AC.band}"/>
+    <path d="M-8 -5 L-18 -8 L-12.5 -2.5 L-18 2 L-10 3 Z" fill="${AC.hair}"/>
+    <path d="M-10 0 A10 10 0 0 1 9.4 -3.4 L10.6 4 Q10 9 4 10.5 Q-2 11.5 -6.5 8 A10 10 0 0 1 -10 0 Z" fill="${AC.skin}"/>
+    <path d="M-3.2 -1.6 Q-6.4 1 -3.4 4.2" fill="none" stroke-width="1.3"/>
+    <ellipse cx="6.2" cy="3.8" rx="2" ry="1" fill="#F7A3A3" stroke="none" opacity=".8"/>
+    <ellipse cx="5.4" cy="-.3" rx="2.1" ry="3.6" fill="${AC.iris}" stroke-width="1"/>
+    <circle cx="4.9" cy="-1.9" r=".9" fill="#fff" stroke="none"/>
+    <path d="M3.1 -4 Q5.6 -4.9 8.3 -3.4" stroke-width="1.9" fill="none"/>
+    <path d="M7.8 6.8 L9.8 6.3" stroke-width="1.3" fill="none"/>
+    <path d="M-10 -1 Q-11.5 -11.5 -1 -12.8 Q8.5 -13.4 11.2 -5 L8 -6.8 L8.6 -3.6 L5.2 -6.2 L4.2 -3 L1.6 -6.8 L-2.8 -5.4 L-5.8 -8 L-7 -2.2 Z" fill="${AC.hair}"/>
+    <path d="M-6.5 -10.2 Q-1 -12.4 4.5 -11.2" stroke="${AC.hairH}" stroke-width="1.6" fill="none"/>
+    <path d="M-9.9 -3.6 L9.9 -7.2 L9.3 -9.9 L-9.6 -6.6 Z" fill="${AC.band}"/>
+  </g>`;
+}
+function animeFx(J, fx) {
+  if (!fx) return "";
+  let s = "";
+  // Speed lines behind whichever joint moves fastest.
+  let best = null, bl = 0;
+  for (const k of ["hip", "neck", "handN", "ankN"]) {
+    const v = [J[k][0] - fx.J0[k][0], J[k][1] - fx.J0[k][1]], l = Math.hypot(v[0], v[1]);
+    if (l > bl) { bl = l; best = { p: J[k], u: [v[0] / l, v[1] / l] }; }
+  }
+  if (best && bl > 1.4) {
+    const { p, u } = best, n = [-u[1], u[0]];
+    [-1, 0, 1].forEach(k => { const a = addv(p, [-u[0] * 12 + n[0] * k * 7, -u[1] * 12 + n[1] * k * 7]);
+      s += `<line x1="${f1(a[0])}" y1="${f1(a[1])}" x2="${f1(a[0] - u[0] * (k ? 9 : 15))}" y2="${f1(a[1] - u[1] * (k ? 9 : 15))}" stroke="${AC.ink}" stroke-width="1.8" stroke-linecap="round" opacity=".5"/>`; });
+  }
+  const h = J.head;
+  if (/Hold|Squeeze|Feel/.test(fx.label)) // sweat drop on effort holds
+    s += `<path transform="translate(${f1(h[0] - 14)},${f1(h[1] - 8)})" d="M0 -5 Q4.5 1 0 3.5 Q-4.5 1 0 -5 Z" fill="#8ED1FF" stroke="${AC.ink}" stroke-width="1.3"/>`;
+  if (fx.i === 3 && fx.u < .9) { // sparkle: rep done
+    const sc = (.6 + .5 * Math.sin(Math.PI * fx.u)).toFixed(2);
+    s += `<path transform="translate(${f1(h[0] + 15)},${f1(h[1] - 13)}) scale(${sc})" d="M0 -8 Q1.2 -1.2 8 0 Q1.2 1.2 0 8 Q-1.2 1.2 -8 0 Q-1.2 -1.2 0 -8 Z" fill="#FFD34D" stroke="${AC.ink}" stroke-width="1.3"/>`;
+  }
+  return s;
+}
+function drawAnime(m, p, fx) {
+  const J = joints(p), att = m.attach ? m.attach(J, p) : {}, t = fx ? fx.t : 0;
+  // Shoulders sit a little below the neck, so sleeves don't cover the chin; re-solve the arms to the same hands.
+  const sh = lerpP(J.neck, J.hip, .14);
+  const [elbN, handN] = ik(sh, J.handN, SEG.upper * (p.uN ?? 1), SEG.fore, p.eN ?? -1);
+  const [elbF, handF] = ik(sh, J.handF, SEG.upper * (p.uF ?? p.uN ?? 1), SEG.fore, p.eF ?? p.eN ?? -1);
+  const back = addv([0, 0], dirv(p.sp - 90 * (m.face || 1), 4));   // torso shade toward the back
+  const torsoD = `M${f1(J.hip[0])} ${f1(J.hip[1])} Q${f1(J.mid[0] * 2 - (J.hip[0] + J.neck[0]) / 2)} ${f1(J.mid[1] * 2 - (J.hip[1] + J.neck[1]) / 2)} ${f1(J.neck[0])} ${f1(J.neck[1])}`;
+  return (att.back || "")
+    + animeLeg(J.hip, J.kneeF, J.ankF, p.ftF ?? p.ftN, AF) + animeArm(sh, elbF, handF, AF) + (att.far || "")
+    + cap(J.neck, lerpP(J.neck, J.head, .55), 7, AC.skin)
+    + `<path d="${torsoD}" stroke="${AC.ink}" stroke-width="21.5" stroke-linecap="round" fill="none"/>`
+    + `<path d="${torsoD}" stroke="${AC.shirt}" stroke-width="18" stroke-linecap="round" fill="none"/>`
+    + `<path d="${torsoD}" transform="translate(${f1(back[0])},${f1(back[1])})" stroke="${AC.shirtS}" stroke-width="7" stroke-linecap="round" fill="none" opacity=".9"/>`
+    + cap(J.hip, lerpP(J.hip, J.neck, .2), 18.5, AC.shorts, AC.shortsS)
+    + animeHead(J, p, m, t)
+    + animeLeg(J.hip, J.kneeN, J.ankN, p.ftN, AC) + (att.mid || "")
+    + animeArm(sh, elbN, handN, AC) + (att.front || "")
+    + animeFx(J, fx);
+}
+/* Background focus lines (manga "shuchusen"), built once. */
+const RAYS = `<rect width="240" height="172" rx="10" fill="var(--animeBg)"/><g fill="var(--animeRay)">${Array.from({ length: 30 }, (_, i) => {
+  const a = i * 12 + (i % 2) * 4, c = [120, 82], p1 = addv(c, dirv(a - 1.8, 70)), p2 = addv(c, dirv(a + 1.8, 70)), p3 = addv(c, dirv(a, 230));
+  return `<path d="M${f1(p1[0])} ${f1(p1[1])} L${f1(p3[0])} ${f1(p3[1])} L${f1(p2[0])} ${f1(p2[1])} Z"/>`; }).join("")}</g>`;
+
+/* Style switch: same poses, two renderers. The anime frame zooms out a
+   little because its head is bigger. */
+const frameWrap = (m, inner) => S.picStyle === "simple"
+  ? `<g transform="${m.fit || ""}">${m.scene}${inner}</g>`
+  : `${RAYS}<g transform="translate(7,10) scale(.94)"><g transform="${m.fit || ""}">${m.scene}${inner}</g></g>`;
+const drawFigure = (m, p, fx) => S.picStyle === "simple" ? drawSimple(m, p) : drawAnime(m, p, fx);
 
 /* ---- Exercise media: key poses, tempo, scene, muscles, cues ---- */
 const UP = -88;  // standing spine, slight forward lean
@@ -497,6 +599,7 @@ const MEDIA = {
     cues: ["Hand and knee on the bench, back flat.", "Pull your elbow back toward your hip.", "Lower slowly until the arm is straight."],
   },
   ringrow: {
+    face: -1,   // lying face-up: flip the face to the other side of the spine
     scene: floor,
     keys: [{ hip: [91.8, 107.6], sp: -32, fN: [24, 150], ftN: -80, hN: [176, 48], hF: [173, 50], eN: -1 },
            { hip: [81.5, 94.4], sp: -44, fN: [24, 150], ftN: -80, hN: [150, 40], hF: [147, 42], eN: -1 }],
@@ -524,6 +627,7 @@ const MEDIA = {
     cues: ["Sit tall, knees slightly bent.", "Pull the handle to your belly.", "Don't swing your back to move the weight."],
   },
   dbbench: {
+    face: -1,   // lying face-up: flip the face to the other side of the spine
     scene: benchAt(44, 176, 118) + floor,
     keys: [{ hip: [80, 109], sp: 0, fN: [30, 156], kN: -1, ftN: 0, hN: [134, 57], hF: [131, 58], eN: -1, uN: 1 },
            { hip: [80, 109], sp: 0, fN: [30, 156], kN: -1, ftN: 0, hN: [134, 88], hF: [131, 89], eN: 1, uN: .45 }],
@@ -569,6 +673,7 @@ const MEDIA = {
     cues: ["Elbows under your shoulders.", "Squeeze your glutes, belly tight.", "Straight line head to heels — don't let the hips sag."],
   },
   deadbug: {
+    face: -1,   // lying face-up: flip the face to the other side of the spine
     scene: mat,
     keys: [{ hip: [92, 148], sp: 0, fN: [56, 106], fF: [58, 106], kN: -1, kF: -1, ftN: -95, ftF: -95, hN: [146, 96], hF: [143, 96] },
            { hip: [92, 148], sp: 0, fN: [56, 106], fF: [14, 140], kN: -1, kF: -1, ftN: -95, ftF: -90, hN: [196, 142], hF: [143, 96] }],
@@ -619,7 +724,7 @@ function formSVG(id, { anim = false, cls = "" } = {}) {
   const still = !anim || S.reduceMotion, last = m.keys[m.keys.length - 1];
   const fig = still ? `<g opacity=".28">${drawFigure(m, m.keys[0])}</g>${drawFigure(m, last)}` : drawFigure(m, m.keys[0]);
   return `<svg class="${cls}" viewBox="0 0 240 172" ${still ? "" : `data-anim="${id}"`} role="img" aria-label="How to do ${esc(EX[id] ? EX[id].name : id)}">
-    <g transform="${m.fit || ""}">${m.scene}<g data-fig>${fig}</g></g>
+    ${frameWrap(m, `<g data-fig>${fig}</g>`)}
     ${anim ? `<text data-phase x="6" y="171" font-size="15" font-weight="700" fill="var(--onVar)">${still ? "Start (faint) → end" : esc(m.tempo[0][0])}</text>` : ""}</svg>`;
 }
 
@@ -679,9 +784,10 @@ const ANIM_T0 = performance.now();
 function animTick(now) {
   if (!S.reduceMotion) document.querySelectorAll("svg[data-anim]").forEach(svg => {
     const m = MEDIA[svg.dataset.anim]; if (!m) return;
-    const { pose, label } = poseAt(m, (now - ANIM_T0) / 1000);
-    const g = svg.querySelector("[data-fig]"); if (g) g.innerHTML = drawFigure(m, pose);
-    const t = svg.querySelector("[data-phase]"); if (t && t.textContent !== label) t.textContent = label;
+    const t = (now - ANIM_T0) / 1000, { pose, label, i, u } = poseAt(m, t);
+    const fx = { J0: joints(poseAt(m, Math.max(0, t - .09)).pose), label, i, u, t };
+    const g = svg.querySelector("[data-fig]"); if (g) g.innerHTML = drawFigure(m, pose, fx);
+    const lab = svg.querySelector("[data-phase]"); if (lab && lab.textContent !== label) lab.textContent = label;
   });
   requestAnimationFrame(animTick);
 }
@@ -1092,7 +1198,8 @@ function viewSettings() {
         <div class="listrow" style="cursor:default"><span class="grow">Units</span>${seg("units", ["kg", "lb"])}</div>
         ${nav("Default rest", "90 s", "info", "rest")}${sw("keepAwake", "Keep screen on in session")}${sw("sounds", "Sounds")}${sw("vibration", "Vibration")}</div>
       <div class="card"><div class="over">Game</div>${sw("game", "Play it like a game")}${nav("Game rules v2 — how it works", "", "why", "xp")}</div>
-      <div class="card"><div class="over">Look</div><div class="listrow" style="cursor:default"><span class="grow">Theme</span>${seg("theme", ["System", "Light", "Dark"]).replace('width:180px', 'width:220px')}</div>${sw("reduceMotion", "Reduce motion")}</div>
+      <div class="card"><div class="over">Look</div><div class="listrow" style="cursor:default"><span class="grow">Theme</span>${seg("theme", ["System", "Light", "Dark"]).replace('width:180px', 'width:220px')}</div>${sw("reduceMotion", "Reduce motion")}
+        <div class="listrow" style="cursor:default"><span class="grow">Exercise pictures</span>${seg("picStyle", ["Anime", "Simple"]).replace('width:180px', 'width:200px')}</div></div>
       <div class="card"><div class="over">Privacy &amp; data</div>${nav("Account &amp; sync", "● synced", "info", "account")}${nav("Photo lock &amp; key backup", S.recoverySaved ? "code saved" : "not set up", "info", "keys")}${nav("Backups &amp; CSV export", "", "info", "backups")}</div>
       <div class="card"><div class="over">About</div>${nav("Not medical advice · credits", "", "info", "about")}</div>
     </div>`;
