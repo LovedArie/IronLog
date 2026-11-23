@@ -7,6 +7,9 @@ Two pictures per exercise (ADR-025):
 | `ironlog-<id>-how.jpg` | **How**: the IronLog character in side view, start pose → end pose |
 | `ironlog-<id>-muscles.jpg` | **Muscles**: front + back muscle diagram; main muscles red, helpers orange |
 
+`ironlog-muscles-base.jpg` is the plain grey diagram every muscle picture
+was coloured from — paste it into a new ChatGPT chat to make more that match.
+
 `exercises.json` lists every exercise with its two files and its muscles.
 The app shows the muscle names as text too (never colour alone).
 
