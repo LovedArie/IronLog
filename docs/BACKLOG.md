@@ -28,7 +28,7 @@ Same rules as TickTimer's backlog, because they worked:
 
 | Milestone | Theme | Items | Why in this order |
 |---|---|---|---|
-| **v0.2** | Foundation | I1 I2 I4 F1 F2 F3 F4 I3 | Protect the code (CI), settle the data format once, and answer the riskiest unknown (QML on Android + web) before building on it |
+| **v0.2** | Foundation | I4 F1 F2 F3 F4 I3 | Protect the code (CI), settle the data format once, and answer the riskiest unknown (QML on Android + web) before building on it |
 | **v0.3** | Coach | F5 F6 F7 F11 F8 F9 F10 | The heart of the app: *Train now*. New domain logic → highest design risk |
 | **v0.4** | Game | F12 F13 F14 | Motivation loop; depends on activity logging (F11) |
 | **v0.5** | Online | I5 F15 F16 F17 I6 | Proven tech from TickTimer → lower risk, so later |
@@ -40,15 +40,12 @@ Same rules as TickTimer's backlog, because they worked:
 
 *Ids only, in the order they will be done. Delete this section when v0.2 ships.*
 
-- **I1** · **I2** · **I4** · **F1** · **F2** · **F3** · **F4** · **I3**
+- **I3** · **I4** · **F1** · **F2** · **F3** · **F4**
 
 ---
 
 ## Infrastructure
 
-- **I1** 👤 Create the `IronLog` GitHub repo, push v0.1.0, tag `v0.1.0`. *(S)*
-- **I2** CI on every push: Linux core-only job (no Qt), Linux + Qt job
-  (`QT_QPA_PLATFORM=offscreen`), Windows MinGW + Qt job; all run `ctest`. *(M)*
 - **I4** Spike in `prototypes/`: one QML screen + one C++ view model, built
   as an Android APK and a WASM page, run on the owner's phone. Decides ADR-012. *(M)* 👤
 - **I3** CD on tag `vX.Y.Z`: build the Windows zip and attach it to a GitHub

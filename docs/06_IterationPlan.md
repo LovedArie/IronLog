@@ -32,12 +32,14 @@ feature research.
 QML runs on the owner's Android phone and in a browser — before any
 v0.3 feature is built on top.
 
-**Backlog items, in order**: I1 → I2 → I4 → F1 → F2 → F3 → F4 → I3
+**Backlog items, in order**: I1 ✅ → I2 ✅ → I3 → I4 → F1 → F2 → F3 → F4
+
+*I3 moved up: the release workflow was written with CI, so it's tested next.*
 
 | Id | Item | Size |
 |---|---|---|
-| I1 | GitHub repo + v0.1.0 tag 👤 | S |
-| I2 | CI: Linux core-only, Linux + Qt, Windows MinGW | M |
+| I1 | GitHub repo + v0.1.0 tag 👤 — ✅ 2026-11-23, `LovedArie/IronLog` | S |
+| I2 | CI: Linux core-only, Linux + Qt 6.4, Windows MinGW + Qt 6.8 LTS — ✅ 2026-11-23, green | M |
 | I4 | QML spike → Android APK + WASM page on the owner's phone 👤 | M |
 | F1 | Schema v2 + migration | L |
 | F2 | Catalog v2 + owner's home-kit exercises | M |

@@ -272,3 +272,41 @@ Pin a version aqtinstall knows: `version: '6.8.3'` (Qt 6 LTS) in
 - Cover the version range with different jobs: Linux = 6.4 (apt, oldest
   supported), Windows CI = 6.8 LTS, owner's PC = 6.11.
 
+---
+
+### CI Windows: the first test hangs for 17+ minutes (and never prints anything)
+
+**SYMPTOM**
+Windows job: Configure and Build pass, then the Test step prints
+`Start 1: core` and nothing else until the job is cancelled. The hanging
+test (`test_core`) doesn't even use Qt. Linux jobs pass.
+
+**CAUSE**
+The step ran in **Git Bash**, which puts Git for Windows' own folders
+first on PATH. A diagnostic step proved it — the first
+`libstdc++-6.dll` each shell finds:
+```
+Git Bash:    /ucrt64/bin/libstdc++-6.dll           <- Git's, different C runtime
+PowerShell:  D:\a\IronLog\Qt\Tools\mingw1310_64\bin\libstdc++-6.dll   <- the right one
+```
+(The runner holds six copies in total: Git, Qt's MinGW, Qt's bin,
+`C:\mingw64`, two in Strawberry Perl.) The test loaded Git's runtime,
+which doesn't match the MinGW 13.1 it was compiled with; Windows showed a
+"procedure entry point not found" popup — on a machine with no screen,
+so it waited forever. Same family as "exit code -1073741515": a C++ exe
+is only as good as the DLLs it finds at launch.
+
+**FIX**
+- Run `ctest` (and `windeployqt`, and the packaged-app smoke test) with
+  `shell: pwsh`; PowerShell's PATH starts with Qt's MinGW bin from
+  `GITHUB_PATH`.
+- `ctest --timeout 120` and `timeout-minutes` on every job, so any future
+  hang fails in minutes, not 25.
+
+**PREVENT**
+- On Windows CI, anything that RUNS a MinGW-built exe uses PowerShell.
+  Git Bash is fine for scripting (`cygpath`, `gh`), not for launching.
+- Every CI job and every test gets a timeout. A test that can hang will.
+- When a fix "works", keep the evidence: the diagnostic step stays in
+  `ci.yml` so the next DLL surprise is visible in the log.
+

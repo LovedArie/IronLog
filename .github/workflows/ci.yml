@@ -28,6 +28,7 @@ jobs:
   core:
     name: Core only (Linux, no Qt)
     runs-on: ubuntu-24.04
+    timeout-minutes: 10
     steps:
       - uses: actions/checkout@v4
       - name: Configure (app OFF — no Qt on this machine)
@@ -40,6 +41,7 @@ jobs:
   linux-qt:
     name: Full build (Linux, Qt 6.4)
     runs-on: ubuntu-24.04
+    timeout-minutes: 20
     env:
       # No display on a CI machine: Qt GUI programs must use the offscreen
       # platform plugin (TickTimer lesson: encode it in CI, not in memory).
@@ -70,6 +72,7 @@ jobs:
   windows:
     name: Full build (Windows, Qt 6.8 MinGW)
     runs-on: windows-latest
+    timeout-minutes: 30
     defaults:
       run:
         shell: bash
