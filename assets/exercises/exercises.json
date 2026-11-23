@@ -1,5 +1,5 @@
 {
-  "version": 1,
+  "version": 2,
   "generated": "2026-11-23",
   "source": "ChatGPT image generation (owner's account)",
   "exercises": [
@@ -15,7 +15,8 @@
       "helpers": [
         "hamstrings",
         "abs"
-      ]
+      ],
+      "clip": "clips/ironlog-boxsquat-clip.mp4"
     },
     {
       "id": "goblet",
@@ -29,7 +30,8 @@
       "helpers": [
         "abs",
         "upper back"
-      ]
+      ],
+      "clip": "clips/ironlog-goblet-clip.mp4"
     },
     {
       "id": "wallsit",
@@ -42,7 +44,8 @@
       "helpers": [
         "glutes",
         "calves"
-      ]
+      ],
+      "clip": "clips/ironlog-wallsit-clip.mp4"
     },
     {
       "id": "dbrow",
@@ -57,7 +60,8 @@
         "biceps",
         "rear shoulders",
         "forearms"
-      ]
+      ],
+      "clip": "clips/ironlog-dbrow-clip.mp4"
     },
     {
       "id": "ringrow",
@@ -72,7 +76,8 @@
         "biceps",
         "rear shoulders",
         "abs"
-      ]
+      ],
+      "clip": "clips/ironlog-ringrow-clip.mp4"
     },
     {
       "id": "bandrow",
@@ -86,7 +91,8 @@
       "helpers": [
         "rear shoulders",
         "biceps"
-      ]
+      ],
+      "clip": "clips/ironlog-bandrow-clip.mp4"
     },
     {
       "id": "cablerow",
@@ -101,7 +107,8 @@
         "biceps",
         "rear shoulders",
         "lower back"
-      ]
+      ],
+      "clip": "clips/ironlog-cablerow-clip.mp4"
     },
     {
       "id": "dbbench",
@@ -114,7 +121,8 @@
       "helpers": [
         "triceps",
         "front shoulders"
-      ]
+      ],
+      "clip": "clips/ironlog-dbbench-clip.mp4"
     },
     {
       "id": "pushup",
@@ -128,7 +136,8 @@
         "triceps",
         "front shoulders",
         "abs"
-      ]
+      ],
+      "clip": "clips/ironlog-pushup-clip.mp4"
     },
     {
       "id": "revlunge",
@@ -142,7 +151,8 @@
       "helpers": [
         "hamstrings",
         "calves"
-      ]
+      ],
+      "clip": "clips/ironlog-revlunge-clip.mp4"
     },
     {
       "id": "stepup",
@@ -156,7 +166,8 @@
       "helpers": [
         "hamstrings",
         "calves"
-      ]
+      ],
+      "clip": "clips/ironlog-stepup-clip.mp4"
     },
     {
       "id": "plank",
@@ -170,7 +181,8 @@
         "obliques",
         "front shoulders",
         "glutes"
-      ]
+      ],
+      "clip": "clips/ironlog-plank-clip.mp4"
     },
     {
       "id": "deadbug",
@@ -183,7 +195,8 @@
       "helpers": [
         "obliques",
         "hip flexors"
-      ]
+      ],
+      "clip": "clips/ironlog-deadbug-clip.mp4"
     },
     {
       "id": "catcow",
@@ -196,7 +209,8 @@
       ],
       "helpers": [
         "abs"
-      ]
+      ],
+      "clip": "clips/ironlog-catcow-clip.mp4"
     },
     {
       "id": "hipflex",
@@ -208,7 +222,8 @@
       ],
       "helpers": [
         "quads"
-      ]
+      ],
+      "clip": "clips/ironlog-hipflex-clip.mp4"
     },
     {
       "id": "walk",
@@ -222,7 +237,8 @@
       "helpers": [
         "hamstrings",
         "glutes"
-      ]
+      ],
+      "clip": "clips/ironlog-walk-clip.mp4"
     },
     {
       "id": "legpress",
@@ -236,7 +252,8 @@
       "helpers": [
         "hamstrings",
         "calves"
-      ]
+      ],
+      "clip": "clips/ironlog-legpress-clip.mp4"
     }
   ]
 }

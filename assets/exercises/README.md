@@ -6,6 +6,7 @@ Two pictures per exercise (ADR-025):
 |---|---|
 | `ironlog-<id>-how.jpg` | **How**: the IronLog character in side view, start pose → end pose |
 | `ironlog-<id>-muscles.jpg` | **Muscles**: front + back muscle diagram; main muscles red, helpers orange |
+| `clips/ironlog-<id>-clip.mp4` | **Clip** (~7 s, 720 × 960): start ↔ end pose twice, then the muscles with their names. Built by `tools/make_clips.py` |
 
 `ironlog-muscles-base.jpg` is the plain grey diagram every muscle picture
 was coloured from — paste it into a new ChatGPT chat to make more that match.
@@ -30,4 +31,6 @@ made, and how to make more that match: [CREDITS.md](CREDITS.md).
 2. In the chat "Edit Muscle Diagram", ask for the new muscle colours.
 3. Check both pictures (form, fingers, right muscles), save as
    `ironlog-<id>-how.jpg` / `ironlog-<id>-muscles.jpg` (1200 × 800), add a
-   line to `exercises.json`.
+   line to `exercises.json` and the step labels to `STEPS` in
+   `tools/make_clips.py`.
+4. Run `python3 tools/make_clips.py assets/exercises assets/exercises/clips <id>`.
