@@ -19,7 +19,8 @@ start over.
 
 ## Try this tour
 
-1. **Train now** → 30 min → Normal → Home → plan → **Start session**. Log sets
+1. **Train now** → 30 min → Normal → Home → plan. Tap a **thumbnail** for the
+   how-to sheet (animation, muscle map, form cues). **Start session**. Log sets
    with ±, watch the rest timer, do the plank hold. **Finish** → *How was it?* → Save.
 2. **You → ⚙ Settings** → turn *Play it like a game* off. Look at Today and You.
 3. **Train now → Cramming** (the 3rd this week) → back on Today: the pause offer.
@@ -31,6 +32,7 @@ start over.
 
 | Real (same as the planned app) | Fake (stand-ins) |
 |---|---|
+| Exercise pictures (ADR-024): animated form figure from key poses + 2-bone IK, front/back muscle map, cues — 17 exercises | Poses are hand-tuned numbers in `MEDIA`, not catalog data yet |
 | Design tokens: colours, type sizes, 48 px targets, light/dark ([ui-research.md](../../docs/research/ui-research.md)) | Planner: a few hard-coded rules instead of `planner::buildSession()` |
 | Screen flow, one primary button per screen, bottom-aligned | XP and levels: simplified, not game rules v2 exactly |
 | Timers from stored timestamps (survive switching apps) | Camera and photos: drawn outlines, no real camera |
@@ -43,6 +45,10 @@ start over.
 - **Buttons carry `data-a` (action) and `data-v` (value).** One click handler
   looks up `A[action](value)`. This is *event delegation*: one listener for
   the whole app instead of one per button.
+- **Exercise pictures** (`MEDIA`, `joints()`, `ik()`): each exercise is 2–3
+  key poses; `ik()` finds knees and elbows with the law of cosines;
+  `poseAt()` eases between poses; one `requestAnimationFrame` loop redraws
+  only figures on screen.
 - **Timers** store an end time (`restEnds`), not a countdown. A 250 ms tick
   updates only the numbers, so the screen doesn't flicker.
 
@@ -51,5 +57,6 @@ QML screens that only display it, and actions that change the state.
 
 ## Tested
 
-Headless Chrome clicked through all the flows above at 390 × 844 (43 screens):
+Headless Chrome clicked through all the flows above at 390 × 844 (44 screens),
+and a gallery script rendered every exercise at 5 points of its loop (light + dark):
 no JavaScript errors, no tap target under 44 px.

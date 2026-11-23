@@ -477,6 +477,23 @@ https://pubmed.ncbi.nlm.nih.gov/35291645/) suggests 12–20. It's a starting
 point and a parameter (`stats::VolumeTarget`); goal programs (F6) will set
 their own per-muscle targets.
 
+### 8.16 Exercise pictures — drawn by code
+
+Every exercise shows two pictures (ADR-024, proposed): **how** (an animated
+side-view figure) and **which muscles** (front + back muscle map).
+
+| Piece | Where | What it does |
+|---|---|---|
+| Catalog entry (F2) | data | 2–3 key poses, tempo, main + helper muscles, 3 form cues |
+| `pose::solveLimb` | `core/` | 2-bone inverse kinematics: root + target + bone lengths → middle joint |
+| `pose::at(entry, t)` | `core/` | Eased blend between key poses for time *t* in the loop |
+| `PoseAnimator` | `ui-qml/` view model | Ticks while visible; exposes joint points to a QML `Shape` |
+| Muscle map | `ui-qml/` | One shape per muscle group; colour + legend text |
+
+Rules: *Reduce motion* → one still (start faint, end solid); the legend
+names the muscles (never colour alone); a gallery test renders every
+exercise so poses are checked by eye once. Demo: `prototypes/ui-prototype/`.
+
 ---
 
 ## 9. Architecture decisions
@@ -511,6 +528,7 @@ Older, longer reasoning for ADR-001 to 009 is also in
 | [021](adr/ADR-021-optional-game.md) | Game layer is optional per user | Accepted | 2026-11-23 |
 | [022](adr/ADR-022-game-rules-v2.md) | Game rules v2 (evidence-based) | Accepted | 2026-11-23 |
 | [023](adr/ADR-023-four-tab-navigation.md) | Four-tab navigation (Today · Log · Progress · You) | Accepted | 2026-11-23 |
+| [024](adr/ADR-024-exercise-pictures-drawn-by-code.md) | Exercise pictures drawn by code (form animation + muscle map) | Proposed | 2026-11-23 |
 
 **Proposed** decisions are waiting for evidence: ADR-012 (QML) on the I4
 spike, ADR-016 (QHttpServer) on F15.

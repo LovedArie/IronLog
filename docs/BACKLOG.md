@@ -29,7 +29,7 @@ Same rules as TickTimer's backlog, because they worked:
 | Milestone | Theme | Items | Why in this order |
 |---|---|---|---|
 | **v0.2** | Foundation | I4 F1 F2 F3 F4 | Protect the code (CI), settle the data format once, and answer the riskiest unknown (QML on Android + web) before building on it |
-| **v0.3** | Coach | F5 F6 F7 F11 F8 F9 F10 | The heart of the app: *Train now*. New domain logic → highest design risk |
+| **v0.3** | Coach | F5 F6 F7 F11 F8 F9 F10 F23 | The heart of the app: *Train now*. New domain logic → highest design risk |
 | **v0.4** | Game & body | F12 F13 F14 F18 F21 | Motivation loop + measuring the main goal (lean); depends on activity logging (F11) |
 | **v0.5** | Online | I5 F15 F16 F17 I6 | Proven tech from TickTimer → lower risk, so later |
 | **v0.6** | Progress+ | F19 F20 F22 H1 | Polish and retire the old desktop UI |
@@ -136,6 +136,10 @@ Same rules as TickTimer's backlog, because they worked:
   random photo key locked by the password-derived lock key and by a
   **recovery code** prompted at the first photo (and in settings); encrypted previews;
   password change re-locks one envelope. Never in exports or the repo. *(L)*
+- **F23** Exercise pictures for every catalog exercise (ADR-024): animated
+  form figure from key poses (2-bone IK) + front/back muscle map + 3 form
+  cues; thumbnail on plan rows, card in the session, how-to sheet. Gallery
+  test renders all poses. Needs F2. *(M)*
 - **F22** Stall detection: e1RM falling over several sessions or sets above
   the target → planner suggests a deload week. *(M)*
 

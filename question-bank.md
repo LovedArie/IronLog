@@ -674,3 +674,41 @@ on your own, or to pull from when you *ask* to be quizzed.
 > timers, so the countdown freezes and is wrong when you come back. Store
 > the **end time** (`restEnds = now + 90 s`) and compute `left = restEnds − now`
 > on each tick — gym usability rule 10.
+
+---
+
+## M — Exercise pictures (2026-11-23, ADR-024 proposed)
+
+**M1 🟢 What two pictures does every exercise get, and where are they shown?**
+> *How* (an animated side-view figure) and *which muscles* (front + back
+> muscle map). Shown as a thumbnail on plan rows, a card in the guided
+> session, and a big how-to sheet with 3 form cues.
+
+**M2 🟡 Why draw the pictures with code instead of AI image generation?**
+> Form must be exactly right (AI images of people often have body errors —
+> nearly half in a 2025 benchmark), animation teaches movements better than
+> stills, one look across 60+ exercises comes for free, and there's no
+> licence question. Adding an exercise is data, not drawing.
+
+**M3 🟡 What is 2-bone inverse kinematics, in one sentence?**
+> Given where a limb starts (hip), where its end must be (ankle) and the two
+> bone lengths, find the middle joint (knee) with the law of cosines —
+> there are two answers, so a "bend side" picks one.
+
+**M4 🔴 Spot the issue: the knee IK picks the wrong bend side. What does the picture show?**
+> A knee bending backward (or an elbow through the floor in a push-up). It
+> looks "almost right" in motion, which is why a gallery test renders every
+> exercise as stills to check each pose by eye.
+
+**M5 🟡 Why is a pose stored as targets (hip, foot, hand) and not as joint angles?**
+> Feet must stay planted and hands must stay on the floor or bench. With
+> targets, interpolating between poses keeps them there; with angles, the
+> errors add up along the limb and feet slide or float.
+
+**M6 🟢 What does *Reduce motion* change for exercise pictures?**
+> No loop. One still: the start pose faint and the end pose solid, so the
+> movement is still visible.
+
+**M7 🟡 Why does the muscle map always have a text legend?**
+> Colour alone fails for colour-blind users and in sunlight. "Main: Quads,
+> Glutes · Helps: Hamstrings" says the same thing in words.
