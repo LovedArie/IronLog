@@ -1,0 +1,52 @@
+@startuml architecture
+' IronLog — logical architecture (Larman Ch. 13: layers; SAiP Ch. 8: layers pattern).
+' Solid arrows = "uses" (compile-time dependency). They only point DOWN.
+' Dotted arrow  = Qt signals: the controller announces; it doesn't know who listens.
+' Render: plantuml -tpng diagrams/*.puml -o rendered
+
+title IronLog — three layers, dependencies point down
+
+skinparam shadowing false
+skinparam packageStyle rectangle
+skinparam defaultFontName Arial
+skinparam componentStyle rectangle
+skinparam ArrowColor #444444
+top to bottom direction
+
+package "UI layer — ui/   (Qt Widgets)" as UI #E3F2FD {
+  component "MainWindow\ncalendar + 3 tabs" as MW
+  component "WorkoutTableModel\nWeeklyVolumeModel\n(QAbstractTableModel)" as MODELS
+  component "ProgressChart\n(QPainter)" as PC
+  component "AddExerciseDialog" as AED
+}
+
+package "Services layer — services/   (Qt Core only)" as SVC #FFF8E1 {
+  component "TrainingController\nGRASP Controller\n(QObject + signals)" as TC
+  component "JsonStore\nPure Fabrication" as JS
+}
+
+package "Domain layer — core/   (pure C++17, no Qt)" as CORE #E8F5E9 {
+  component "TrainingLog / Workout / SetEntry\nExerciseLibrary / Date" as DOMAIN
+  component "stats::\ne1RM history, PRs, weekly sets" as ST
+}
+
+database "ironlog.json" as FILE
+
+MW -down-> TC : (1) every user action\naddSet / removeSet / addExercise
+MODELS -down-> TC : read log()
+TC -down-> JS : (2) save after\nevery change
+TC -down-> DOMAIN : (2) update
+JS -down-> DOMAIN : to/from JSON
+JS -right-> FILE : QSaveFile\natomic write
+ST -left-> DOMAIN : reads
+MODELS -down-> ST : read-only queries\n(layer bridging)
+
+TC .up.> MODELS : (3) <<signal>> logChanged()\nmodels reload
+TC .up.> MW : (3) <<signal>> logChanged()\nlibraryChanged(), saveFailed()
+
+note bottom of CORE
+  Builds and tests with NO Qt installed:
+  cmake -S . -B build -DIRONLOG_BUILD_APP=OFF
+end note
+
+@enduml

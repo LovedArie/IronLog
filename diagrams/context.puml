@@ -1,0 +1,37 @@
+@startuml context
+' arc42 §3 — Context: who and what IronLog talks to.
+' Render: plantuml -tpng diagrams/*.puml -o rendered
+
+title IronLog — system context (target, v1)
+
+skinparam shadowing false
+skinparam defaultFontName Arial
+skinparam rectangleStyle rounded
+left to right direction
+
+actor "Owner\n(student, badminton)" as OWNER
+actor "Partner\n(aesthetic goal)" as PARTNER
+
+rectangle "IronLog" as SYS #E8F5E9 {
+  rectangle "IronLog app\nAndroid · Web · Windows\n(local-first)" as APP
+  rectangle "ironlog-server\n(accounts + sync)" as SRV
+}
+
+cloud "GitHub" as GH {
+  rectangle "Repository\n+ Actions (CI/CD)" as REPO
+  rectangle "Releases\n(zip, APK)" as REL
+}
+
+OWNER --> APP : Train now, log,\ncheck levels
+PARTNER --> APP : pick a goal,\nfollow plans
+APP --> SRV : HTTPS via Caddy\nlogin, push/pull log
+REPO --> REL : CD: on version tag
+REPO --> SRV : CD: deploy + verify\n(SSH)
+REL --> APP : download / update
+
+note bottom of SYS
+  The app works fully offline.
+  The server only stores and syncs.
+end note
+
+@enduml

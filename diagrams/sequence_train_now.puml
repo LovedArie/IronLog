@@ -1,0 +1,46 @@
+@startuml sequence_train_now
+' arc42 §6 R1 — "Train now": from three answers to a session plan.
+' The planner is a PURE function in core/: same inputs -> same plan.
+' Render: plantuml -tpng diagrams/*.puml -o rendered
+
+title R1 Train now — cramming night, 25 minutes, home
+
+skinparam shadowing false
+skinparam defaultFontName Arial
+skinparam sequenceMessageAlign center
+autonumber
+
+actor Owner
+participant "TodayPage\n(QML)" as UI
+participant "TrainNowViewModel" as VM
+participant "TrainingController" as TC
+participant "planner::buildSession()\n(core, pure)" as PL
+participant "Catalog" as CAT
+participant "game::\n(core, pure)" as GM
+
+Owner -> UI : tap "Train now"
+UI -> Owner : How much time?
+Owner -> UI : 25 min
+UI -> Owner : How's today?
+Owner -> UI : Cramming
+UI -> Owner : What's nearby?\n(pre-ticked: last "limited" set)
+Owner -> UI : dumbbells, bands, mat
+UI -> VM : request(25 min, Cramming, equipment)
+VM -> TC : planSession(context)
+TC -> PL : buildSession(profile, context,\nhistory, catalog, today)
+PL -> CAT : exercises where\nequipment ⊆ nearby AND\nkneeStress ≤ knee stage
+CAT --> PL : candidates
+PL -> PL : R1 pick type: what the\nweekly quest still needs
+PL -> PL : R2 time budget: 5 warm-up\n+ 17 main + 3 stretch
+PL -> PL : R3 compound first, skip\nPR attempts (cramming)
+PL -> PL : R4 loads: double progression\nfrom last performance
+PL --> TC : SessionPlan + "why" per item
+TC -> GM : previewXp(plan)
+GM --> TC : Legs +60, Back +40, Core +20
+TC --> VM : plan + preview
+VM --> UI : show plan
+UI -> Owner : 25-min plan, each line\nwith its reason, XP preview
+Owner -> UI : Start
+note over UI, TC : Guided session: each logged set goes through\nTrainingController.addSet() as in UC-01
+
+@enduml

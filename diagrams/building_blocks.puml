@@ -1,0 +1,79 @@
+@startuml building_blocks
+' arc42 §5 — Building blocks, target (v1). Green = exists in v0.1.
+' Arrows = "uses" and only point down. The server shares core/ and the
+' sync protocol, never the UI.
+' Render: plantuml -tpng diagrams/*.puml -o rendered
+
+title IronLog — building blocks (target; green = exists in v0.1)
+
+skinparam shadowing false
+skinparam defaultFontName Arial
+skinparam packageStyle rectangle
+skinparam componentStyle rectangle
+
+package "ui-qml/   (Qt Quick, phone-first)" as QML #E3F2FD {
+  component "Today / Train now" as U1
+  component "Guided session" as U2
+  component "Character sheet" as U3
+  component "Progress" as U4
+  component "Onboarding / profile" as U5
+}
+
+package "ui/   (Qt Widgets — v0.1 desktop, retired at parity)" as WID #EEEEEE {
+  component "MainWindow + models" as W1 #C8E6C9
+}
+
+package "services/   (Qt Core + Network)" as SVC #FFF8E1 {
+  component "TrainingController" as TC #C8E6C9
+  component "JsonStore\n(schema v2)" as JS #C8E6C9
+  component "SyncClient (wire)\nSyncService (policy)" as SY
+  component "AuthClient" as AU
+  component "ViewModels for QML\n(QObject properties,\nQAbstractListModel)" as VM
+}
+
+package "core/   (pure C++17 — no Qt)" as CORE #E8F5E9 {
+  component "log\nSetEntry, Workout,\nCardio, Mobility, BodyCheckIn" as LOG #C8E6C9
+  component "catalog\nExercise metadata:\nequipment, muscles,\nknee stress, stage" as CAT #C8E6C9
+  component "stats\nPRs, e1RM, weekly sets" as ST #C8E6C9
+  component "planner\nrules → SessionPlan" as PL
+  component "game\nXP, levels, decay,\nquests, tokens" as GM
+  component "sync::merge\nrecord-level merge" as MG
+  component "Date" as DT #C8E6C9
+}
+
+package "server/   (separate executable)" as SERVER #FCE4EC {
+  component "ironlog-server\nQHttpServer, 127.0.0.1" as HS
+  component "AccountStore\nLogStore (revisioned blob)" as SS
+}
+
+QML --> VM
+WID --> TC
+VM --> TC
+TC --> JS
+TC --> SY
+SY --> AU
+SY --> MG
+TC --> PL
+TC --> GM
+VM --> ST
+PL --> CAT
+PL --> LOG
+GM --> LOG
+GM --> CAT
+ST --> LOG
+LOG --> DT
+HS --> SS
+
+note right of GM
+  XP and levels are DERIVED:
+  recomputed from the log,
+  never stored or synced.
+end note
+
+note bottom of SERVER
+  Stays dumb (TickTimer design):
+  stores each user's log as an
+  opaque document + revision.
+end note
+
+@enduml

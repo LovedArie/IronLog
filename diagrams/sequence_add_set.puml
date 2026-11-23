@@ -1,0 +1,54 @@
+@startuml sequence_add_set
+' IronLog — UC-01 "Log a set", main success scenario.
+' Shows the Controller pattern + observer fan-out via signals.
+' Render: plantuml -tpng diagrams/*.puml -o rendered
+
+title UC-01 Log a set — what happens after "Add set" is clicked
+
+skinparam shadowing false
+skinparam defaultFontName Arial
+skinparam sequenceMessageAlign center
+autonumber
+
+actor Lifter
+participant "MainWindow" as MW
+participant "TrainingController" as TC
+participant "ExerciseLibrary" as LIB
+participant "SetEntry" as SE
+participant "TrainingLog" as LOG
+participant "JsonStore" as JS
+participant "WorkoutTableModel" as WTM
+participant "WeeklyVolumeModel" as WVM
+
+Lifter -> MW : pick exercise, kg, reps;\nclick Add set
+MW -> TC : addSet(date, "bench press", 100, 5)
+TC -> LIB : find("bench press")
+LIB --> TC : Exercise{"Bench Press", Chest}
+TC -> SE : make("Bench Press", 100, 5)
+SE --> TC : optional<SetEntry> (valid)
+TC -> LOG : workoutOn(date).addSet(set)
+note right of LOG : get-or-create keeps\nworkouts date-sorted
+TC -> JS : save(data)
+JS -> JS : toJson() -> QSaveFile\nwrite + commit (atomic)
+JS --> TC : true
+
+TC -> TC : emit logChanged()
+group signal fan-out (direct connections, same thread)
+  TC -> WTM : reload()
+  WTM -> WTM : copy day's sets,\nstats::personalRecordIndices()
+  TC -> WVM : reload()
+  WVM -> WVM : stats::weeklySets()
+  TC -> MW : refreshAfterLogChange()
+  MW -> MW : calendar marks, headers,\nprogress chart
+end
+TC --> MW : AddResult::Ok
+MW -> WTM : isRecord(lastRow)?
+WTM --> MW : true
+MW -> Lifter : status bar:\n"New personal record on Bench Press!"
+
+== Extensions ==
+TC --> MW : AddResult::UnknownExercise   (3a: name not in library)
+TC --> MW : AddResult::InvalidNumbers    (6a: make() refused kg/reps)
+JS --> TC : false -> emit saveFailed(msg) (7a: disk full / no permission)
+
+@enduml

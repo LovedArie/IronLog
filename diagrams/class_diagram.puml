@@ -1,0 +1,138 @@
+@startuml class_diagram
+' IronLog — design class diagram for the domain core + services.
+' Filled diamond = composition (the part lives and dies with the whole).
+' Render: plantuml -tpng diagrams/*.puml -o rendered
+
+title IronLog — core and services classes
+
+skinparam shadowing false
+skinparam defaultFontName Arial
+skinparam classAttributeIconSize 0
+hide empty members
+
+package "core (pure C++17)" #E8F5E9 {
+
+  class Date <<struct>> {
+    + year : int
+    + month : int
+    + day : int
+    + isValid() : bool
+    + toDayNumber() : long
+    + weekday() : int
+    + mondayOfWeek() : Date
+    + toIso() : string
+    + {static} fromIso(text) : optional<Date>
+  }
+
+  enum MuscleGroup {
+    Chest
+    Back
+    Shoulders
+    Biceps
+    Triceps
+    Quads
+    Hamstrings
+    Glutes
+    Calves
+    Abs
+  }
+
+  class Exercise <<struct>> {
+    + name : string
+    + primary : MuscleGroup
+  }
+
+  class ExerciseLibrary {
+    - m_exercises : vector<Exercise>
+    + {static} withDefaults() : ExerciseLibrary
+    + add(Exercise) : bool
+    + find(name) : const Exercise*
+  }
+
+  class SetEntry {
+    - m_exercise : string
+    - m_weightKg : double
+    - m_reps : int
+    + {static} make(exercise, kg, reps) : optional<SetEntry>
+    + volume() : double
+    + estimatedOneRepMax() : double
+  }
+
+  class Workout {
+    - m_date : Date
+    - m_sets : vector<SetEntry>
+    + addSet(SetEntry)
+    + removeSet(index) : bool
+    + totalVolume() : double
+  }
+
+  class TrainingLog {
+    - m_workouts : vector<Workout>  // sorted by date
+    + workoutOn(Date) : Workout&
+    + find(Date) : Workout*
+    + removeWorkout(Date) : bool
+    + pruneEmpty()
+  }
+
+  class "stats" as Stats <<namespace>> {
+    + e1rmHistory(log, exercise) : vector<ProgressPoint>
+    + bestE1rmBefore(log, exercise, date) : optional<double>
+    + lastSet(log, exercise) : optional<SetEntry>
+    + personalRecordIndices(log, workout) : vector<size_t>
+    + weeklySets(log, library, day) : MuscleCounts
+    + classify(sets, target) : VolumeStatus
+  }
+
+  TrainingLog *-- "0..*" Workout : sorted, one per day >
+  Workout *-- "0..*" SetEntry : in order done >
+  Workout --> "1" Date
+  ExerciseLibrary *-- "0..*" Exercise
+  Exercise --> MuscleGroup : primary
+  SetEntry ..> Exercise : refers to by name
+  Stats ..> TrainingLog : reads
+  Stats ..> ExerciseLibrary : reads
+}
+
+package "services (Qt Core)" #FFF8E1 {
+
+  class AppData <<struct>> {
+    + log : TrainingLog
+    + library : ExerciseLibrary
+  }
+
+  class JsonStore {
+    - m_path : QString
+    + load() : LoadResult
+    + save(AppData) : bool
+    + {static} toJson(AppData) : QByteArray
+    + {static} fromJson(bytes) : LoadResult
+  }
+
+  class TrainingController <<QObject>> {
+    - m_store : JsonStore
+    - m_data : AppData
+    + addSet(date, exercise, kg, reps) : AddResult
+    + removeSet(date, index) : bool
+    + addExercise(name, muscle) : bool
+    + loadSampleData(today) : bool
+    -- signals --
+    + logChanged()
+    + libraryChanged()
+    + saveFailed(message)
+  }
+
+  TrainingController *-- AppData
+  TrainingController *-- JsonStore
+  JsonStore ..> AppData : reads / builds
+}
+
+AppData *-- TrainingLog
+AppData *-- ExerciseLibrary
+
+note bottom of SetEntry
+  Invariant: 0 <= kg <= 1000, 1 <= reps <= 100.
+  Private constructor + checked make(),
+  so an invalid SetEntry cannot exist.
+end note
+
+@enduml

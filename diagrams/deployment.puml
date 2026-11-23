@@ -1,0 +1,51 @@
+@startuml deployment
+' arc42 §7 — Deployment: where each piece runs.
+' Mirrors TickTimer's proven setup (ROLLOUT.md §2, §2i): one Caddy owns 443,
+' each app gets a subdomain + a loopback port + a systemd unit.
+' Render: plantuml -tpng diagrams/*.puml -o rendered
+
+title IronLog — deployment (target)
+
+skinparam shadowing false
+skinparam defaultFontName Arial
+skinparam nodeStyle rectangle
+
+node "Android phone" as PHONE {
+  artifact "IronLog.apk\n(Qt for Android)" as APK
+  database "ironlog.json\n(app data)" as D1
+}
+node "iPhone / any browser" as WEB {
+  artifact "IronLog web app\n(Qt WebAssembly)" as WASM
+  database "browser storage" as D2
+}
+node "Windows PC" as PC {
+  artifact "IronLog.exe" as EXE
+  database "ironlog.json\n(AppData)" as D3
+}
+
+node "Hetzner CX23 — Ubuntu (existing VPS)" as VPS {
+  component "Caddy (systemd)\n:80 / :443, auto TLS" as CADDY
+  component "ironlog-server (systemd)\nuser: ironlog\n127.0.0.1:8081" as SRV
+  database "/var/lib/ironlog\naccounts.json\ndevices.json\nlogs/<user>.json" as DATA
+  component "ironlog-backup.timer\nnightly 03:00" as BK
+  folder "/var/www/ironlog-app\n(web app files)" as WWW
+  component "ticktimer-server\n127.0.0.1:8080" as TT
+}
+
+cloud "GitHub" as GH {
+  component "Actions\nCI on push · CD on tag" as ACT
+  artifact "Releases" as REL
+}
+
+APK --> CADDY : HTTPS\nironlog.<domain>
+WASM --> CADDY : HTTPS\n/app + API
+EXE --> CADDY : HTTPS
+CADDY --> SRV : HTTP (loopback only)
+CADDY --> WWW : static files
+CADDY --> TT : ticktimer.<domain>
+SRV --> DATA
+BK --> DATA : tarball to\n/var/backups/ironlog
+ACT --> REL : zip, APK
+ACT --> VPS : SSH deploy,\nthen GET /version check
+
+@enduml
