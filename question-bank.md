@@ -418,14 +418,16 @@ on your own, or to pull from when you *ask* to be quizzed.
 > open, which is trivial (ADR-014).
 
 **V6 🔴 Decay could punish the owner during exams. How is that prevented?**
-> 10-day grace per skill, exam mode pauses decay (≤ 21 days), a floor at
-> 50 % of peak XP, and muscle memory doubles XP while climbing back. The
-> quest also drops to the exam minimum.
+> *(Updated for game rules v2.)* 14-day grace per skill with a 3-day
+> warning, a Pause (exams ≤ 21 days, also sick / injured / travel) stops
+> decay, a floor at 50 % of peak XP, and the comeback bonus doubles XP while
+> climbing back. During an exams pause the quest drops to the exam minimum.
 
-**V7 🟡 How does a cheat-meal token get earned, and why a bank cap of 2?**
-> Completing the weekly quest (the program's planned sessions) earns one.
-> The cap keeps it a weekly reward for consistency, not a stockpile — and it
-> rewards showing up, not extra volume (R-12).
+**V7 🟡 How does a rest token get earned, and why a bank cap of 2?**
+> *(Updated for game rules v2 — it replaced the cheat-meal token.)*
+> Completing the weekly quest earns one; it's spent automatically to keep a
+> missed week in the streak. The cap keeps it a reward for consistency, not
+> a stockpile — the same "bank max 2" Duolingo uses for streak freezes.
 
 **V8 🔴 TickTimer asks a human on every sync conflict. Why does IronLog merge automatically?**
 > A planner is *edited*; a training log is *appended*. Two devices adding
@@ -547,3 +549,31 @@ on your own, or to pull from when you *ask* to be quizzed.
 > before 3 pain-free weeks of step-ups), presented *as* unlocks when the game
 > is on. Tying them to the toggle would let a user bypass safety by
 > unchecking a box.
+
+**V32 🔴 Why was the cheat-meal token replaced?**
+> Research round 2: cheat meals are linked to eating-disorder symptoms in
+> young adults (Ganson 2022; Murray 2018, preliminary), dietitians advise
+> dropping "cheat" language, and an expected reward earned for a task is the
+> kind most likely to undermine intrinsic motivation. A rest token keeps the
+> mechanic; the user can still write their own reward — the app just never
+> suggests food or says "cheat" (ADR-022).
+
+**V33 🟡 Why did decay go from 10 days / −1 % to 14 days / −0.5 %?**
+> In a detraining study no group lost maximal strength in 3 weeks off and
+> the group lost about 1.2 % in 6 weeks. v1 removed ~13 % of XP by day 24 —
+> harsher than the body. A game that lies about the body loses trust.
+
+**V34 🟡 What changed when "exam mode" became "Pause"?**
+> Same mechanism (stops decay, changes the quest) with a reason and a cap:
+> exams ≤ 21 days, sick ≤ 14, injured ≤ 42, travel ≤ 21. Sick/injured
+> suspend the quest; travel lowers it to one session. Record: `PausePeriod`.
+
+**V35 🟡 Name four ways the weekly streak is forgiving.**
+> Counted per week (not per day); rest days count; paused and rest-token
+> weeks keep it; logging a forgotten set for a past day restores that week.
+> And no shaming messages.
+
+**V36 🔴 Why version the game rules?**
+> XP is derived, so changing the balance table re-scores history and levels
+> can shift. A version number + "Game rules updated — levels recalculated"
+> tells the user why, instead of numbers silently moving.

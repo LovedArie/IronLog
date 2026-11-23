@@ -17,7 +17,7 @@
 | Transition | v1.0 | 1–2 weeks | Partner onboarding, release routine, QA checklist |
 
 Student pace: exam periods will stretch these. That's expected — the app
-itself has an exam mode for the same reason.
+itself has a Pause (exams, sick, injured, travel) for the same reason.
 
 ---
 
@@ -28,7 +28,7 @@ itself has an exam mode for the same reason.
 | ✅ v0.1.0 | Desktop logbook | Tests green, docs complete |
 | v0.2 | Foundation | CI green; data v2; QML decision made |
 | v0.3 | Coach | Owner trains a full week from *Train now* plans |
-| v0.4 | Game | Character sheet, decay, exam mode, quest tokens in daily use |
+| v0.4 | Game & body | Character sheet, gentle decay, pauses, weekly quest + streak, check-ins + photos in daily use |
 | v0.5 | Online | Owner + partner synced through the VPS |
 | v0.6 | Progress+ | Body check-ins, PR types, calculators; Widgets UI retired |
 | v1.0 | Release | One semester of real use without data loss |

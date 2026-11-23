@@ -19,7 +19,7 @@
   only; invite-only registration; salted, stretched password hashes; each
   user reads and writes only their own log. (arc42 §8.8)
 - **Game fairness (v2)**: every XP, level and token can be explained from
-  logged records; no decay during exam mode. (arc42 §8.6)
+  logged records; no decay during a pause; no food rewards, no "cheat" wording. (arc42 §8.6)
 
 ## Usability
 

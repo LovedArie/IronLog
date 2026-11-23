@@ -36,7 +36,7 @@ package "core/   (pure C++17 — no Qt)" as CORE #E8F5E9 {
   component "catalog\nExercise metadata:\nequipment, muscles,\nknee stress, stage" as CAT #C8E6C9
   component "stats\nPRs, e1RM, weekly sets" as ST #C8E6C9
   component "planner\nrules → SessionPlan" as PL
-  component "game\nXP, levels, decay,\nquests, tokens" as GM
+  component "game\nXP, levels, gentle decay,\npauses, quests, streak" as GM
   component "sync::merge\nrecord-level merge" as MG
   component "Date" as DT #C8E6C9
 }

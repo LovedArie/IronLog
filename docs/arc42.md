@@ -40,7 +40,7 @@ vision: [01_Vision.md](01_Vision.md). Use cases: [02_UseCaseModel.md](02_UseCase
 | Log | Strength sets, cardio, badminton, stretching; edit + undo | ✅ sets only |
 | Progress | PRs, e1RM chart, weekly sets per muscle, body check-ins, progress photos | ✅ first three |
 | Coach | Goal programs, *Train now* planner, guided session | planned |
-| Game | 8 skills, XP, decay, exam mode, weekly quest, cheat-meal token, unlocks | planned |
+| Game | 8 skills, XP, gentle decay, pauses, weekly quest, rest token + own reward, weekly streak, unlocks | planned |
 | Online | Accounts, sync via the owner's VPS | planned |
 | Platforms | Android, web (WASM), Windows from one codebase | ✅ Windows/Linux desktop |
 
@@ -135,7 +135,7 @@ be one-way.)
 
 | Module | Main types | Job | Status |
 |---|---|---|---|
-| `log` | `SetEntry`, `Workout`, `TrainingLog` → v2: `CardioEntry`, `MobilityEntry`, `BodyCheckIn`, `ExamPeriod`, `TokenSpend` | What happened | ✅ sets |
+| `log` | `SetEntry`, `Workout`, `TrainingLog` → v2: `CardioEntry`, `MobilityEntry`, `BodyCheckIn`, `PausePeriod`, `RestTokenUse`, `UserReward` | What happened | ✅ sets |
 | `catalog` | `Exercise`, `ExerciseLibrary`, `MuscleGroup` → v2: equipment, secondary muscles, movement pattern, knee stress, stage | What exists | ✅ basic |
 | `stats` | free functions | PRs, e1RM history, weekly sets, last set | ✅ |
 | `planner` | `Profile`, `TrainContext`, `SessionPlan`, `buildSession()` | What to do today | planned |
@@ -192,8 +192,8 @@ saves atomically → emits `logChanged()` → all views reload.
 ### R4 — Opening the app on a new day
 
 Nothing is "ticked" or stored. The character sheet is recomputed:
-`game::computeSheet(log, examPeriods, today)` applies XP, decay and muscle
-memory up to today. Same inputs → same levels on every device.
+`game::computeSheet(log, pauses, today)` applies XP, decay and the comeback
+bonus up to today. Same inputs → same levels on every device.
 
 ---
 
@@ -247,8 +247,9 @@ Here the verification is part of the pipeline.
 | `SessionReview` | `id`, `date`, `overall` (great / good / ok / rough), `energy` (high / normal / low), `joints` (fine / twinge / pain), `note?`, `prefilled` (which answers the app suggested) | Planner input; `joints = pain` → pain check |
 | `GameModeChange` | `id`, `at`, `on` (true / false) | The off-intervals pause decay; the current value is the last record |
 | `TimedSet` | as `StrengthSet` but `seconds` instead of `reps` (plank, wall sit, balance) | Same PR/XP rules on duration |
-| `ExamPeriod` | `id`, `start`, `end` (≤ 21 days) | Pauses decay, lowers quest |
-| `TokenSpend` | `id`, `date`, `note?` | Spent cheat-meal tokens |
+| `PausePeriod` | `id`, `start`, `end`, `reason` (exams / sick / injured / travel) | Stops decay; changes the quest (§8.6); length capped per reason |
+| `RestTokenUse` | `id`, `week` | A rest token spent to keep a missed week in the streak |
+| `UserReward` | `id`, `text`, `since` | The reward the user writes for completing a weekly quest (free text, optional) |
 | `Profile` | goal program, units, equipment sets per place, constraints (knee stage …), weekly availability | Per user |
 | `Exercise` | stable `id` slug, name, primary + secondary muscles, equipment set, movement pattern, knee stress (low/med/high), stage, default rep range | Catalog |
 
@@ -282,8 +283,8 @@ Every record also carries `updatedAt` and `deleted` (tombstone) for sync.
 ### 8.4 Derived state
 
 XP, levels, decay, quest progress and **earned** tokens are computed from
-the log on demand. Only *inputs* are stored (sets, cardio, exam periods,
-token spends). Consequences: nothing to sync or corrupt; rebalancing the
+the log on demand. Only *inputs* are stored (sets, cardio, pauses,
+rest-token uses, the user's reward text). Consequences: nothing to sync or corrupt; rebalancing the
 game is a code change that re-scores history; two devices always agree.
 
 ### 8.5 Planner (rules engine)
@@ -315,12 +316,24 @@ Lean & toned lower, General) are **data files**, not code.
 | XP: mobility | +2 / min |
 | Level curve | level L → L+1 costs 50 × L XP (fast early, slower later) |
 | Total level | sum of skill levels |
-| Decay | after **10 days** with no XP in a skill: −1 % of that skill's XP per day |
-| Muscle-memory floor | decay never goes below 50 % of the skill's peak XP |
-| Muscle memory | XP ×2 while below peak |
-| Exam mode | pauses all decay; ≤ 21 days; quest target lowered |
-| Weekly quest | complete the program's planned sessions (exam: 2 strength + 1 cardio) |
-| Reward | quest complete → +1 cheat-meal token; bank max 2 |
+| Progress display | "N sets to next level" on every skill (competence feedback) |
+| Decay | after **14 days** with no XP in a skill: **−0.5 %** of that skill's XP per day |
+| Decay warning | 3 days before decay starts: "Back starts fading in 3 days"; the body map greys that muscle |
+| Floor | decay never goes below 50 % of the skill's peak XP |
+| Comeback bonus | XP ×2 while below peak (retraining is faster than first training) |
+| Pause | stops all decay. Reasons and caps: exams ≤ 21 days · sick ≤ 14 · injured ≤ 42 · travel ≤ 21 |
+| Weekly quest | the program's planned sessions; during a pause: exams → 2 strength + 1 cardio · travel → 1 session · sick / injured → no quest |
+| Rest token | quest complete → +1 rest token (bank max 2); spent automatically to keep a missed week in the streak |
+| Your reward | optional text the user writes ("movie night"); shown when the quest completes. The app never suggests food and never says "cheat" |
+| Streak | consecutive **weeks** with the quest done; rest days count; paused weeks and rest-token weeks keep it; a set logged later for a past day can restore that week; no shaming messages |
+| Rules version | the balance table has a version number; when it changes, the app says "Game rules updated — levels recalculated" |
+
+*Game rules v2 (2026-11-23), changed after research round 2
+(`research/feature-research-2.md`): decay was gentler than v1 (strength
+barely changes in 3 weeks off), cheat-meal token replaced (cheat meals are
+linked to eating-disorder symptoms in young adults; "cheat" wording breeds
+guilt), streak made weekly and forgiving (Duolingo freezes, Apple pause,
+Gentler Streak).*
 
 **Game mode (on/off, per user — ADR-021).** One checkbox, asked at
 onboarding and changeable in settings.
@@ -328,9 +341,9 @@ onboarding and changeable in settings.
 | | Game ON | Game OFF |
 |---|---|---|
 | XP | earned and shown | still computed from the log, not shown |
-| Decay | applies after the grace period | **paused** (like exam mode) |
+| Decay | applies after the grace period | **paused** (like a Pause) |
 | Levels, body map colours, streak, tokens | shown | hidden |
-| Weekly quest | "quest", earns a token | plain "2 of 3 planned sessions done" |
+| Weekly quest | "quest", earns a rest token + shows your reward | plain "2 of 3 planned sessions done" |
 | Progression gates, pain check, plans | active | **active** — safety rules never depend on the game |
 | Turning back on | — | levels include everything trained while off; nothing lost |
 
@@ -371,7 +384,7 @@ Server errors use distinct codes (`auth`, `forbidden`, `conflict`,
 
 | Level | Tool | Examples |
 |---|---|---|
-| Core rules | Catch2 | planner never breaks constraints; decay paused in exam mode; merge is commutative for appends |
+| Core rules | Catch2 | planner never breaks constraints; decay stopped during every pause reason; merge is commutative for appends |
 | Services | Catch2 + Qt Core | store migration v1→v2; controller signals; sync state machine |
 | Server | Catch2 + live process | register/login/409 against a real `ironlog-server` on a temp port |
 | UI | manual QA checklist + screenshots | phone layout, web build loads |
@@ -390,7 +403,7 @@ another chip.
 | Answer | Pre-picked when |
 |---|---|
 | Overall | ≥ 90 % of planned sets hit target → *Good*; any PR → *Great*; < 60 % → *Rough*; else *OK* |
-| Energy | exam mode or *Cramming* → *Low*; otherwise last review's value |
+| Energy | an exams pause or *Cramming* → *Low*; otherwise last review's value |
 | Joints | always *Fine* — **never** pre-pick pain; the user must tap it |
 
 The app stores which answers were suggested (`prefilled`), so later
@@ -460,6 +473,7 @@ Full reasoning for ADR-001 to 009: [archive/design-notes-v0.1.md](archive/design
 | 019 | Personal training documents stay out of the public repo | A |
 | 020 | **Progress photos encrypted end-to-end** (libsodium, key from password); server stores ciphertext only | P |
 | 021 | **Game layer is optional** per user: off hides it and pauses decay; safety rules independent of it | A |
+| 022 | **Game rules v2** (evidence-based): gentler decay, Pause with reasons, weekly forgiving streak, rest token + user-written reward instead of a cheat-meal token; rules versioned | A |
 
 ### Notes on the new decisions
 
@@ -494,7 +508,7 @@ Full reasoning for ADR-001 to 009: [archive/design-notes-v0.1.md](archive/design
 | Q2 | *Train now* on a phone, offline | Plan shown < 1 s after the last answer | Timed in QA |
 | Q3 | App killed while saving | Previous file intact | ✅ `test_services` |
 | Q4 | Planner with knee stage 1 and any input | Never returns a knee-stress-high exercise | Property test over many contexts |
-| Q5 | 30 days without training during exam mode | No decay | Catch2 |
+| Q5 | 21 days without training during an exams pause | No decay; streak kept | Catch2 |
 | Q6 | Port 8081 probed from the internet | Times out | `curl` from mobile data |
 | Q7 | Core built on a machine without Qt | Builds and passes | ✅ CI job 1 |
 | Q8 | Same day logged on phone and PC offline, then both sync | All sets present once | Catch2 on `sync::merge` + live test |
@@ -512,7 +526,7 @@ Full register: [05_RiskList.md](05_RiskList.md). Top risks:
 | Generated plans cause injury | Rules from written decisions, gates, pain check, tests (Q4) |
 | QML + Android + WASM is new territory | Spike first (backlog I4) |
 | Sync merge loses data | Ids, tombstones, pure merge with tests, server backups |
-| Gamification backfires (decay feels like punishment) | Grace period, exam mode, muscle memory, floor |
+| Gamification backfires (decay feels like punishment) | Game rules v2: 14-day grace, warning, pauses, comeback bonus, floor, weekly streak, game can be turned off |
 | Scope is large for one student | Milestones, backlog cap, risk-driven order |
 
 **Technical debt (known)**

@@ -57,7 +57,8 @@ Same rules as TickTimer's backlog, because they worked:
 
 - **F1** Schema v2 + migration v1→v2: record ids, `updatedAt`, tombstones,
   weight + unit as entered (kg/lb), RIR, set type, note; new record kinds
-  (cardio, mobility, body check-in, exam period, token spend, progress photo);
+  (cardio, mobility, body check-in, pause period, rest-token use, user reward,
+  progress photo);
   **timed sets** (plank, wall sit, balance holds) and distance. One migration,
   not five. *(L)*
 - **F2** Catalog v2: exercise ids and metadata (equipment, primary +
@@ -95,11 +96,13 @@ Same rules as TickTimer's backlog, because they worked:
   as a **body map** where muscles light up by level. **Game mode is a
   checkbox** (onboarding + settings): off hides XP, levels, streaks and tokens
   and pauses decay; turning it back on loses nothing (ADR-021). *(M)*
-- **F13** Decay after 10 days, 50 % peak floor, muscle memory ×2, exam mode
-  (≤ 21 days, pauses decay, lowers the quest). *(M)*
-- **F14** Weekly quest → cheat-meal token (bank max 2), spend a token,
-  level-up and quest-complete moments; **streak + training heat map**
-  (exam weeks don't break a streak). *(M)*
+- **F13** Game rules v2: decay after 14 days at −0.5 %/day with a 3-day warning,
+  50 % peak floor, comeback bonus ×2, **Pause** with a reason (exams / sick /
+  injured / travel, each capped), "sets to next level", versioned rules. *(M)*
+- **F14** Weekly quest → **rest token** (bank max 2, protects the streak) +
+  **your own reward** text; level-up and quest-complete moments; **weekly
+  streak** (rest days count, pauses keep it, back-dated logs restore a week)
+  + training heat map. *(M)*
 
 ## Features — online
 

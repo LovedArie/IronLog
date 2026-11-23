@@ -49,7 +49,7 @@ part by part, and rewards consistency — synced to your own server.
 | Module | What it does |
 |---|---|
 | **Coach** | **Goal programs** (Badminton singles · Lean & toned, upper focus · Lean & toned, lower focus · General fitness). **Train now**: asks time → today's situation → gym or home / what's nearby, then builds a session. **Guided session**: follow the plan, log as you go, rest timer. **"How was it?"** check-in at the end: quick-tap answers pre-picked from the session (overall, energy, joints) + a voice-friendly note. Progression and pain checks. |
-| **Game** *(optional — a checkbox)* | **Character sheet** (a **body map** that lights up by level) with 8 skills: Arms, Shoulders, Chest, Back, Core, Legs, Stamina, Mobility. XP from every set, minute of cardio and stretch. **Decay** after a grace period, paused by **exam mode**; **muscle memory** doubles XP while you climb back. **Weekly quest** → **cheat-meal token**. **Unlocks**: harder exercises open when progression gates are passed. **Streak + heat map** (exam weeks don't break it). |
+| **Game** *(optional — a checkbox)* | **Character sheet** (a **body map** that lights up by level) with 8 skills: Arms, Shoulders, Chest, Back, Core, Legs, Stamina, Mobility. XP from every set, minute of cardio and stretch; "sets to next level" always shown. **Gentle decay** (warned first) after 2 weeks off a skill, stopped by a **Pause** (exams, sick, injured, travel); a **Comeback bonus** doubles XP while you climb back. **Weekly quest** → **rest token** (protects your streak) + **your own reward**, written by you. **Unlocks**: harder exercises open when progression gates are passed. **Weekly streak + heat map** (rest days count; a pause never breaks it). |
 | **Log** | Strength sets (weight, reps, RIR, set type, note), **timed holds** (plank, wall sit, balance), cardio (treadmill time/speed/incline), badminton, stretching. One-tap "repeat last set". Edit + undo. |
 | **Progress** | PRs, estimated-1RM charts, weekly sets per muscle, weekly body weight + waist trend, **progress photos** (private, encrypted) with side-by-side compare, stall → deload hint. |
 | **Online** | Accounts on the owner's VPS (invite-only), sync across devices, works offline. |
@@ -81,8 +81,8 @@ Train now
 ## Out of scope (for v1)
 
 - **Food logging and calorie counting.** "Lean" is tracked with weekly body
-  weight + waist + progress photos instead. Cheat-meal tokens reward consistency; they are
-  not a diet tool.
+  weight + waist + progress photos instead. The app never suggests food as a
+  reward and never uses the word "cheat" (game rules v2, research round 2).
 - Social feeds, leaderboards with strangers, public sharing.
 - Wearables / heart-rate devices.
 - App-store publishing (APK + web app + zip, like TickTimer).
@@ -117,6 +117,7 @@ Train now
 |---------|------|-------------|--------|
 | Inception draft | 2026-11-23 | v0.1: desktop logbook with PRs, weekly volume, chart | Claude (pairing) |
 | v2 | 2026-11-23 | Coach + game + online, phone-first, after feature research and owner interview | Claude (pairing) with owner |
+| v2.4 | 2026-11-23 | Game rules v2 from research round 2: gentler decay, Pause with a reason, weekly streak, rest token + user-written reward (replaces cheat-meal token) | Claude (pairing) with owner |
 | v2.3 | 2026-11-23 | Game mode is optional: a per-user checkbox; off hides the game and pauses decay, nothing is lost | Claude (pairing) with owner |
 | v2.2 | 2026-11-23 | "How was it?" session check-in with pre-picked choices; voice notes via keyboard dictation; voice set logging parked as AI track | Claude (pairing) with owner |
 | v2.1 | 2026-11-23 | Research triage: progress photos (Must), timed holds, fast phone logging, body map, streak, stall/deload | Claude (pairing) with owner |

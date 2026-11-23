@@ -47,19 +47,20 @@
 | **XP** | Experience points earned per set, cardio minute or stretch minute. | integer | ≥ 0 | — |
 | **Level** | A skill's rank, from its XP (level L → L+1 costs 50 × L XP). | integer | ≥ 1 | — |
 | **Total level** | Sum of the 8 skill levels. | integer | 8+ | — |
-| **Decay** | Losing XP in a skill after 10 days without training it (−1 %/day). | rule | never below floor | — |
-| **Muscle-memory floor** | Decay never drops a skill below 50 % of its peak XP. | rule | — | — |
-| **Muscle memory** | XP counts double while a skill is below its peak. | rule | — | comeback bonus |
-| **Exam mode** | A period (≤ 21 days) that pauses decay and lowers the weekly quest. | `ExamPeriod` | ≤ 21 days | — |
-| **Weekly quest** | The week's planned sessions; completing it earns a token. | derived | — | quest |
-| **Cheat-meal token** | Reward for a completed weekly quest. Bank at most 2. | integer | 0–2 | token |
-| **Derived state** | Values recomputed from the log (XP, levels, quests, earned tokens), never stored. | — | — | — |
+| **Decay** | Losing XP in a skill after 14 days without training it (−0.5 %/day), warned 3 days ahead. | rule | never below floor | fading |
+| **Floor** | Decay never drops a skill below 50 % of its peak XP. | rule | — | — |
+| **Comeback bonus** | XP counts double while a skill is below its peak. | rule | — | muscle memory |
+| **Pause** | A period that stops decay and changes the weekly quest, with a reason: exams (≤ 21 days), sick (≤ 14), injured (≤ 42), travel (≤ 21). | `PausePeriod` | capped per reason | exam mode (v1 name) |
+| **Weekly quest** | The week's planned sessions; completing it earns a rest token and shows your reward. | derived | — | quest |
+| **Rest token** | Earned per completed quest (bank max 2); keeps a missed week in the streak. Replaced the v1 cheat-meal token. | integer | 0–2 | streak freeze |
+| **Your reward** | Optional text the user writes as their own reward for completing a quest. The app never suggests food. | `UserReward` | free text | — |
+| **Derived state** | Values recomputed from the log (XP, levels, quests, earned rest tokens, streak), never stored. | — | — | — |
 | **Body check-in** | Weekly body weight + waist entry (+ progress photos); the "lean" trend. | `BodyCheckIn` | — | weigh-in |
 | **Session review** | The end-of-session "How was it?" answers (overall, energy, joints, note). | `SessionReview` | — | check-in |
 | **Pre-picked answer** | A review answer the app suggests from session data; one tap confirms it. | flag | joints never pre-picked as pain | autofill |
 | **Progress photo** | Front, side or back photo taken at a check-in; encrypted on the device before sync. | `ProgressPhoto` | — | — |
 | **Timed set** | A set measured in seconds instead of reps (plank, wall sit, balance hold). | `TimedSet` | 1–600 s | hold |
-| **Streak** | Consecutive weeks with the weekly quest completed; exam weeks don't break it. | derived | — | — |
+| **Streak** | Consecutive weeks with the weekly quest completed; rest days count; paused weeks and rest-token weeks keep it. | derived | — | — |
 | **Body map** | Picture of the body where each muscle group is coloured by its skill level. | UI | — | — |
 | **Deload** | A planned lighter week after a stall, to recover and resume progress. | planner hint | — | — |
 | **Revision** | Server counter for a user's log; bumps on every successful push. | integer | ≥ 0 | — |

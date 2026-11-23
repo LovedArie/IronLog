@@ -16,14 +16,14 @@ v0.1 is a desktop logbook. The plan (see [Vision](docs/01_Vision.md) and
 [Backlog](docs/BACKLOG.md)) turns it into a **phone-first training coach
 that plays like an MMO**: *Train now* builds a workout from your time,
 situation and equipment; 8 skills level up as you train and decay if you
-stop; a weekly quest earns a cheat-meal token; data syncs to your own
-server.
+stop (gently, with pauses for exams); a weekly quest earns a rest token
+and your own reward; data syncs to your own server.
 
 | Milestone | Theme |
 |---|---|
 | v0.2 | Foundation: CI/CD, data format v2, QML/Android/web spike |
 | v0.3 | Coach: profiles, goal programs, *Train now*, guided sessions |
-| v0.4 | Game: skills, XP, decay, exam mode, quests, tokens |
+| v0.4 | Game & body: skills, XP, gentle decay, pauses, quests, streak, check-ins, photos |
 | v0.5 | Online: server on the VPS, accounts, sync |
 | v0.6 | Progress+: body check-ins, more PRs, calculators |
 

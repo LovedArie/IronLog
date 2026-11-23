@@ -34,8 +34,8 @@
 | UC-13 | Log Cardio, Badminton or Stretching | Lifter | | Planned | F11 |
 | UC-14 | Set Up Profile (onboarding) | Lifter | | Planned | F5 |
 | UC-15 | View Character Sheet | Lifter | | Planned | F12 |
-| UC-16 | Start / End Exam Mode | Lifter | | Planned | F13 |
-| UC-17 | Redeem a Cheat-Meal Token | Lifter | | Planned | F14 |
+| UC-16 | Start / End a Pause (exams, sick, injured, travel) | Lifter | | Planned | F13 |
+| UC-17 | Set Your Weekly Reward | Lifter | | Planned | F14 |
 | UC-18 | Report Pain on an Exercise | Lifter | | Planned | F10 |
 | UC-19 | Weekly Body Check-In | Lifter | | Planned | F18 |
 | UC-20 | Register / Log In | Lifter | | Planned | F15 |
