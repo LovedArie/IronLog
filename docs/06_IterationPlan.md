@@ -32,7 +32,7 @@ feature research.
 QML runs on the owner's Android phone and in a browser — before any
 v0.3 feature is built on top.
 
-**Backlog items, in order**: I1 ✅ → I2 ✅ → I3 → I4 → F1 → F2 → F3 → F4
+**Backlog items, in order**: I1 ✅ → I2 ✅ → I3 ✅ → I4 → F1 → F2 → F3 → F4
 
 *I3 moved up: the release workflow was written with CI, so it's tested next.*
 
@@ -45,7 +45,7 @@ v0.3 feature is built on top.
 | F2 | Catalog v2 + owner's home-kit exercises | M |
 | F3 | Edit a set + undo/redo | M |
 | F4 | Rotating backups + CSV export | S |
-| I3 | CD: Windows zip on tag → GitHub Release | M |
+| I3 | CD: Windows zip → GitHub Release (tag or button) — ✅ 2026-11-23, v0.1.0 published | M |
 
 **Definition of done**:
 - CI is green on all three jobs for the final commit.
