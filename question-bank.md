@@ -782,3 +782,15 @@ on your own, or to pull from when you *ask* to be quizzed.
 > Phones only autoplay video that is muted, and iPhone plays inline (not
 > full screen) only with `playsinline`. Reduce motion turns autoplay off and
 > shows a play button instead.
+
+**M22 🟡 Why is the body map made by a script from the exercise diagram, not drawn by ChatGPT?**
+> The script finds each muscle in the grey base diagram (connected grey
+> areas between white lines) and names its skill from a seed point. Result:
+> the exact same body as the exercise pictures, 8 exact key colours, and it
+> can be re-run when a skill's area changes. A generated image would need
+> snapping and could drift from the diagrams.
+
+**M23 🔴 Spot the issue: the body map shows Arms in blue, Legs in red, Chest in green…**
+> That's the colour *key*, meant for the code only. Shown to users, it would
+> break the colour-blind rule and say nothing about level. On screen: one
+> purple hue, darker = higher, stripes = fading, plus the level as text.

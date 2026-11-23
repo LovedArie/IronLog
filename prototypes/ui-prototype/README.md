@@ -23,7 +23,7 @@ reload to start over.
 1. **Train now** → 30 min → Normal → Home → plan. Tap a **thumbnail** for the
    how-to sheet (clip, how-to picture, muscle diagram, form cues). **Start session**. Log sets
    with ±, watch the rest timer, do the plank hold. **Finish** → *How was it?* → Save.
-2. **You → ⚙ Settings** → turn *Play it like a game* off. Look at Today and You.
+2. **You**: the body map — darker = higher level, the striped back is fading. Tap a part. Then **⚙ Settings** → turn *Play it like a game* off. Look at Today and You.
 3. **Train now → Cramming** (the 3rd this week) → back on Today: the pause offer.
 4. **Progress → Photos** → unlock → *Take photos* (recovery-code prompt) → Compare.
 5. **Log** → Sun 22 → Strength B → delete a set → **Undo**.
@@ -49,6 +49,7 @@ reload to start over.
 | Timers | `restEnds` | Store an end time, not a countdown. A 250 ms tick updates only the numbers |
 | Exercise pictures | `PIC`, `howImg()`, `clipVideo()`, `muscleImg()` | `PIC` is the folder: `assets/exercises/` when published, `../../assets/exercises/` in the repo |
 | Clip | `<video autoplay muted loop playsinline>` | Muted, so phones allow autoplay. Reduce motion → still, with a play button |
+| Body map | `BODY`, `bodyMap()` | Outlines from `assets/game/bodymap-paths.json`; fill = level shade, or stripes when fading; tap → `skillTap` snackbar |
 | Missing diagram | `NO_DIAGRAM` | Plank and dead bug show a box; the muscle names below still say it all |
 
 *The code-drawn pictures (ADR-024, rejected) were removed on 2026-11-23.

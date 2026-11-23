@@ -114,7 +114,8 @@ Same rules as TickTimer's backlog (TickTimer = the owner's earlier Qt timer app,
 
 - **F12** Character sheet: 8 skills, XP from sets/cardio/mobility, level
   curve, total level — all derived from the log (`game::computeSheet`); shown
-  as a **body map** where muscles light up by level. **Game mode is a
+  as a **body map** where muscles light up by level (assets ready:
+  `assets/game/`, shown in the UI prototype). **Game mode is a
   checkbox** (onboarding + settings): off hides XP, levels, streaks and tokens
   and pauses decay; turning it back on loses nothing (ADR-021). *(M)*
 - **F13** Game rules v2 (arc42 §8.6). *(M)*

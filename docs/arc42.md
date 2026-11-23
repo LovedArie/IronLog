@@ -525,10 +525,12 @@ Core; quads, glutes, hamstrings, calves, hip flexors → Legs; biceps,
 triceps, forearms → Arms. Stamina and Mobility come from cardio and stretch
 minutes, not muscles.
 
-**Body map (game).** `assets/game/ironlog-bodymap-key.png` is a colour key
-of the same diagram: one flat colour per skill area. The app repaints each
-area by level (one purple `xp` hue, darker = higher; stripes = fading — the
-UI research's sequential rule). See `assets/game/README.md`.
+**Body map (game).** `tools/make_bodymap.py` turns the same grey diagram
+into `assets/game/ironlog-bodymap-key.png` (one flat colour per skill area,
+for the app) and `bodymap-paths.json` (SVG outlines, for the prototype). The
+app repaints each area by level (one purple `xp` hue, darker = higher;
+stripes = fading — the UI research's sequential rule). Tapping an area shows
+its level and sets to the next one. See [`assets/game/README.md`](../assets/game/README.md).
 
 ---
 
