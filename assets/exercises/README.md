@@ -1,6 +1,6 @@
 # Exercise pictures
 
-Two pictures per exercise (ADR-025):
+Two pictures and one clip per exercise ([ADR-025](../../docs/adr/ADR-025-exercise-pictures-from-chatgpt.md); rules in [arc42 §8.16](../../docs/arc42.md#816-exercise-pictures)):
 
 | File | Shows |
 |---|---|

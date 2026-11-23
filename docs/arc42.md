@@ -71,7 +71,7 @@ vision: [01_Vision.md](01_Vision.md). Use cases: [02_UseCaseModel.md](02_UseCase
 |---|---|---|
 | Technical | C++17, Qt 6 (dev: 6.11, MinGW on Windows), CMake ≥ 3.20 | One language from server to phone |
 | Technical | Targets: Android, WebAssembly (iPhone via browser), Windows | Phone-first UI; no native iOS app |
-| Technical | Existing **Hetzner CX23** VPS (Ubuntu, x86_64), **Caddy**, **systemd**, no Docker, shared with TickTimer | New app = subdomain + loopback port + systemd unit + Caddy block (TickTimer `ROLLOUT.md` §2i) |
+| Technical | Existing **Hetzner CX23** VPS (Ubuntu, x86_64), **Caddy**, **systemd**, no Docker, shared with TickTimer (the owner's earlier Qt timer app, with its own sync server on the same VPS) | New app = subdomain + loopback port + systemd unit + Caddy block (TickTimer `ROLLOUT.md` §2i) |
 | Organizational | One developer, student schedule | Small iterations; risk-driven order |
 | Organizational | Public GitHub repo | No personal health data or secrets in the repo |
 | Conventions | UP artifacts (Larman), arc42, TickTimer-style backlog and troubleshooting log | See `08_DevelopmentCase.md` |
@@ -122,7 +122,7 @@ vision: [01_Vision.md](01_Vision.md). Use cases: [02_UseCaseModel.md](02_UseCase
 |---|---|---|---|
 | `core/` | Pure C++17 | All training knowledge: log, catalog, stats, planner, game, sync merge | ✅ log, catalog, stats |
 | `services/` | Qt Core + Network | Controller (every write), JSON store, sync, auth, view models | ✅ controller, store |
-| `ui-qml/` | Qt Quick | Phone-first screens: tabs **Today · Log · Progress · You** (ADR-023); Train now wizard, guided session + mini bar, "How was it?", Why? sheet | planned |
+| `ui-qml/` | Qt Quick | Phone-first screens: tabs **Today · Log · Progress · You** (ADR-023); Train now questions, guided session + mini bar, "How was it?", Why? sheet | planned |
 | `ui/` | Qt Widgets | v0.1 desktop UI; retired when QML reaches parity | ✅ |
 | `server/` | Qt Core + HttpServer | Accounts, sessions, revisioned log storage | planned |
 
@@ -159,6 +159,11 @@ be one-way.)
 | `TrainingController` | services | Every write → validate, save, signal | GRASP Controller (Larman Ch. 17) |
 | `WorkoutTableModel`, `WeeklyVolumeModel` | ui | Table views | Qt model/view |
 | `ProgressChart` | ui | e1RM line chart | Custom `paintEvent()` |
+
+**Pattern names** (GRASP = Larman's rules for which class does what):
+Information Expert = the data owner does the work · Creator = a container
+makes its parts · Pure Fabrication = a helper class not from the domain ·
+Controller = one entry point for all actions · ctor = constructor.
 
 ---
 
@@ -208,7 +213,7 @@ bonus up to today. Same inputs → same levels on every device.
 | Hostname | `ironlog.<domain>` (A record → VPS IP; DNS on Cloudflare) |
 | Caddy | New site block: API → `reverse_proxy 127.0.0.1:8081`; `/app*` → web files; `/download/*` → APK |
 | Service | `/etc/systemd/system/ironlog.service`, user `ironlog`, `--bind 127.0.0.1 --port 8081 --data /var/lib/ironlog --invite …`, systemd hardening as TickTimer's unit |
-| Data | `/var/lib/ironlog/{accounts.json, devices.json, logs/<user>.json}` — all writes via `QSaveFile` |
+| Data | `/var/lib/ironlog/{accounts.json, devices.json, logs/<user>.json, photos/<user>/}` — all writes via `QSaveFile` |
 | Backups | `ironlog-backup.timer` nightly 03:00 → `/var/backups/ironlog`, 30 days; off-box copy manual for now |
 | Firewall | `ufw` allow 22, 80, 443 only (open item on the shared box, also TickTimer's) |
 
@@ -222,10 +227,10 @@ bonus up to today. Same inputs → same levels on every device.
 
 ### 7.3 CI/CD (GitHub Actions)
 
-| Pipeline | Trigger | Steps |
-|---|---|---|
-| **CI** | every push and pull request | (1) Linux, core only, no Qt: build + `test_core` — fast feedback. (2) Linux + Qt: full build, `ctest` with `QT_QPA_PLATFORM=offscreen`. (3) Windows + Qt MinGW: full build + tests. |
-| **CD** | tag `vX.Y.Z` | Build Windows zip, Android APK (keystore from secrets), web bundle → GitHub Release. Deploy server + web files to the VPS over SSH → restart service → **`GET https://ironlog.<domain>/version` must return X.Y.Z**, else the job fails. |
+| Pipeline | Trigger | Status | Steps |
+|---|---|---|---|
+| **CI** | every push to `main`, every pull request | ✅ I2 |  (1) Linux, core only, no Qt: build + `test_core` — fast feedback. (2) Linux + Qt: full build, `ctest` with `QT_QPA_PLATFORM=offscreen`. (3) Windows + Qt MinGW: full build + tests. |
+| **CD** | tag `vX.Y.Z` or the Release button | ✅ Windows zip (I3) · planned: APK + web bundle, VPS deploy + `/version` check (I6, v0.5) | Build Windows zip, Android APK (keystore from secrets), web bundle → GitHub Release. Deploy server + web files to the VPS over SSH → restart service → **`GET https://ironlog.<domain>/version` must return X.Y.Z**, else the job fails. |
 
 The last step answers TickTimer's reason for *not* automating deploys
 (`design-addendum-deployment.md` §H: "the value is in the verification").
@@ -258,7 +263,7 @@ Every record also carries `updatedAt` and `deleted` (tombstone) for sync.
 
 ### 8.2 Persistence and schema versions
 
-- One JSON document per user; `schemaVersion` 2. Strict about the file,
+- One JSON document per user; `schemaVersion` 2 (planned, F1; v0.1 writes 1 ✅). Strict about the file,
   tolerant about items (v0.1 rule kept).
 - **Migration v1 → v2** on first load: generate ids, name → exercise id,
   unit = kg. The v1 file is kept as `ironlog.v1.json` (copy, never move).
@@ -294,20 +299,23 @@ game is a code change that re-scores history; two devices always agree.
 | Rule | What it does | Source |
 |---|---|---|
 | P1 Session type | Pick what the weekly plan still needs (strength A/B alternation, zone-2 cardio, mobility); avoid hitting a skill hard < 48 h apart | Owner's plan: A/B full-body ×3 |
-| P2 Time budget | Warm-up 5–8 min (RAMP) + main + 3–5 min stretch; ~3 min per strength set incl. rest; drop isolation first, never the warm-up | Owner's plan: RAMP, 60–90 s rest |
+| P2 Time budget | Warm-up 5–8 min (RAMP: raise, activate, mobilise, potentiate) + main + 3–5 min stretch; ~3 min per strength set incl. rest; drop one-joint (isolation) exercises first, never the warm-up | Owner's plan: RAMP, 60–90 s rest |
 | P3 Exercise choice | Equipment ⊆ available; knee stress ≤ current knee stage; compound before isolation | Decision report: pain rule, compound-first |
 | P4 Loads | Double progression: all sets at top of rep range → next available weight (e.g. +5 lb dumbbell) | Owner's plan: "picking weights" |
-| P5 Situation | **Cramming**: shorter, compound-only, no PR attempts, weekly target = exam minimum (2 strength + 1–2 cardio). **Sore/tired**: mobility + easy zone 2 + light core | Decision report C8 |
+| P5 Situation | **Cramming**: shorter, compound-only, no PR attempts, weekly target = exam minimum (2 strength + 1 cardio). **Sore/tired**: mobility + easy zone 2 + light core | Decision report C8 |
 | P6 Gates | Harder variations unlock only after their gate (e.g. reverse lunge after 3–4 pain-free weeks of step-ups; stability stage after 2 clean weeks) | Decision report D3, D7 |
-| P7 Pain check | "Sharp pain, pinching, or swelling next day" → that exercise drops one stage for 2 weeks | Owner's plan: pain rule |
+| P7 Pain check | "Sharp pain, pinching, or swelling next day" → that exercise drops one stage for 2 weeks. Again, or not settling → suggest stopping it and seeing a health professional (§8.9) | Owner's plan: pain rule |
+
+*Compound = a multi-joint exercise. C8, D3, D7 = sections of the owner's
+private Decision Report (kept out of the repo, ADR-019).*
 
 Each plan item carries a **reason string** ("Box squat: knee-friendly depth,
 compound first"). Goal programs (Badminton singles, Lean & toned upper,
 Lean & toned lower, General) are **data files**, not code.
 
-### 8.6 Game rules (balance table v1 — tunable, one file)
+### 8.6 Game rules v2 (balance table — tunable, one file)
 
-| Rule | v1 value |
+| Rule | Value |
 |---|---|
 | Skills | Arms, Shoulders, Chest, Back, Core, Legs, Stamina, Mobility |
 | XP: strength set | +10 primary skill, +5 each secondary (half-set rule) |
@@ -328,12 +336,12 @@ Lean & toned lower, General) are **data files**, not code.
 | Streak | consecutive **weeks** with the quest done; rest days count; paused weeks and rest-token weeks keep it; a set logged later for a past day can restore that week; no shaming messages |
 | Rules version | the balance table has a version number; when it changes, the app says "Game rules updated — levels recalculated" |
 
-*Game rules v2 (2026-11-23), changed after research round 2
-(`research/feature-research-2.md`): decay was gentler than v1 (strength
-barely changes in 3 weeks off), cheat-meal token replaced (cheat meals are
-linked to eating-disorder symptoms in young adults; "cheat" wording breeds
-guilt), streak made weekly and forgiving (Duolingo freezes, Apple pause,
-Gentler Streak).*
+**Why v2 changed the game** (research round 2, [`feature-research-2.md`](research/feature-research-2.md)):
+
+- **Gentler decay** than v1: strength barely drops in 3 weeks off.
+- **No cheat-meal token**: cheat meals are linked to eating-disorder
+  symptoms in young adults, and "cheat" wording breeds guilt.
+- **Weekly, forgiving streak**, like Duolingo's streak freeze.
 
 **Game mode (on/off, per user — ADR-021).** One checkbox, asked at
 onboarding and changeable in settings.
@@ -396,30 +404,43 @@ Server errors use distinct codes (`auth`, `forbidden`, `conflict`,
 No core function reads the clock. `today` / `now` is a parameter
 (TickTimer lesson: a test that failed only after 5 PM).
 
-### 8.15 "How was it?" — pre-picked answers
+### 8.13 Training rules already in v0.1 ✅
 
-`review::suggest(session, plan, history) → SessionReview` is a pure core
-function; the UI shows its picks highlighted and the user confirms or taps
-another chip.
+| Rule | Definition | Where |
+|---|---|---|
+| Set volume | weight × reps | `SetEntry::volume()` |
+| e1RM (Epley) | weight × (1 + reps/30); 1 rep → weight | `epleyOneRepMax()` |
+| PR | first set with the day's top e1RM, **strictly** greater than every earlier day; first-ever session is not a PR | `stats::personalRecordIndices()` |
+| Week | Monday–Sunday containing the chosen day | `Date::mondayOfWeek()` |
+| Weekly sets | sets per primary muscle in the week; unknown exercises skipped | `stats::weeklySets()` |
+| Volume status | < low → Below; > high → Above; default 10–20 | `stats::classify()` |
 
-| Answer | Pre-picked when |
-|---|---|
-| Overall | ≥ 90 % of planned sets hit target → *Good*; any PR → *Great*; < 60 % → *Rough*; else *OK* |
-| Energy | an exams pause or *Cramming* → *Low*; otherwise last review's value |
-| Joints | always *Fine* — **never** pre-pick pain; the user must tap it |
-
-The app stores which answers were suggested (`prefilled`), so later
-analysis can tell "confirmed" from "chosen". Voice notes use the phone
-keyboard's dictation: no speech code in v1.
+**About the 10–20 default.** A 2017 meta-analysis (Schoenfeld, Ogborn &
+Krieger, *J Sports Sci* 35(11):1073–1082, https://doi.org/10.1080/02640414.2016.1210197)
+found more muscle growth with more weekly sets; groups doing ≥ 9 sets per
+muscle grew more (p = 0.076, so not quite significant), and the data only
+reached ~10 sets. A 2022 systematic
+review (Baz-Valle et al., *J Hum Kinet* 81:199–210,
+https://pubmed.ncbi.nlm.nih.gov/35291645/) suggests 12–20. It's a starting
+point and a parameter (`stats::VolumeTarget`); goal programs (F6) will set
+their own per-muscle targets.
 
 ### 8.14 Progress photos (privacy) — envelope encryption
 
 Body photos are the most sensitive data IronLog holds. Design approved by
 the owner 2026-11-23 (ADR-020).
 
+**Idea in one line:** a random photo key locks the photos. That key is
+kept in two locked "envelopes": one opens with your password, one with a
+recovery code.
+
+**Words:** libsodium = crypto library (the owner's earlier password-manager
+project EyesOff uses it) · Argon2id = slow password hash · KDF = makes
+sub-keys from one key · salt = random extra input per user.
+
 ![Photo keys](../diagrams/rendered/photo_keys.png)
 
-**The keys** (libsodium, the library EyesOff already uses):
+**The keys:**
 
 | Key | Made from | Lives | Job |
 |---|---|---|---|
@@ -427,13 +448,16 @@ the owner 2026-11-23 (ADR-020).
 | Login key | `crypto_kdf` sub-key 1 of the master key | sent at login; server stores only a hash of it | Proves who you are — **the server never sees the password** |
 | Lock key | `crypto_kdf` sub-key 2 of the master key | **never leaves the device** | Locks/unlocks envelope A |
 | Photo key | random 256-bit, made once | inside the envelopes; in memory while unlocked | Encrypts every photo and preview |
-| Recovery code | random, shown **once** when photo sync is turned on (e.g. `K7QF-2MZD-…`) | the user's password manager or paper | Backup way in |
+| Recovery code | random, shown **once** at the first photo, which turns on photo sync (also in Settings) (e.g. `K7QF-2MZD-…`) | the user's password manager or paper | Backup way in |
 | Recovery keys | Argon2id of the recovery code → auth + unlock sub-keys | memory only | Auth proves the code to the server; unlock opens envelope B |
 
 **What the server stores** (all useless without the password or the code):
-hash of the login key · hash of the recovery auth key · envelope A (photo
-key locked with the lock key) · envelope B (photo key locked with the
-recovery unlock key) · encrypted photos and encrypted previews.
+
+- hash of the login key
+- hash of the recovery auth key
+- envelope A: the photo key, locked by the lock key (from your password)
+- envelope B: the photo key, locked by the recovery unlock key
+- encrypted photos and encrypted previews
 
 **Flows**
 
@@ -459,23 +483,21 @@ recovery unlock key) · encrypted photos and encrypted previews.
 **Open for F16:** the training log could be locked with the same machinery
 (the server would then store an encrypted log blob). Decide when building sync.
 
-### 8.13 Training rules already in v0.1 ✅
+### 8.15 "How was it?" — pre-picked answers
 
-| Rule | Definition | Where |
-|---|---|---|
-| Set volume | weight × reps | `SetEntry::volume()` |
-| e1RM (Epley) | weight × (1 + reps/30); 1 rep → weight | `epleyOneRepMax()` |
-| PR | first set with the day's top e1RM, **strictly** greater than every earlier day; first-ever session is not a PR | `stats::personalRecordIndices()` |
-| Week | Monday–Sunday containing the chosen day | `Date::mondayOfWeek()` |
-| Weekly sets | sets per primary muscle in the week; unknown exercises skipped | `stats::weeklySets()` |
-| Volume status | < low → Below; > high → Above; default 10–20 | `stats::classify()` |
+`review::suggest(session, plan, history) → SessionReview` is a pure core
+function; the UI shows its picks highlighted and the user confirms or taps
+another chip.
 
-**About the 10–20 default.** A 2017 meta-analysis (Schoenfeld et al.) found
-better hypertrophy above ~9 weekly sets per muscle; a 2022 systematic
-review (Baz-Valle et al., *J Hum Kinet* 81:199–210,
-https://pubmed.ncbi.nlm.nih.gov/35291645/) suggests 12–20. It's a starting
-point and a parameter (`stats::VolumeTarget`); goal programs (F6) will set
-their own per-muscle targets.
+| Answer | Pre-picked when |
+|---|---|
+| Overall | ≥ 90 % of planned sets hit target → *Good*; any PR → *Great*; < 60 % → *Rough*; else *OK* |
+| Energy | an exams pause or *Cramming* → *Low*; otherwise last review's value |
+| Joints | always *Fine* — **never** pre-pick pain; the user must tap it |
+
+The app stores which answers were suggested (`prefilled`), so later
+analysis can tell "confirmed" from "chosen". Voice notes use the phone
+keyboard's dictation: no speech code in v1.
 
 ### 8.16 Exercise pictures
 
@@ -486,7 +508,7 @@ checked by eye; the code-drawn alternative (ADR-024) was rejected.
 
 | Piece | Where | What it does |
 |---|---|---|
-| Image files | `assets/exercises/ironlog-<id>-how.jpg`, `…-muscles.jpg` | 1200 × 800 JPEG, ~80–130 KB each |
+| Image files | `assets/exercises/ironlog-<id>-how.jpg`, `…-muscles.jpg` | 1200 × 800 JPEG, ~65–140 KB each |
 | `exercises.json` | `assets/exercises/` | Exercise id → files + main/helper muscles; read with the catalog (F2) |
 | Qt resource file | `ui-qml/` (planned) | Bundles the images into the app, so they work offline |
 | Clip per exercise | built with ffmpeg (planned) | Switches between start and end pose at the exercise's tempo, then the muscle diagram |
@@ -494,6 +516,19 @@ checked by eye; the code-drawn alternative (ADR-024) was rejected.
 
 Rules: the muscle names are always shown as text too (never colour alone);
 a missing diagram falls back to the text legend (plank, dead bug today).
+
+**Three muscle vocabularies, one mapping (F2).** `exercises.json` uses 16
+display names; the core has 10 `MuscleGroup` values; the game has 8 skills.
+F2 maps each display name to a `MuscleGroup` and a skill, e.g. lats, upper
+back, lower back → Back; front/rear shoulders → Shoulders; abs, obliques →
+Core; quads, glutes, hamstrings, calves, hip flexors → Legs; biceps,
+triceps, forearms → Arms. Stamina and Mobility come from cardio and stretch
+minutes, not muscles.
+
+**Body map (game).** `assets/game/ironlog-bodymap-key.png` is a colour key
+of the same diagram: one flat colour per skill area. The app repaints each
+area by level (one purple `xp` hue, darker = higher; stripes = fading — the
+UI research's sequential rule). See `assets/game/README.md`.
 
 ---
 
@@ -549,8 +584,8 @@ spike, ADR-016 (QHttpServer) on F15.
 | Q6 | Port 8081 probed from the internet | Times out | `curl` from mobile data |
 | Q7 | Core built on a machine without Qt | Builds and passes | ✅ CI job 1 |
 | Q8 | Same day logged on phone and PC offline, then both sync | All sets present once | Catch2 on `sync::merge` + live test |
-| Q10 | Game off for 60 days of training, then on again | Levels reflect all training; no decay applied for the off period | Catch2 on `game::computeSheet` |
 | Q9 | Someone with root on the VPS opens the photo store | Sees only ciphertext | Inspect `/var/lib/ironlog/photos/` in QA |
+| Q10 | Game off for 60 days of training, then on again | Levels reflect all training; no decay applied for the off period | Catch2 on `game::computeSheet` |
 | Q11 | User forgets the password, has the recovery code | All photos back on every device; none re-uploaded | Live test: reset via code, open on a 2nd client |
 
 ---
@@ -572,7 +607,6 @@ Full register: [05_RiskList.md](05_RiskList.md). Top risks:
 - Exercise referenced by **name** (fixed by schema v2 ids).
 - Widgets UI will be duplicated by QML until retired.
 - Full model resets in table models (fine at current sizes).
-- No CI yet (backlog I2).
 
 ---
 
@@ -585,6 +619,7 @@ See [04_Glossary.md](04_Glossary.md).
 ## Sources
 
 - arc42 template: https://arc42.org
+- [Feature research round 2](research/feature-research-2.md) (game rules v2, pictures) and [UI research](research/ui-research.md) (design system v1, 4 tabs).
 - Larman, *Applying UML and Patterns* (3rd ed.): Ch. 8 (risk-driven
   iterations), Ch. 13 (Layers), Ch. 17 (Expert, Creator, Controller),
   Ch. 25 (Pure Fabrication).

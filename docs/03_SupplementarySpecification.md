@@ -29,6 +29,11 @@
 - Keyboard: Ctrl+Enter adds a set; Delete removes the selected set.
 - Colours must read on **light and dark** themes (use palette colours or
   translucent fills).
+- **Never colour alone:** every colour cue also has text (muscle names on
+  muscle diagrams, numbers on the body map). Shades of one hue, not red vs
+  green or red vs orange (design system v1, `research/ui-research.md`).
+- **Exercise pictures** have a recorded source: ChatGPT images, prompts and
+  date in `assets/exercises/CREDITS.md` (ADR-025). (arc42 §8.16)
 
 ## Reliability
 
@@ -38,7 +43,7 @@
 - **Tolerant item reading:** one bad set in the file is skipped and counted;
   the rest still loads.
 - **Sync never loses a set (v2):** merges by record id; deletes travel as
-  tombstones; the server keeps nightly backups. (arc42 §8.3)
+  tombstones; the server keeps nightly backups. (arc42 §8.3, §7.1)
 - **Offline first (v2):** every feature except sync works with no network.
 
 ## Performance
@@ -57,10 +62,14 @@
 ## "+" — Additional
 
 - **Implementation:** C++17, Qt 6.4+ (developed against 6.11), CMake 3.20+.
-- **Platforms:** v0.1 Windows (MinGW), Linux, macOS. **v2: phone-first** —
+- **Platforms:** v0.1 Windows (MinGW), Linux; macOS should build but is not tested. **v2: phone-first** —
   Android (APK), web via Qt WebAssembly (for iPhone), Windows desktop.
 - **Server:** existing Hetzner VPS, Caddy + systemd, no Docker (arc42 §7).
-- **Licensing:** Catch2 is Boost-licensed; Qt used under LGPL (dynamic linking).
+- **Licensing:** Catch2 is Boost-licensed; Qt under LGPLv3 with dynamic linking on desktop and
+  Android. The WebAssembly build links Qt statically by default, so LGPL
+  relinking duties apply. `ironlog-server` uses Qt HTTP Server, which is
+  GPLv3 or commercial only (no LGPL) — fine for a public GPL-compatible repo,
+  re-check before any closed release.
 
 ---
 

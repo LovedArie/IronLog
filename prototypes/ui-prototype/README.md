@@ -20,7 +20,7 @@ start over.
 ## Try this tour
 
 1. **Train now** → 30 min → Normal → Home → plan. Tap a **thumbnail** for the
-   how-to sheet (animation, muscle map, form cues). **Start session**. Log sets
+   how-to sheet (animation, muscle diagram, form cues). **Start session**. Log sets
    with ±, watch the rest timer, do the plank hold. **Finish** → *How was it?* → Save.
 2. **You → ⚙ Settings** → turn *Play it like a game* off. Look at Today and You.
 3. **Train now → Cramming** (the 3rd this week) → back on Today: the pause offer.
@@ -32,11 +32,11 @@ start over.
 
 | Real (same as the planned app) | Fake (stand-ins) |
 |---|---|
-| Exercise pictures (ADR-024, **rejected** — kept as an experiment; the app uses the ChatGPT images in `assets/exercises/`, ADR-025): animated form figure from key poses + 2-bone IK, front/back muscle map, cues — 17 exercises | Poses are hand-tuned numbers in `MEDIA`, not catalog data yet |
 | Design tokens: colours, type sizes, 48 px targets, light/dark ([ui-research.md](../../docs/research/ui-research.md)) | Planner: a few hard-coded rules instead of `planner::buildSession()` |
 | Screen flow, one primary button per screen, bottom-aligned | XP and levels: simplified, not game rules v2 exactly |
 | Timers from stored timestamps (survive switching apps) | Camera and photos: drawn outlines, no real camera |
 | Snackbar + Undo, Why? sheets, pre-picked answers | Fingerprint unlock, recovery code, sync |
+| | Exercise pictures: drawn by code (ADR-024, **rejected**). The app uses the ChatGPT how-to pictures, muscle diagrams and clips in `assets/exercises/` (ADR-025) |
 
 ## How it's built (for reading the code)
 

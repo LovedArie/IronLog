@@ -756,3 +756,19 @@ on your own, or to pull from when you *ask* to be quizzed.
 > Many colour-blind people (red–green deficiency) see red and orange as
 > nearly the same. The UI research's rule: one hue, light vs dark (here dark
 > blue = main, light blue = helpers), plus the muscle names as text.
+
+**M17 🟡 Three review agents found ~96 problems. How do we avoid paying for that again?**
+> Save the findings with evidence and a status (`docs/reviews/`), turn the
+> repeat mistakes into a checklist (`DOC-RULES.md`), and next time review
+> only the docs changed since the last reviewed commit, skipping facts
+> already confirmed.
+
+**M18 🔴 Spot the issue: a doc says "OpenAI shut down Sora in March 2026", sourced to a news story.**
+> March was the announcement (2026-03-24). OpenAI's own help page says the
+> app closed 2026-04-26 and the API ends 2026-09-24. Rule: use the first-hand
+> source for dates.
+
+**M19 🟡 Why did the docs stop calling "knees past toes" wrong form?**
+> Fry et al. 2003: keeping knees back lowered knee torque a little but
+> raised hip torque about tenfold. Knees past toes is normal for most
+> people; vertical shins are only a choice for users on a knee stage.

@@ -1,7 +1,7 @@
 # Releasing IronLog
 
 > **What this is**: the release routine, with a proof point per step.
-> Same idea as TickTimer's `GITHUB.md`, but the build and packaging are
+> Same idea as TickTimer (the owner's earlier Qt timer app, with its own sync server on the same VPS)'s `GITHUB.md`, but the build and packaging are
 > done by GitHub Actions instead of a script on your PC.
 
 ---
@@ -11,7 +11,7 @@
 | Workflow | File | Runs when | Does |
 |---|---|---|---|
 | **CI** | `.github/workflows/ci.yml` | every push to `main`, every pull request | Core-only build (no Qt) · Linux + Qt 6.4 build, tests, app screenshot · Windows + Qt 6.8 LTS MinGW build and tests |
-| **Release** | `.github/workflows/release.yml` | a tag like `v0.2.0` is pushed, **or** the *Run workflow* button | Checks tag = `project(VERSION)` · builds + tests on Windows · `windeployqt` · smoke-tests the zip with no Qt on PATH · publishes a GitHub Release |
+| **Release** | `.github/workflows/release.yml` | a tag like `v0.2.0` is pushed, **or** the *Run workflow* button | Checks tag = `project(VERSION)` · builds + tests on Windows · `windeployqt` · smoke-tests the packaged folder (the zip's contents) with no Qt on PATH · publishes a GitHub Release |
 
 See them run: repo → **Actions** tab.
 

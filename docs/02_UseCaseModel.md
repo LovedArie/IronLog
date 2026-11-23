@@ -44,18 +44,14 @@
 | UC-23 | Turn Game Mode On / Off | Lifter | | Planned | F5, F12 |
 | UC-24 | Turn On Photo Sync (save the recovery code) | Lifter | | Planned | F21 |
 | UC-25 | Reset Password with the Recovery Code | Lifter | | Planned | F15, F21 |
+| UC-26 | Take and Compare Progress Photos | Lifter | | Planned | F21 |
+| UC-27 | View an Exercise's How-To Pictures | Lifter | | Planned | F23 |
+| UC-28 | Answer "How Was It?" (session review) | Lifter | | Planned | F10 |
 
-----|------|---------------|-----------|--------|
-| UC-01 | Log a Set | Lifter | ⭐ | Done (iteration 1) |
-| UC-02 | Delete a Set | Lifter | | Done |
-| UC-03 | Review a Session | Lifter | | Done |
-| UC-04 | Review Weekly Volume | Lifter | ⭐ | Done |
-| UC-05 | Track Exercise Progress | Lifter | | Done |
-| UC-06 | Add Custom Exercise | Lifter | | Done |
-| UC-07 | Load Sample Data | Lifter | | Done |
-| UC-08 | Edit a Set | Lifter | | Future |
-| UC-09 | Follow a Program Template | Lifter | | Future |
-| UC-10 | Export / Back Up Log | Lifter | | Future |
+**Key:** ⭐ = written out in full below ("fully dressed": every step plus
+what can go wrong). Steps like "6a" are what-can-go-wrong branches of step 6.
+*Inception* = the first planning phase.
+
 
 ---
 
@@ -139,9 +135,14 @@ Lifter repeats steps 3–5 for each set.
 **Preconditions**: Lifter has a profile (UC-14): goal program, equipment per
 place, constraints.
 
-**Success guarantee**: A session plan is shown that fits the time budget,
-uses only available equipment, never exceeds the lifter's constraint
-stages, and gives a one-line reason per exercise. Nothing is logged yet.
+**Success guarantee**: a plan is shown that:
+
+- fits the time,
+- uses only the equipment you have,
+- stays inside your limits (e.g. knee stage),
+- gives a one-line reason for each exercise.
+
+Nothing is logged yet.
 
 **Main success scenario**:
 1. Lifter taps *Train now* on the Today screen.
@@ -151,7 +152,7 @@ stages, and gives a one-line reason per exercise. Nothing is logged yet.
 5. Lifter picks *Normal*.
 6. System asks: gym or home?
 7. Lifter picks one; System loads that place's equipment set.
-8. System builds the plan (planner rules P1–P5) and shows warm-up, main
+8. System builds the plan (planner rules P1–P7) and shows warm-up, main
    block and stretch, each item with its reason, plus an XP preview.
 9. Lifter taps *Start*; System opens the guided session (UC-12).
 

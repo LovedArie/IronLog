@@ -44,7 +44,7 @@ v0.1 is a desktop logbook. The goal ([Vision](docs/01_Vision.md),
 |---|---|
 | **Log sets** | Pick a day on the calendar, choose an exercise, enter kg × reps. Weight and reps pre-fill from last time. |
 | **Personal records** | A gold **PR** badge on any set that beats your previous best estimated 1RM. |
-| **Weekly volume** | Sets per muscle group for the Monday–Sunday week, marked *below / on / above* a 10–20 set target. |
+| **Weekly volume** | Sets per muscle group for the Monday–Sunday week, marked *below / on / above* a 10–20 set target (a common starting range, not a prescription). |
 | **Progress chart** | Estimated 1RM per session for any exercise, best point highlighted. |
 | **Custom exercises** | Add your own, each tied to a primary muscle group. |
 | **Safe saving** | Auto-saves after every change with an atomic write. A corrupt file is moved aside, never overwritten. |
@@ -67,9 +67,11 @@ v0.1 is a desktop logbook. The goal ([Vision](docs/01_Vision.md),
 ### Command line
 
 ```bash
-cmake -S . -B build -DCMAKE_PREFIX_PATH="C:/Qt/6.11.0/mingw_64"   # Windows; omit on Linux
+# Windows: run these in the "Qt 6.11.0 (MinGW 64-bit)" prompt
+cmake -S . -B build -G "MinGW Makefiles" -DCMAKE_PREFIX_PATH="C:/Qt/6.11.0/mingw_64"
+# Linux: cmake -S . -B build
 cmake --build build
-./build/IronLog            # build\IronLog.exe on Windows
+./build/IronLog            # Windows: build\IronLog.exe · macOS: open build/IronLog.app
 ```
 
 > **Windows:** running the `.exe` from a plain terminal may exit instantly with
@@ -81,9 +83,9 @@ cmake --build build
 The domain core is pure C++17. You can build and test it anywhere:
 
 ```bash
-cmake -S . -B build-core -DIRONLOG_BUILD_APP=OFF
-cmake --build build-core
-ctest --test-dir build-core --output-on-failure
+cmake -S . -B build/core -DIRONLOG_BUILD_APP=OFF
+cmake --build build/core
+ctest --test-dir build/core --output-on-failure
 ```
 
 ---
@@ -207,6 +209,7 @@ Details and reasoning: **[docs/adr/](docs/adr/README.md)** — one record per de
 | [DEVELOPING](docs/DEVELOPING.md) | Our git workflow; running on Windows, Android, iPhone |
 | [RELEASING](docs/RELEASING.md) | CI/CD pipelines and the release routine |
 | [TROUBLESHOOTING](docs/TROUBLESHOOTING.md) | Symptom → cause → fix |
+| [reviews/](docs/reviews/README.md) | Doc review findings with sources, and the doc rules checklist |
 | [assets/exercises](assets/exercises/README.md) | Exercise pictures and clips, and how to make more |
 | [prototypes/](prototypes/README.md) | Throwaway experiments (clickable 4-tab phone UI) |
 | [question-bank.md](question-bank.md) | Self-review questions with answers |

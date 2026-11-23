@@ -13,7 +13,7 @@ flowchart LR
     GH -- "git pull" --> PC
     CL["Claude's cloud copy<br/>(new clone each session)"] -- "git push" --> GH
     GH -- "git clone / pull" --> CL
-    GH -- "every push" --> CI["CI<br/>build + tests<br/>Linux + Windows"]
+    GH -- "push to main / PR" --> CI["CI<br/>build + tests<br/>Linux + Windows"]
     GH -- "Release button<br/>or tag" --> REL["GitHub Release<br/>Windows zip<br/>(later: APK, web)"]
 ```
 
@@ -28,10 +28,13 @@ Neither of us sees the other's work until it is **pushed**.
 | Tell Claude "I pushed" when you did | Claude pulls before touching anything |
 | Check the **Actions** tab after a push | CI (build + tests) tells you if something broke |
 
-Both of us push to `main`. If we both changed the **same lines**, `git pull`
-stops with a *merge conflict*: git marks both versions in the file, you keep
-the right one, then `git add` + `git commit`. Different files or different
-lines merge on their own.
+Both of us push to `main`. Different files or different lines merge on their own.
+
+**Merge conflict** = we both changed the same lines.
+
+1. `git pull` stops and marks both versions in the file.
+2. Keep the right one and delete the markers.
+3. `git add` the file, then `git commit`.
 
 ---
 
@@ -66,8 +69,8 @@ three clients. **iPhone uses the web version — there is no native iOS app.**
 | Platform | Today (v0.1) | How it ships | When |
 |---|---|---|---|
 | **Windows desktop** | ✅ runs (Qt Widgets) | zip from the Release button | now |
-| **Android phone** | ❌ not yet | APK (Qt for Android, arm64-v8a) — GitHub Release + `/download/` on your VPS | spike **I4**, then v0.2+ |
-| **iPhone** | ❌ not yet | web app (Qt for WebAssembly) at `https://ironlog.<domain>/app/` | spike **I4**, then v0.2+ |
+| **Android phone** | ❌ not yet | APK (Qt for Android, arm64-v8a) — GitHub Release + `/download/` on your VPS | spike **I4** (v0.2), shipped from v0.3 |
+| **iPhone** | ❌ not yet | web app (Qt for WebAssembly) at `https://ironlog.<domain>/app/` | spike **I4** (v0.2), shipped from v0.3 |
 | **UI prototype** | ✅ any browser, any phone | `prototypes/ui-prototype/index.html` | now |
 
 ### Windows desktop

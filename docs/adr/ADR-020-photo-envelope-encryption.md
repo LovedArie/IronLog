@@ -10,7 +10,11 @@ Body photos are the most private data in the app. They must sync across Android,
 
 ## Decision
 
-A random photo key encrypts photos and previews (libsodium secretstream). It is locked twice: envelope A with a lock key derived from the password (Argon2id → KDF; never leaves the device) and envelope B with a recovery code shown once when photo sync is turned on. The server never sees the password: a derived login key is sent and hashed; `/prelogin` returns salt and settings (fake salt for unknown users).
+**Words:** envelope encryption = a key locked by other keys · Argon2id =
+slow password hash · KDF = makes sub-keys from one key · salt = random
+extra input per user · secretstream = libsodium's file-encryption mode.
+
+A random photo key encrypts photos and previews (libsodium secretstream). It is locked twice: envelope A with a lock key derived from the password (Argon2id → KDF; never leaves the device) and envelope B with a recovery code shown once at the first photo (which turns on photo sync). The server never sees the password: a derived login key is sent and hashed; `/prelogin` returns salt and settings (fake salt for unknown users).
 
 ## Consequences
 

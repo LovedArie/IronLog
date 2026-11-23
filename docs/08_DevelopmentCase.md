@@ -16,6 +16,7 @@
 | Requirements | Use-Case Model | s | r | | |
 | Requirements | Vision | s | r | | |
 | Requirements | Supplementary Specification | s | r | | |
+| Requirements | Feature and UI research (`research/`) | s | r | | |
 | Requirements | Glossary | s | r | r | |
 | Design | Design Model (`diagrams/`, `arc42.md` §5–§6) | | s | r | |
 | Design | SW Architecture Document (`arc42.md`) | | s | r | |
@@ -24,8 +25,12 @@
 | Project management | Risk List | s | r | r | r |
 | Project management | Iteration Plan | s | r | r | r |
 | Project management | Backlog (`BACKLOG.md`, TickTimer rules) | s | r | r | r |
-| Requirements | Feature research (`research/`) | s | | | |
 | Environment | Development Case (this file) | s | r | | |
+| Environment | How-to guides (`DEVELOPING`, `RELEASING`, `TROUBLESHOOTING`) | | s | r | r |
+| Design | UI prototype (`prototypes/ui-prototype/`) | | s | | |
+| Implementation | Exercise pictures + `CREDITS.md` (`assets/exercises/`) | | s | r | |
+| Learning | Question bank (`question-bank.md`) | s | r | r | r |
+| Quality | Doc reviews + doc rules (`reviews/`) | | s | r | r |
 
 **Changed 2026-11-23**: the v0.1 `09_DesignNotes.md` is replaced by
 **`arc42.md`**, one architecture document in a standard 12-section template
@@ -43,8 +48,8 @@ The Phase Plan's feature list moved to **`BACKLOG.md`**.
 - [x] Warnings on (`-Wall -Wextra -Wpedantic`), zero tolerated
 - [x] Docs and diagrams updated in the same change as the code
 - [x] Troubleshooting log for every real build/run problem
-- [ ] Continuous integration — GitHub Actions running `ctest` (backlog I2, v0.2)
-- [ ] Continuous delivery — release on tag, VPS deploy with `/version` check (I3, I6)
+- [x] Continuous integration — GitHub Actions `ci.yml`, 3 jobs (I2 ✅)
+- [ ] Continuous delivery — Windows zip on tag ✅ (I3); APK, web bundle and VPS deploy with `/version` check still to do (I6)
 - [ ] Code review (solo project)
 
 ---

@@ -10,7 +10,17 @@ Research round 2: v1 decay was harsher than real detraining; cheat meals are lin
 
 ## Decision
 
-Decay after 14 days at −0.5 %/day with a 3-day warning; 50 % floor; Comeback bonus ×2; Pause with a reason (exams 21, sick 14, injured 42, travel 21 days); weekly forgiving streak; rest token (bank max 2) + a reward the user writes, replacing the cheat-meal token; "sets to next level"; balance table versioned.
+| Rule | Value |
+|---|---|
+| Decay starts | after 14 days without training a skill |
+| Decay speed | −0.5 % per day, with a 3-day warning first |
+| Floor | never below 50 % of the skill's peak |
+| Comeback bonus | ×2 XP until back at the old level |
+| Pause (with a reason) | exams ≤ 21 days · sick ≤ 14 · injured ≤ 42 · travel ≤ 21; no decay while paused |
+| Streak | counts weeks, not days; forgiving (rest days count, pauses keep it) |
+| Weekly quest reward | rest token (bank max 2) + a reward the user writes — replaces the cheat-meal token |
+| Shown to the user | "sets to next level" |
+| Versioning | the balance table has a version number |
 
 ## Consequences
 

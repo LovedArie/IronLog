@@ -14,7 +14,7 @@ Put analysis in free functions in namespace `stats::` that read `TrainingLog` th
 
 ## Consequences
 
-- `TrainingLog` keeps one job: its sorted, one-record-per-id invariant.
+- `TrainingLog` keeps one job: its invariant (workouts sorted by date, at most one per date; `Workout.h`).
 - Stats are tested on their own.
 - New reports don't touch the log class.
 

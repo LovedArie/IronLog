@@ -30,7 +30,7 @@ itself has a Pause (exams, sick, injured, travel) for the same reason.
 | v0.3 | Coach | Owner trains a full week from *Train now* plans |
 | v0.4 | Game & body | Character sheet, gentle decay, pauses, weekly quest + streak, check-ins + photos in daily use |
 | v0.5 | Online | Owner + partner synced through the VPS |
-| v0.6 | Progress+ | Body check-ins, PR types, calculators; Widgets UI retired |
+| v0.6 | Progress+ | More PR types, calculators, stall → deload hint; Widgets UI retired |
 | v1.0 | Release | One semester of real use without data loss |
 
 Items per milestone: [BACKLOG.md — Roadmap](BACKLOG.md#roadmap).

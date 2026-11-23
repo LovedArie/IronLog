@@ -5,7 +5,7 @@
 | Made with | ChatGPT image generation (OpenAI), the owner's account |
 | Date | 2026-11-23 |
 | Made by | Claude, driving the owner's Chrome at the owner's request |
-| Rights | OpenAI's Terms of Use assign rights in outputs to the user. Re-check if the terms change |
+| Rights | OpenAI's Terms of Use (effective 2026-01-01) say the user owns Output, and OpenAI assigns its rights in it, *if any*, to the user (not to other users' look-alike output). Re-check if the terms change — https://openai.com/policies/terms-of-use/ |
 | Checked | Every image checked by eye for form errors, extra limbs/fingers and wrong muscles before saving |
 | Format | Downscaled in the browser to 1200 × 800 JPEG (quality 0.88) |
 
@@ -20,8 +20,11 @@
 Each exercise then: *"Next exercise, same character, same style, same
 layout (two side views facing right, arrow between). EXERCISE: LEFT = start
 pose … RIGHT = end pose … Anatomy must be correct. No text. Landscape 3:2."*
-The pose wording per exercise is in `exercises.json` order; key form points
-asked for: shins vertical / knees over feet (squats, lunge), flat back
+Only these template prompts are saved; the per-exercise pose wording was
+not. Exercises were made in `exercises.json` order. Key form points
+asked for: shins fairly vertical (squats, lunge — a knee-friendly choice for
+users on a knee stage, **not** a general rule: knees past toes is normal for
+most people, Fry et al. 2003), flat back
 (rows), straight body line (push-up, plank, ring row), lower back on the mat
 (dead bug), knees not locked (leg press).
 

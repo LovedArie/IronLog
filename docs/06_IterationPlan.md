@@ -26,31 +26,35 @@ feature research.
 
 ---
 
-## Iteration 2 — v0.2 Foundation (next)
+## Iteration 2 — v0.2 Foundation (in progress)
 
-**Goal**: Protect the code with CI, settle the data format once, and prove
+**Goal**: CI is done. Next: settle the data format once, and prove
 QML runs on the owner's Android phone and in a browser — before any
 v0.3 feature is built on top.
 
 **Backlog items, in order**: I1 ✅ → I2 ✅ → I3 ✅ → I4 → F1 → F2 → F3 → F4
 
-*I3 moved up: the release workflow was written with CI, so it's tested next.*
-
 | Id | Item | Size |
 |---|---|---|
 | I1 | GitHub repo + v0.1.0 tag 👤 — ✅ 2026-11-23, `LovedArie/IronLog` | S |
 | I2 | CI: Linux core-only, Linux + Qt 6.4, Windows MinGW + Qt 6.8 LTS — ✅ 2026-11-23, green | M |
+| I3 | CD: Windows zip → GitHub Release (tag or button) — ✅ 2026-11-23, v0.1.0 published | M |
 | I4 | QML spike → Android APK + WASM page on the owner's phone 👤 | M |
 | F1 | Schema v2 + migration | L |
 | F2 | Catalog v2 + owner's home-kit exercises | M |
 | F3 | Edit a set + undo/redo | M |
 | F4 | Rotating backups + CSV export | S |
-| I3 | CD: Windows zip → GitHub Release (tag or button) — ✅ 2026-11-23, v0.1.0 published | M |
+
+**Also done (not planned):**
+
+- UI research → design system (ADR-023) + clickable prototype (`prototypes/ui-prototype/`)
+- Game rules v2 and optional game mode (ADR-021, ADR-022)
+- Exercise pictures: code-drawn idea rejected (ADR-024); ChatGPT pictures accepted (ADR-025) — 32 images + 17 clips, half of F23
 
 **Definition of done**:
 - CI is green on all three jobs for the final commit.
 - A v1 file migrates to v2 with no lost sets (test with the sample log).
-- The spike's result is written into arc42 ADR-012 (accept or reject QML).
+- The spike's result is written into [ADR-012](adr/ADR-012-qml-ui.md) (accept or reject QML).
 - Tag `v0.2.0` produces a GitHub Release with the Windows zip automatically.
 - Docs, diagrams and `question-bank.md` updated.
 

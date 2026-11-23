@@ -23,7 +23,7 @@ for the muscle picture as an anatomy view, not the character, and for videos.
   system's blue (`#2F5BD0` / `#8FAAF0`) because red vs orange fails the UI
   research's colour-blind check (`docs/research/ui-research.md`, design
   system v1). Dark vs light of one hue passes.
-- **Videos:** OpenAI's video tool (Sora) was shut down in March 2026 and
+- **Videos:** OpenAI's video tool (Sora) closed its app and web on 2026-04-26 (announced 2026-03-24) and
   ChatGPT offers no video option on this account. Short clips are made from
   the two pictures with ffmpeg (start ↔ end pose flip at the exercise's tempo,
   then the muscle diagram with the muscle names). See backlog F23.
@@ -54,4 +54,5 @@ for the muscle picture as an anatomy view, not the character, and for videos.
 
 - docs/adr/ADR-024-exercise-pictures-drawn-by-code.md
 - assets/exercises/CREDITS.md
-- NPR / AP, 2026-03-25: OpenAI shuts down Sora
+- OpenAI Help Center, "What to know about the Sora discontinuation": app and web closed 2026-04-26, API ends 2026-09-24 — https://help.openai.com/en/articles/20001152-what-to-know-about-the-sora-discontinuation
+- AP (via OPB), 2026-03-24: OpenAI announces the end of Sora — https://www.opb.org/article/2026/03/24/openai-pulls-the-plug-on-sora-the-viral-ai-video-app-that-sparked-deepfake-concerns

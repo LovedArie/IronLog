@@ -15,7 +15,7 @@ screen and found 7 features with no home and 3 screens at risk of crowding.
 
 - **Tab bar:** Today · Log · Progress · You (a left rail on wide screens).
 - *Train now* is the primary **button** on Today, not a tab; "Same as last
-  time" skips the wizard.
+  time" skips the questions.
 - The guided session is full-screen and can shrink to a **mini bar** above
   the tabs.
 - *You* is never hidden: game on = character sheet; game off = plain

@@ -25,4 +25,4 @@ Build new screens in Qt Quick (QML) over C++ view models; keep the Widgets UI un
 ## Sources
 
 - TickTimer design-addendum-responsive.md
-- docs/research/ui-research.md (when available)
+- [docs/research/ui-research.md](../research/ui-research.md) (design tokens, `Theme.qml`; see ADR-023)
