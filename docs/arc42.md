@@ -244,6 +244,7 @@ Here the verification is part of the pipeline.
 | `MobilityEntry` | `id`, `at`, `routineId`, `minutes` | Feeds Mobility |
 | `BodyCheckIn` | `id`, `date`, `bodyweight`, `unit`, `waist?` | "Lean" trend |
 | `ProgressPhoto` | `id`, `date`, `pose` (front / side / back), `fileRef`, `checkInId?` | Image file stored beside the JSON, encrypted (§8.14) |
+| `SessionReview` | `id`, `date`, `overall` (great / good / ok / rough), `energy` (high / normal / low), `joints` (fine / twinge / pain), `note?`, `prefilled` (which answers the app suggested) | Planner input; `joints = pain` → pain check |
 | `TimedSet` | as `StrengthSet` but `seconds` instead of `reps` (plank, wall sit, balance) | Same PR/XP rules on duration |
 | `ExamPeriod` | `id`, `start`, `end` (≤ 21 days) | Pauses decay, lowers quest |
 | `TokenSpend` | `id`, `date`, `note?` | Spent cheat-meal tokens |
@@ -363,6 +364,22 @@ Server errors use distinct codes (`auth`, `forbidden`, `conflict`,
 
 No core function reads the clock. `today` / `now` is a parameter
 (TickTimer lesson: a test that failed only after 5 PM).
+
+### 8.15 "How was it?" — pre-picked answers
+
+`review::suggest(session, plan, history) → SessionReview` is a pure core
+function; the UI shows its picks highlighted and the user confirms or taps
+another chip.
+
+| Answer | Pre-picked when |
+|---|---|
+| Overall | ≥ 90 % of planned sets hit target → *Good*; any PR → *Great*; < 60 % → *Rough*; else *OK* |
+| Energy | exam mode or *Cramming* → *Low*; otherwise last review's value |
+| Joints | always *Fine* — **never** pre-pick pain; the user must tap it |
+
+The app stores which answers were suggested (`prefilled`), so later
+analysis can tell "confirmed" from "chosen". Voice notes use the phone
+keyboard's dictation: no speech code in v1.
 
 ### 8.14 Progress photos (privacy)
 

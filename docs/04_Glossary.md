@@ -54,6 +54,8 @@
 | **Cheat-meal token** | Reward for a completed weekly quest. Bank at most 2. | integer | 0–2 | token |
 | **Derived state** | Values recomputed from the log (XP, levels, quests, earned tokens), never stored. | — | — | — |
 | **Body check-in** | Weekly body weight + waist entry (+ progress photos); the "lean" trend. | `BodyCheckIn` | — | weigh-in |
+| **Session review** | The end-of-session "How was it?" answers (overall, energy, joints, note). | `SessionReview` | — | check-in |
+| **Pre-picked answer** | A review answer the app suggests from session data; one tap confirms it. | flag | joints never pre-picked as pain | autofill |
 | **Progress photo** | Front, side or back photo taken at a check-in; encrypted on the device before sync. | `ProgressPhoto` | — | — |
 | **Timed set** | A set measured in seconds instead of reps (plank, wall sit, balance hold). | `TimedSet` | 1–600 s | hold |
 | **Streak** | Consecutive weeks with the weekly quest completed; exam weeks don't break it. | derived | — | — |

@@ -81,8 +81,11 @@ Same rules as TickTimer's backlog, because they worked:
   equipment → plan with XP preview; *Sore* asks which body parts. *(M)*
 - **F9** Guided session: step through the plan, log each set inline (one tap
   "repeat last set", +/− steppers), hold timer for timed sets, rest timer. *(M)*
-- **F10** Progression gates (P6) shown as **unlocks**, and the pain check (P7)
-  that drops an exercise one stage for 2 weeks. *(M)*
+- **F10** End-of-session **"How was it?"** check-in: quick-tap chips for overall,
+  energy and joints, **pre-picked from the session's data** (one tap to confirm),
+  plus a note field (voice via the phone keyboard's mic). "Joints: pain" starts
+  the pain check (P7); answers feed the next plan. Progression gates (P6) shown
+  as **unlocks**. *(M)*
 
 ## Features — game
 
@@ -129,6 +132,9 @@ Same rules as TickTimer's backlog, because they worked:
 ## Later (parked — not counted in the cap)
 
 - AI coach: an LLM that explains or tunes plans **inside** the planner's rules
+- **Voice set logging** (AI track): say "eighty for eight" or "same again" →
+  a logged set. Speech-to-text with whisper.cpp (on the VPS or on the phone) +
+  a rule-based parser in `core/`
 - Party view: see your partner's levels (opt-in)
 - Achievements beyond unlocks (streaks, milestones)
 - Import from Strong / Hevy CSV

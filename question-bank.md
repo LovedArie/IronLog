@@ -514,3 +514,20 @@ on your own, or to pull from when you *ask* to be quizzed.
 > Programmable progression rules (planner rules cover it) · AI-generated
 > workouts (black box; ADR-013) · nutrition logging (scope creep, users
 > dislike it in workout apps).
+
+**V26 🟡 How does "How was it?" stay a one-tap habit?**
+> `review::suggest()` pre-picks answers from the session (hit rate, PRs, exam
+> mode); the user just confirms. Fast enough to do every time, so the
+> planner gets readiness data every session.
+
+**V27 🔴 Why is "Joints: pain" never pre-picked, and why store which answers were suggested?**
+> Pain must be a deliberate report — it changes the plan (pain check P7),
+> and a wrong suggestion either hides real pain or invents it. Storing
+> `prefilled` separates "confirmed a suggestion" from "chose it", so the
+> suggestions can be judged later instead of grading themselves.
+
+**V28 🟡 Why is voice logging two features, one now and one later?**
+> Voice *notes* are free today: the phone keyboard's mic turns speech into
+> text in any field. Voice *set logging* ("eighty for eight" → a set) needs
+> real speech-to-text plus a parser — parked as an AI-track item
+> (whisper.cpp on the VPS or phone + a rule-based parser in `core/`).
