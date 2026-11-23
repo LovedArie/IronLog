@@ -49,6 +49,9 @@
 | **Joint stress** | How hard an exercise loads a joint: low, medium or high. | per exercise, per joint | — | knee stress |
 | **Pain monitoring** | Rating pain 0–10 during an exercise and the next morning; decides hold, keep or drop a stage. | `PainReport` | 0–10 | pain scale |
 | **Red flag** | A sign to stop and see a professional: swelling, heat, locking, giving way, can't take weight. | list | — | — |
+| **Flare-up** | Pain reported any time, outside a session, for a joint (0–10, side, red flags). The app registers it and adjusts that joint's stage. | `PainReport` (kind flare-up) | 0–10 | — |
+| **Pain log** | All pain reports for a joint over time: session, flare-up, next morning, weekly rating. | derived list | — | pain history |
+| **Pain pin** | A number on the body map at a joint with recent pain (last 7 days, ≥ 3/10); "!" for a red flag. | UI | — | — |
 | **Gate** | Criteria plus a minimum time that unlock an exercise, stage or phase. | data | — | unlock rule |
 | **Trigger** | A condition the app watches; when it's met, an offer appears ("ready for…"). Never automatic. | data | — | — |
 | **Goal test** | A measurement every 4 weeks that shows progress toward a goal (reach, balance, time before gassed). | `GoalTest` | — | re-test, benchmark |
@@ -88,6 +91,7 @@
 | **Timed set** | A set measured in seconds instead of reps (plank, wall sit, balance hold). | `TimedSet` | 1–600 s | hold |
 | **Streak** | Consecutive weeks with the weekly quest completed; rest days count; paused weeks and rest-token weeks keep it. | derived | — | — |
 | **Body map** | Game picture of the body: each skill's area is shaded by its level (one purple hue, darker = higher; stripes = fading). Not the exercise muscle diagram. | UI | — | — |
+| **Skill detail** | What a body part got: level, sets per muscle vs target, strength trend, endurance, stretching, limits, pain. Opened by tapping the body map. | derived | — | body part detail |
 | **Deload** | A planned easy recovery week after a stall, then progress resumes. Not a Pause. | planner hint | — | — |
 | **Revision** | Server counter for a user's log; bumps on every successful push. | integer | ≥ 0 | — |
 | **Tombstone** | A record marked `deleted` instead of removed, so deletes sync. | flag | — | — |

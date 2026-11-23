@@ -864,3 +864,21 @@ on your own, or to pull from when you *ask* to be quizzed.
 > The user can't tell why their usual exercise is gone. Every swap is named
 > with its reason ("Reverse lunge → Low step-up, for your knee"), and the
 > limitation row opens the settings.
+
+**M38 🟡 The skill detail shows "12 sets" for Legs but Quads 12, Glutes 9, Hamstrings 3, Calves 1.5. Why don't the muscles add up to 12?**
+> One set can train several muscles: a box squat counts for quads **and**
+> glutes. Helper muscles count ½ (the same half-set rule as XP). The skill
+> total counts each set once.
+
+**M39 🟡 How is a flare-up different from the pain check after a session?**
+> The session check is about one exercise; a flare-up is about a joint, any
+> time. The same 0–10 rules apply, but they change the **joint's stage**
+> (or add a limitation), and the next-morning check still follows.
+
+**M40 🔴 Spot the issue: a red-flagged shoulder comes back into plans automatically after 2 weeks.**
+> A red flag needs a professional's check. The joint stays out until the
+> user marks it "cleared by a professional"; time alone never clears it.
+
+**M41 🟢 Why does the body map show pain as a number, not just a red dot?**
+> Never colour alone (colour-blind users, and "how bad?" matters). The pin
+> shows the 0–10 level, or "!" for a red flag, and opens the detail.

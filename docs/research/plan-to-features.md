@@ -60,6 +60,7 @@ same shape for every joint. Only the data changes.
 | Filter | Planner rule P3: stress ≤ what the stage allows, for **every** limitation. The safety filter runs first and nothing can override it |
 | Swap and cues | Kneeling + knee limitation → "pad your knee" cue, or the standing version. Overhead + shoulder limitation → a neutral-grip version |
 | Weekly rating | 0–10 per limitation in the body check-in. Feeds the gates (F26) |
+| Flare-up | Report pain any time, not only in a session. Same 0–10 rules, applied to the joint's stage. Logged, and shown on the body map as a number |
 
 **Pain monitoring.** It replaces the yes/no pain check. The scale is 0–10,
 during the exercise and the next morning:

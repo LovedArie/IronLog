@@ -94,7 +94,10 @@ Same rules as TickTimer's backlog (TickTimer = the owner's earlier Qt timer app,
   - Swaps and cues by limitation (kneeling → pad or standing version).
   - Pain monitoring 0–10 during + next morning (asked on the next open);
     > 5 or worse next day → down a stage for 2 weeks. Replaces P7's yes/no.
-  - Red flags → stop and see a professional. Weekly 0–10 rating per limitation.
+  - Red flags → stop and see a professional; out of plans until "cleared by
+    a professional". Weekly 0–10 rating per limitation.
+  - **Flare-ups** any time (joint, side, 0–10, red flags) → same rules on the
+    joint's stage. Pain log per joint; pins on the body map (≥ 3/10, 7 days).
 - **F6** Goal programs as data files: Badminton singles, Lean & toned (upper
   focus), Lean & toned (lower focus), General — each with weekly sessions and
   per-muscle weekly set targets. *(M)*
@@ -162,6 +165,9 @@ Same rules as TickTimer's backlog (TickTimer = the owner's earlier Qt timer app,
   `assets/game/`, shown in the UI prototype). **Game mode is a
   checkbox** (onboarding + settings): off hides XP, levels, streaks and tokens
   and pauses decay; turning it back on loses nothing (ADR-021). *(M)*
+  - **Skill detail**: tap a body part, skill row or bar → level, this week's
+    sets per muscle vs target, sets per week, strength trend, endurance,
+    stretching for the area, limits, pain & joints, recent sessions (arc42 §8.6.1).
 - **F13** Game rules v2 (arc42 §8.6). *(M)*
   - Decay starts after 14 days: −0.5 %/day, 3-day warning, never below 50 % of peak.
   - Comeback bonus ×2.

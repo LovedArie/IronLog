@@ -2,7 +2,7 @@
 
 > **What this is**: the 3-minute summary of the project: goals, users,
 > scope, constraints. **Read it when** you start, or before deciding if a
-> feature belongs. Version 2 (now v2.8) replaced the v0.1 "desktop logbook"
+> feature belongs. Version 2 (now v2.9) replaced the v0.1 "desktop logbook"
 > vision on 2026-11-23. *(Method: Larman, Applying UML and Patterns, Ch. 4
 > §4.3, Table 4.1.)*
 
@@ -69,7 +69,7 @@ gate (phase 2).
 | **Train now** | Time → today's situation → gym, home or what's nearby → a session plan, each item with its reason | F8 |
 | **Guided session** | Follow the plan, log as you go, rest and hold timers | F9 |
 | **Session review** | "How was it?" at the end: answers pre-picked from the session, plus a voice-friendly note | F10 |
-| **Body limitations** | Pick the joint that needs care (knee, shoulder, back…), its side and stage. Every plan stays inside it. Pain is rated 0–10, during and the next morning, so the plan steps back when needed. Red flags → see a professional | F25 |
+| **Body limitations** | Pick the joint that needs care (knee, shoulder, back…), its side and stage. Every plan stays inside it. Pain is rated 0–10, during and the next morning, so the plan steps back when needed. Report a **flare-up** any time; the app registers it and adjusts. Red flags → see a professional | F25 |
 | **Exercise pictures** | How-to picture (the IronLog character, start → end), muscle diagram (dark blue = main, light blue = helpers), and a short clip | F23 |
 | **Daily stretch** | A guided morning routine (12 stretches, ~12 min, timer per side), add-ons after training or in the evening, and a weekly reach test | F24 |
 | **Ready for…** | The app watches the log and offers the next step (a harder exercise, intervals, a new phase) when time **and** criteria are met. Goal tests every 4 weeks | F26 |
@@ -80,7 +80,7 @@ gate (phase 2).
 
 | Feature | What it does |
 |---|---|
-| **Character sheet** | A **body map** that lights up by level, 8 skills: Arms, Shoulders, Chest, Back, Core, Legs, Stamina, Mobility |
+| **Character sheet** | A **body map** that lights up by level, 8 skills: Arms, Shoulders, Chest, Back, Core, Legs, Stamina, Mobility. Tap a part for its **detail**: sets per muscle, strength trend, endurance, stretching, pain and limits. Recent pain shows on the map as a number |
 | **XP** | From every set, cardio minute and stretch minute; "sets to next level" always shown |
 | **Gentle decay** | Warned first, after 2 weeks off a skill; stopped by a **Pause** (exams, sick, injured, travel); a **Comeback bonus** doubles XP while you climb back |
 | **Weekly quest** | → **rest token** (protects your streak) + **your own reward**, written by you |
@@ -177,3 +177,4 @@ Train now
 | v2.6 | 2026-11-23 | Daily stretch (F24): guided morning routine + add-ons + weekly reach test, from the owner's fitness plan | Claude (pairing) with owner |
 | v2.7 | 2026-11-23 | Plan scaled to every user: body limitations (any joint), pain monitoring, gates and triggers, goal tests, cardio program, sport profile + prehab (plan-to-features, ADR-026/027) | Claude (pairing) with owner |
 | v2.8 | 2026-11-23 | Full read of the owner's plan and Decision Report: new problems (coming back, "revisit later"), scaled persona, G3 sharpened, G6 + goal horizons, module tables split, "Before my sport" in Train now, out-of-scope (diagnosis, early jump training), safety constraint | Claude (pairing) with owner |
+| v2.9 | 2026-11-23 | Skill detail (tap a body part) and flare-up reporting with a pain log and body-map pins | Claude (pairing) with owner |

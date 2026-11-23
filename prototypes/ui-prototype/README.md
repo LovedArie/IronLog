@@ -30,7 +30,7 @@ reload to start over.
 4. **You → Programs → Body limitations**: set Knee stage 1, add Shoulder. Then Train now again:
    reverse lunge becomes step-up; at the gym the bench press is left out.
 5. **Train now → Before my sport**: the badminton RAMP warm-up, no static holds.
-6. **You**: the body map — darker = higher level, the striped back is fading. Tap a part. Then **⚙ Settings** → turn *Play it like a game* off. Look at Today and You.
+6. **You**: the body map — darker = higher level, the striped back is fading. **Tap a part** for its detail (sets per muscle, strength, endurance, stretching, pain). In *Pain & joints* → **Report a flare-up** → Knee 7/10 → Save: a "7" appears on the map, the knee drops a stage, and Today asks the next morning. Then **⚙ Settings** → turn *Play it like a game* off. Look at Today and You.
 7. **Today → Morning stretch → Start**: hold timer per side, a beep to switch sides, then it moves on by itself. Try +15 s on the towel stretch. At the end: the weekly reach test (hand gap in cm). See it, and the **goal tests**, in **Progress → Body**.
 8. **Train now → Cramming** (the 3rd this week) → back on Today: the pause offer.
 9. **Progress → Photos** → unlock → *Take photos* (recovery-code prompt) → Compare.
@@ -47,6 +47,7 @@ reload to start over.
 | Snackbar + Undo, Why? sheets, pre-picked answers | Fingerprint unlock, recovery code, sync |
 | Exercise pictures and clips: the real files from `assets/exercises/` (ADR-025) | Cues and muscle lists are typed into `MEDIA`, not read from the catalog (F2) |
 | Body limitations: safety filter before anything else, swaps named in the plan, pain 0–10 + next-morning check, red flags (ADR-026) | Joint stress per exercise is typed into `STRESS`; only the knee has a full stage ladder |
+| Skill detail and flare-ups: tap a body part; pain log per joint, pins on the map, red flags until cleared | Skill numbers come from `SKILL_INFO` sample data, not computed from the log |
 | One "ready for…" offer at a time, with its reason (ADR-027) | The offer, goal-test results, cardio week and prehab block are fixed sample data, not computed |
 
 ## How it's built (for reading the code)
@@ -61,6 +62,8 @@ reload to start over.
 | Clip | `<video autoplay muted loop playsinline>` | Muted, so phones allow autoplay. Reduce motion → still, with a play button |
 | Body limitations | `S.limitations`, `STRESS`, `fitsLimits()`, `painAction()`, `viewLimits()` | `buildPlan()` runs the safety filter first: each exercise's stress per joint ≤ that limitation's stage, else swap to an allowed alternative or leave it out (the note says which) |
 | Daily stretch | `STRETCH`, `ROUTINE`, `viewStretch()` | Phases ready → hold → switch → hold → next; a second 250 ms timer moves between them. ±15 s is kept in `holdSec` |
+| Skill detail | `skillSheet()`, `SKILL_INFO`, `painSection()` | A bottom sheet; Stamina and Mobility show minutes instead of sets |
+| Flare-ups | `viewFlare()`, `S.painLog`, `S.redFlags`, `painPins()` | Same 0–10 rules as the pain check, on the joint's stage; pins are SVG on the body map |
 | Body map | `BODY`, `bodyMap()` | Outlines from `assets/game/bodymap-paths.json`; fill = level shade, or stripes when fading; tap → `skillTap` snackbar |
 | Missing diagram | `NO_DIAGRAM` | Plank and dead bug show a box; the muscle names below still say it all |
 

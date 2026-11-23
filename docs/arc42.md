@@ -210,7 +210,9 @@ saves atomically → emits `logChanged()` → all views reload.
 1. In the session, "Joints: pain" opens the pain sheet: which exercise,
    0–10, any red flag.
 2. A red flag → that exercise is removed today, and the sheet suggests a
-   professional. Nothing else is decided automatically.
+   professional. Nothing else is decided automatically. A **flare-up** can
+   also be reported any time, outside a session; the same rules then act on
+   the joint's stage instead of one exercise (§8.18).
 3. Next app open, the next morning: "How's your knee this morning? 0–10".
 4. `body::painAction(during, nextMorning)` (pure): 0–3 and settled → keep;
    4–5 or still there → hold the load; > 5 or worse → that exercise drops a
@@ -289,7 +291,7 @@ Here the verification is part of the pipeline.
 | `Profile` | goal program, units, equipment sets per place, weekly availability, sport + usual days, time since regular training | Per user; limitations are their own records |
 | `StretchRoutine` | `id`, name, ordered stretch ids, default hold (s) | Data file, like goal programs (§8.17) |
 | `Limitation` | `id`, `joint` (knee / shoulder / lower back / ankle / hip / wrist / neck), `side` (left / right / both), `stage`, `since`, `note?` | Per user; drives the safety filter (P3, ADR-026). Note stays on the device |
-| `PainReport` | `id`, `at`, `exerciseId`, `limitationId?`, `during` (0–10), `nextMorning?` (0–10), `redFlags` (list) | P7; feeds stages and gates |
+| `PainReport` | `id`, `at`, `kind` (session / flare-up / next morning / weekly rating / red flag cleared), `joint`, `side`, `level` (0–10), `exerciseId?` (session only), `flags` (red flags) | P7 and flare-ups; the **pain log** per joint; feeds stages, gates, body-map pins and the skill detail |
 | `GoalTest` | `id`, `date`, `testId` (e.g. reach, balance, time-before-gassed), `value`, `unit` | Every 4 weeks (F26) |
 | `TriggerResponse` | `id`, `at`, `triggerId`, `accepted` (true / false) | So a dismissed offer isn't repeated every day (ADR-027) |
 | `Exercise` | stable `id` slug, name, primary + secondary muscles, equipment set, movement pattern, knee stress (low/med/high), stage, default rep range | Catalog |
@@ -399,6 +401,27 @@ onboarding and changeable in settings.
 
 Possible only because game state is derived (ADR-014): the toggle is a
 view choice plus a decay pause, not data to migrate.
+
+#### 8.6.1 Skill detail (tap a body part)
+
+Tapping a body-map area, a skill row or a Stamina / Mobility bar opens that
+skill's detail. Everything is **derived** from the log (ADR-014); nothing new
+is stored.
+
+| Section | Derived from |
+|---|---|
+| Level, XP, "N sets to next level" (or minutes for Stamina / Mobility), comeback, fading | `game::computeSheet` |
+| This week: sets, sessions, XP | sets whose exercise trains the skill (a set counts once) |
+| Per muscle vs target | `stats::weeklySets` per muscle, main = 1, helper = ½ (same rule as XP); target 10–20 from the goal program; Below / On / Above |
+| Sets per week, last 4 weeks | the same count per Monday–Sunday week |
+| Strength | best e1RM per session for the skill's lifts (exercise → muscle → skill, §8.16), change over 4 weeks |
+| Endurance | best hold (`TimedSet`) and best bodyweight reps |
+| Mobility for the area | stretches whose body area maps to the skill (§8.17) |
+| Limits | the user's limitations on the skill's joints (Legs: knee, hip, ankle · Shoulders and Arms: shoulder, wrist · Back: lower back, neck · Core: lower back) |
+| Pain & joints | the pain log for those joints: last level, trend, red flags; "Report a flare-up" (§8.18) |
+| Recent | the last sessions that trained it |
+| Stamina | cardio minutes by kind, cardio program week, time-before-gassed test |
+| Mobility | stretch minutes, mornings done, reach test |
 
 ### 8.7 Units
 
@@ -627,6 +650,9 @@ The owner's plan was built around one knee. The app generalizes it: a
 | Swaps and cues | a filtered exercise is swapped for the closest allowed variant; kneeling → "pad your knee" or the standing version; the swap is named in the plan ("for your knee") |
 | Pain monitoring (P7) | 0–10 during and next morning: 0–3 settled → keep · 4–5 or still there → hold · > 5 or worse → down one stage for 2 weeks |
 | Red flags | swelling, heat or redness, locking, giving way, can't take weight → stop that exercise, suggest a professional |
+| Flare-up | pain reported **any time**, not tied to a session (from a body part's detail or the limitations screen): joint, side, 0–10, red flags. 0–3 → noted · 4–5 → hold: no increases for that joint this week · > 5 → that joint drops one stage for 2 weeks (no limitation yet → added at stage 1) · red flag → every exercise that loads the joint is out until the user marks it "cleared by a professional". Always followed by the next-morning check |
+| Pain log | every report (session, flare-up, next morning, weekly rating) is a `PainReport`; the skill detail shows the last level and a trend per joint |
+| Pain pins | the body map shows the latest report per joint from the last 7 days, if ≥ 3/10 or flagged: a number (or "!") on the joint, never colour alone; tap → that body part's detail |
 | Weekly rating | 0–10 per limitation in the body check-in; used by gates (§8.19) |
 | Stage up | a gate: 2 weeks, all planned sessions, no pain > 3, weekly rating ≤ 2 → an **offer**, never automatic |
 
@@ -754,6 +780,8 @@ spike, ADR-016 (QHttpServer) on F15.
 | Q13 | A red flag (swelling) is reported | That exercise is removed today and the "see a professional" message shows; no XP | Catch2 + QA |
 | Q14 | User taps "Not now" on a trigger | The same offer doesn't show again for 7 days | Catch2 on `rules::evaluate` |
 | Q15 | Back after a 4-week pause | Week 1 plans ~60 % of normal sets, rising each week (P9) | Catch2 on the planner |
+| Q16 | Knee flare-up 7/10 with knee at stage 2 | Knee is stage 1 for 2 weeks; reverse lunge leaves the plan; a pin "7" shows on the body map; the next morning asks again | Catch2 on `body::` + QA |
+| Q17 | Red flag (swelling) on the right shoulder | No exercise with any shoulder stress is planned until "cleared by a professional" | Property test on the planner |
 
 ---
 

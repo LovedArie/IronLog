@@ -231,6 +231,17 @@ textarea, input[type=text] { width:100%; min-height:var(--tap); border-radius:va
 .thumbbtn img { width:100%; height:100%; object-fit:cover; display:block; }
 .howto-clip video { width:100%; max-width:300px; aspect-ratio:3/4; margin:0 auto; display:block; border-radius:var(--radius); background:#fff; }
 .bodybar { width:100%; gap:var(--s); align-items:center; min-height:40px; background:none; border:0; padding:0; color:inherit; font:inherit; text-align:left; cursor:pointer; }
+.minimap { display:block; width:100%; height:120px; margin-bottom:var(--s); }
+.statrow { display:grid; grid-template-columns:repeat(3, minmax(0, 1fr)); gap:var(--s); margin-top:6px; }
+.statrow > div { background:var(--surfaceVar); border-radius:var(--radius); padding:var(--s); display:flex; flex-direction:column; align-items:center; }
+.wkbars { display:grid; grid-template-columns:repeat(4, minmax(0, 1fr)); gap:var(--s); align-items:end; margin-top:6px; }
+.wkbars > div { display:flex; flex-direction:column; align-items:center; gap:2px; }
+.wkbars i { display:block; width:60%; border-radius:4px 4px 0 0; background:color-mix(in srgb, var(--series) 45%, var(--surface)); }
+.wkbars i.now { background:var(--series); }
+.tag { font-size:11px; font-weight:700; padding:2px 6px; border-radius:6px; }
+.tag.below { background:color-mix(in srgb, var(--below) 18%, transparent); color:var(--on); }
+.tag.ok { background:color-mix(in srgb, var(--ok) 18%, transparent); color:var(--on); }
+.tag.above { background:color-mix(in srgb, var(--above) 18%, transparent); color:var(--on); }
 .cue { color:var(--onVar); font-size:12px; line-height:16px; font-weight:600; }
 .thumbbtn.ramp { display:inline-flex; align-items:center; justify-content:center; font-weight:700; font-size:22px; color:var(--onVar); background:var(--surfaceVar); }
 .chip.n { min-width:44px; padding:0 var(--s); justify-content:center; }
@@ -304,6 +315,16 @@ const S = {
   dropped: {},            // exercise id → why it's out of plans (pain drop or red flag)
   painPending: null,      // { id, ex, during } → asked again the next morning
   pain: { during: null, flags: [] },
+  // Pain log (F25): session reports, flare-ups, next-morning checks, weekly ratings. Sample data.
+  painLog: [
+    { date: "Sun 1", daysAgo: 22, joint: "Knee", side: "Right", level: 3, kind: "weekly rating" },
+    { date: "Sun 8", daysAgo: 15, joint: "Knee", side: "Right", level: 2, kind: "weekly rating" },
+    { date: "Thu 12", daysAgo: 11, joint: "Knee", side: "Right", level: 4, kind: "session", ex: "Reverse lunge" },
+    { date: "Sun 15", daysAgo: 8, joint: "Knee", side: "Right", level: 2, kind: "weekly rating" },
+    { date: "Sun 22", daysAgo: 1, joint: "Knee", side: "Right", level: 1, kind: "weekly rating" },
+  ],
+  redFlags: [],          // joints with a red flag: everything loading them is out until cleared
+  flare: null,           // the flare-up form
   offer: { id: "intervals" },          // one "ready for…" offer (F26, ADR-027)
   sport: { name: "Badminton", day: "Sat" }, cardioWeek: 3, intervalsOn: false,
   skills: [
@@ -383,9 +404,18 @@ const LADDER = {
          "+ high: Bulgarian split squat, deeper squats.", "Everything, incl. forward lunges; jumps only after a readiness gate."],
 };
 const ladderText = (joint, st) => (LADDER[joint] || ["", `Low ${joint.toLowerCase()} stress only.`, `Up to medium ${joint.toLowerCase()} stress.`, `Up to high ${joint.toLowerCase()} stress.`, "Everything, incl. impact (after a readiness gate)."])[st];
-const fitsLimits = id => { for (const l of S.limitations) if (((STRESS[id] || {})[l.joint] || 0) > Math.min(3, l.stage)) return { ok: false, joint: l.joint }; return { ok: true }; };
+const fitsLimits = id => {
+  for (const j of S.redFlags) if ((STRESS[id] || {})[j]) return { ok: false, joint: `${j} (red flag)` };
+  for (const l of S.limitations) if (((STRESS[id] || {})[l.joint] || 0) > Math.min(3, l.stage)) return { ok: false, joint: l.joint };
+  return { ok: true }; };
 const limitsSummary = () => S.limitations.length ? S.limitations.map(l => `${l.joint}${l.side !== "Both" ? ` (${l.side.toLowerCase()})` : ""} · stage ${l.stage}`).join(", ") : "None set";
 const exIdByName = n => Object.keys(EX).find(k => EX[k].name === n);
+const SKILL_OF_JOINT = { Knee: "Legs", Hip: "Legs", Ankle: "Legs", Shoulder: "Shoulders", Wrist: "Arms", "Lower back": "Back", Neck: "Back" };
+// Where a joint sits on the body map (base-diagram pixels; front view, the figure's right is on your left).
+const PIN = { Knee: { Right: [[300, 548]], Left: [[432, 548]] }, Hip: { Right: [[318, 372]], Left: [[412, 372]] }, Ankle: { Right: [[296, 722]], Left: [[436, 722]] },
+  Shoulder: { Right: [[262, 165]], Left: [[466, 165]] }, Wrist: { Right: [[205, 362]], Left: [[525, 362]] }, Neck: { Both: [[364, 118]] }, "Lower back": { Both: [[832, 330]] } };
+const pinsFor = (joint, side) => { const p = PIN[joint] || {}; return side === "Both" ? [...(p.Right || []), ...(p.Left || []), ...(p.Both || [])] : (p[side] || p.Both || []); };
+const mainJoint = id => { const st = STRESS[id] || {}; return Object.keys(st).sort((a, b) => st[b] - st[a])[0]; };
 // Pain monitoring (P7): during + next morning → keep / hold / drop a stage for 2 weeks.
 const painAction = (during, morning) => (during > 5 || (morning != null && (morning > 5 || morning > during))) ? "drop" : (during >= 4 || (morning != null && morning >= 4)) ? "hold" : "keep";
 
@@ -623,6 +653,34 @@ const routineMin = r => Math.round(ROUTINE[r].ids.reduce((a, id) => a + stretchS
 const COVERED_THIS_WEEK = ["Neck", "Shoulders", "Chest", "Spine", "Lower back", "Hip flexors", "Glutes", "Hamstrings", "Quads", "Calves", "Obliques"];
 const coolDownPicks = () => ROUTINE.addons.ids.filter(id => !COVERED_THIS_WEEK.includes(STRETCH[id].area)).slice(0, 4);
 
+/* Skill detail (F12): what a body part got. In the app every number is
+   derived from the log (arc42 §8.6.1); here it's sample data. Sets: main
+   muscle = 1 set, helper = ½ (the same half-set rule as XP). e1RM in lb. */
+const SKILL_INFO = {
+  Legs: { joints: ["Knee", "Hip", "Ankle"], weeks: [14, 9, 12, 12], sessions: 2, last: "Sun 22 · Strength B", ago: "yesterday", xpWeek: 145,
+    muscles: [["Quads", 12], ["Glutes", 9], ["Hamstrings", 3], ["Calves", 1.5]],
+    lifts: [["Box squat", [22.7, 24, 25.3, 26.7]], ["Low step-up", [18, 19, 20, 20]]], holds: [["Wall sit", "35 s best"]],
+    stretches: "Hip flexor, figure-four, hamstring, quad and calf stretches", recent: [["Sun 22", "Box squat 3×8 · Step-up 3×10"], ["Wed 18", "Box squat 3×8"]] },
+  Back: { joints: ["Lower back"], weeks: [10, 9, 6, 0], sessions: 0, last: "Wed 12 · Strength B", ago: "11 days ago", xpWeek: 0,
+    muscles: [["Lats", 0], ["Upper back", 0], ["Lower back", 0]],
+    lifts: [["DB row", [31.7, 32.5, 33.3, 33.3]]], holds: [["Ring row", "10 reps best"]],
+    stretches: "Cat-cow and child's pose (spine, lower back); child's pose side reach (lats)", recent: [["Wed 12", "DB row 3×10 · Ring row 3×9"]] },
+  Chest: { joints: ["Shoulder", "Wrist"], weeks: [9, 9, 6, 9], sessions: 1, last: "Wed 18 · Strength A", ago: "5 days ago", xpWeek: 115,
+    muscles: [["Chest", 9]], lifts: [["DB bench press", [31.7, 33.3, 33.3, 34.2]]], holds: [["Push-up", "12 reps best"]],
+    stretches: "Doorway chest stretch", recent: [["Wed 18", "DB bench press 3×10"]] },
+  Shoulders: { joints: ["Shoulder"], weeks: [6, 7, 5, 7.5], sessions: 2, last: "Sun 22 · Strength B", ago: "yesterday", xpWeek: 60,
+    muscles: [["Front shoulders", 4.5], ["Rear shoulders", 3]], lifts: [], holds: [],
+    note: "Trained mostly as a helper (bench press, rows). Strength A's shoulder press adds direct work.",
+    stretches: "Cross-body shoulder, towel stretch, arm circles; sleeper (add-on)", recent: [["Sun 22", "DB row 3×10 (helper)"], ["Wed 18", "DB bench press 3×10 (helper)"]] },
+  Arms: { joints: ["Shoulder", "Wrist"], weeks: [7, 6, 8, 7.5], sessions: 2, last: "Sun 22 · Strength B", ago: "yesterday", xpWeek: 45,
+    muscles: [["Biceps", 1.5], ["Triceps", 4.5], ["Forearms", 1.5]], lifts: [], holds: [],
+    note: "Trained as a helper so far. Strength B's curls and triceps extensions add direct work.",
+    stretches: "Wrist flexor and extensor, overhead triceps (add-ons)", recent: [["Sun 22", "DB row 3×10 (helper)"]] },
+  Core: { joints: ["Lower back"], weeks: [8, 9, 6, 9], sessions: 2, last: "Sun 22 · Strength B", ago: "yesterday", xpWeek: 90,
+    muscles: [["Abs", 9], ["Obliques", 3]], lifts: [], holds: [["Plank", "30 s × 3"], ["Dead bug", "8 per side"]],
+    stretches: "Standing side bend (add-on)", recent: [["Sun 22", "Plank 3×30 s"], ["Wed 18", "Plank 3×30 s"]] },
+};
+
 /* Body map (game on). Outlines come from the exercise muscle diagram, so the
    game and the pictures share one body: tools/make_bodymap.py writes them to
    assets/game/bodymap-paths.json (and the colour key PNG the app will use).
@@ -637,6 +695,16 @@ const BODY = {
   Legs: "M781 722 780 738 784 738ZM883 721 879 734 880 738 884 738ZM887 642 882 653 874 659 885 698 888 738 915 738 911 735 907 721 908 691 915 653 908 658 902 696 905 698 905 714 903 725 897 736 897 699 901 666 904 658 894 652ZM776 641 771 650 760 658 767 703 767 737 764 734 759 713 758 699 761 695 757 663 755 657 748 652 757 704 756 722 752 736 749 738 776 738 778 701 789 661 779 649ZM421 633 413 659 413 672 417 689 415 716 417 722 422 713 426 697 426 668ZM400 568 394 596 393 617 396 631 409 657 418 628 418 608 411 586ZM326 567 313 592 305 629 308 631 314 649 314 659 312 659 305 634 302 651 300 698 304 714 309 722 308 693 318 652 329 632 333 616 332 595ZM871 563 864 592 861 623 864 639 870 652 874 654 882 643 884 620 880 588ZM792 563 783 590 780 614 782 645 791 654 797 645 802 627 802 608ZM436 562 431 569 428 580 426 628 432 698 442 716 441 685 453 625 454 604 450 584 442 568ZM291 562 285 567 277 583 272 607 274 630 284 681 285 705 282 713 283 717 291 705 294 693 301 625 300 588 297 572ZM767 552 750 580 743 603 746 634 752 649 758 653 766 649 775 628 775 587 771 561ZM896 551 888 592 888 623 893 643 905 653 912 648 916 640 921 618 921 604 915 583ZM885 539 878 543 874 552 884 585 893 546ZM779 539 774 541 771 547 780 583 790 554 784 541ZM435 524 432 533 432 560 438 556ZM292 523 288 556 294 558 295 530ZM416 503 411 511 405 530 401 533 395 533 394 537 400 557 421 597 428 554 428 535ZM863 458 856 487 855 521 859 540 867 558 876 535 878 515 874 493ZM801 457 786 511 788 536 797 559 806 535 809 513 807 483ZM388 443 382 468 382 497 391 524 395 528 400 528 406 515 406 500 392 463ZM868 426 866 430 867 455 879 493 884 519 891 535 906 557 907 539 902 513 903 480 900 464 889 436 879 428ZM796 426 785 428 778 433 769 448 761 479 761 520 757 538 757 558 772 536 779 521 786 488 797 453 798 431ZM826 414 818 420 802 426 810 479 814 492 825 445ZM838 413 836 416 838 445 850 495 862 426 846 420ZM911 394 906 411 896 431 896 439 907 475 908 512 914 493 918 466 918 432ZM753 393 746 428 746 470 755 510 757 472 768 439 768 431 758 411ZM296 393 285 411 279 428 277 468 282 491 297 524 306 505 306 487 295 441ZM431 392 433 442 421 491 421 504 429 524 446 489 451 463 451 444 447 422ZM313 359 306 376 302 395 300 442 311 491 316 501 322 483 335 457 336 461 321 503 322 519 329 530 326 533 322 529 315 508 311 503 299 535 299 553 306 597 317 572 328 555 334 527 342 511 346 489 344 460 340 443 337 442 338 437 332 410ZM415 358 396 410 393 426 395 455 411 501 422 471 428 441 427 401 422 376ZM857 344 840 358 835 368 836 403 847 415 855 419 879 423 891 431 902 408 905 395 904 380 900 368 895 360 883 349 868 343ZM808 344 796 343 781 349 772 357 763 371 760 381 760 401 773 431 785 423 802 421 819 414 829 402 829 366 825 358ZM413 341 398 356 377 387 369 393 368 417 377 465 386 425 409 363ZM315 341 321 369 343 429 350 464 357 436 359 394 351 387 331 357ZM426 329 420 335 418 342 420 359 429 380 447 409 446 390 432 337ZM301 328 296 337 285 374 280 411 300 378 308 358 310 342 307 333Z",
   none: "M880 739 882 753 879 770 886 779 903 779 918 767 929 764 936 759 935 753 916 739 888 739 886 744 884 739ZM728 755 728 759 732 763 747 768 762 779 777 779 784 773 782 755 784 739 780 739 779 743 776 739 748 739 735 747ZM430 702 423 721 417 726 415 750 427 759 429 769 434 775 445 781 466 779 473 773 473 768 453 744 443 726 443 722 433 711ZM296 702 291 714 282 722 282 726 271 747 254 767 254 774 261 779 281 781 293 775 297 770 299 759 310 751 311 742 308 727 299 713ZM991 373 994 378 985 379 984 396 996 433 1000 438 999 416 1007 439 1011 445 1013 444 1007 421 1009 416 1018 444 1021 446 1023 441 1015 414 1017 412 1027 437 1031 437 1021 397 1023 395 1035 404 1041 402 1021 381 1008 373 1003 373 1000 376 998 373ZM681 373 678 373 674 379 669 377 673 373 666 373 665 376 661 373 655 373 642 381 623 400 624 404 628 404 637 397 642 396 640 409 632 431 632 437 635 438 644 414 647 412 648 416 640 441 642 446 645 444 654 416 657 418 650 444 654 443 664 416 666 419 661 436 665 437 679 399 679 377ZM516 377 513 383 513 392 527 434 530 434 526 415 529 413 537 439 540 442 542 440 535 415 537 412 546 439 550 443 551 434 544 413 545 409 552 421 555 433 558 435 560 432 550 394 552 392 564 401 569 399 568 396 541 373 529 373 526 378ZM212 377 202 379 198 373 187 373 180 377 159 398 164 401 176 392 178 393 176 407 168 431 170 435 173 433 180 411 183 409 184 414 176 440 178 443 182 439 190 413 193 414 186 441 190 440 200 413 198 434 201 433 214 397 215 388ZM822 11 811 17 805 24 800 38 800 53 795 56 796 68 800 76 804 78 809 93 808 102 825 89 837 88 845 92 855 103 860 79 866 75 870 64 870 56 865 53 864 32 859 22 848 13 839 10ZM358 10 347 14 338 22 332 39 332 53 328 54 327 59 329 68 337 78 343 93 355 104 368 106 375 103 389 88 392 78 399 70 401 55 396 52 396 33 391 22 378 12Z"
 };
+/* Pain pins: the latest report per joint in the last 7 days, if 3/10 or more.
+   A number, not just a colour. Tap → that body part's detail. */
+function painPins() {
+  const latest = {};
+  for (const p of S.painLog) if (p.daysAgo <= 7) { const k = p.joint + "|" + p.side; if (!latest[k] || p.daysAgo <= latest[k].daysAgo) latest[k] = p; }
+  return Object.values(latest).filter(p => p.level >= 3 || (p.flags || []).length).map(p => pinsFor(p.joint, p.side).map(([x, y]) =>
+    `<g data-a="skillTap" data-v="${SKILL_OF_JOINT[p.joint]}" style="cursor:pointer"><title>${p.joint} (${p.side.toLowerCase()}): pain ${p.level}/10, ${p.kind}, ${p.date}</title>
+      <circle cx="${x}" cy="${y}" r="30" fill="var(--danger)" stroke="var(--surface)" stroke-width="6"/>
+      <text x="${x}" y="${y + 11}" text-anchor="middle" font-size="32" font-weight="700" fill="#fff">${(p.flags || []).length ? "!" : p.level}</text></g>`).join("")).join("");
+}
 function bodyMap() {
   const sk = n => S.skills.find(s => s.n === n);
   const shade = s => s.fading ? "url(#fadeStripes)" : `color-mix(in srgb, var(--xp) ${Math.min(95, 10 + s.lvl * 13)}%, var(--surface))`;
@@ -651,6 +719,7 @@ function bodyMap() {
         <rect width="22" height="22" fill="color-mix(in srgb, var(--xp) 35%, var(--surface))"/><rect width="8" height="22" fill="var(--fading)"/></pattern></defs>
       <path d="${BODY.none}" fill="var(--surfaceVar)"/>
       ${["Legs", "Core", "Back", "Arms", "Chest", "Shoulders"].map(area).join("")}
+      ${painPins()}
       <text x="365" y="806" text-anchor="middle" font-size="30" font-weight="700" letter-spacing="3" fill="var(--onVar)">FRONT</text>
       <text x="830" y="806" text-anchor="middle" font-size="30" font-weight="700" letter-spacing="3" fill="var(--onVar)">BACK</text></svg>
     <div class="mt">${extra("Stamina")}${extra("Mobility")}</div>`;
@@ -696,7 +765,7 @@ function viewToday() {
   if (S.painPending) {
     const p = S.painPending;
     cards.push(`<div class="card info"><div class="t-title">How does it feel this morning?</div>
-      <div class="muted">After ${esc(p.ex)} yesterday (${p.during}/10 during). 0 = nothing, 10 = worst.</div>
+      <div class="muted">${p.joint ? `Your ${esc(p.joint.toLowerCase())} flared up yesterday (${p.during}/10).` : `After ${esc(p.ex)} yesterday (${p.during}/10 during).`} 0 = nothing, 10 = worst.</div>
       <div class="chips mt">${Array.from({ length: 11 }, (_, n) => `<button class="chip n" data-a="morningPain" data-v="${n}">${n}</button>`).join("")}</div>
       <p class="t-caption muted">Prototype: asked now. The app asks on your first open the next morning.</p></div>`);
   } else if (S.pause) {
@@ -832,15 +901,15 @@ function viewYou() {
   return `<div class="top"><h1>You</h1><button class="btn" data-a="openPause">${S.pause ? "Paused" : "Pause"}</button><button class="btn icon" data-a="openSettings" aria-label="Settings">${ICON.gear}</button></div>
     <div class="scroll" data-scroll="you-on">
       <div class="row between"><span class="t-title">Total level <span class="num">${totalLevel()}</span></span><button class="whybtn" data-a="why" data-v="xp">How XP works</button></div>
-      <div class="card">${bodyMap()}<div class="t-caption muted">Darker = higher level · stripes = fading soon. Tap a part for its level.</div></div>
+      <div class="card">${bodyMap()}<div class="t-caption muted">Darker = higher level · stripes = fading soon · red number = recent pain (0–10). Tap a part for its detail.</div></div>
       <div class="card"><div class="row between"><span class="over">Weekly quest</span><span class="t-label num">${done} of ${items.length} · streak ${S.streak} wk</span></div>
         <div class="chips mt">${items.map(x => `<span class="chip" style="min-height:36px;pointer-events:none">${x.done ? "✓" : "○"} ${esc(x.n)}</span>`).join("")}</div>
         <div class="row between mt"><button class="btn text" data-a="why" data-v="tokens">Rest tokens ${"◆".repeat(S.tokens)}${"◇".repeat(2 - S.tokens)}</button>
           <button class="btn text" data-a="editReward">Reward: ${esc(S.reward)} ✎</button></div></div>
       <div class="card"><div class="row between"><span class="over">Skills</span><span class="t-label muted">sets to next level</span></div>
-        ${skills.map(s => `<div class="row mt"><span style="width:88px">${s.n}</span><span class="t-label num" style="width:28px">L${s.lvl}</span>
+        ${skills.map(s => `<button class="row mt bodybar" data-a="skillTap" data-v="${s.n}"><span style="width:88px">${s.n}</span><span class="t-label num" style="width:28px">L${s.lvl}</span>
           <div class="bar xp grow ${s.fading ? "fade" : ""}"><i style="width:${s.xp / need(s) * 100}%"></i></div>
-          <span class="t-label num" style="width:64px;text-align:right">${s.fading ? "fading" : setsToGo(s)}${s.comeback ? " ×2" : ""}</span></div>`).join("")}
+          <span class="t-label num" style="width:64px;text-align:right">${s.fading ? "fading" : setsToGo(s)}${s.comeback ? " ×2" : ""}</span></button>`).join("")}
         <button class="btn text mt" data-a="toggle" data-v="showAllSkills">${S.showAllSkills ? "Show top 3" : "Show all 8 skills"}</button></div>
       ${programs}
       <div class="card">${unlocks}</div>
@@ -850,17 +919,44 @@ function viewYou() {
 /* =====================================================================
    Views — full-screen flows (overlays)
    ===================================================================== */
+/* Flare-up (F25): pain reported any time, not tied to a session.
+   Same rules as the pain check, applied to the joint instead of one exercise. */
+function viewFlare() {
+  const F = S.flare, lim = S.limitations.find(l => l.joint === F.joint), d = F.level, flagged = F.flags.length > 0;
+  const FLAGS = ["Swelling", "Heat or redness", "Locking", "Giving way", "Can't take weight"];
+  const j = F.joint.toLowerCase();
+  const verdict = flagged ? `<div class="card warn"><b>Stop exercises that load your ${j}.</b> A red flag means: please see a doctor or physio. Plans leave them out until you say it's cleared.</div>`
+    : d == null ? "" : d <= 3 ? `<div class="card info">${d}/10 — noted. Plans stay the same; we'll ask again tomorrow morning.</div>`
+    : d <= 5 ? `<div class="card info">${d}/10 — hold: no increases for your ${j} this week. We'll ask again tomorrow morning.</div>`
+    : `<div class="card info">${d}/10 — ${lim ? (lim.stage > 1 ? `your ${j} drops from stage ${lim.stage} to ${lim.stage - 1} for 2 weeks.` : `your ${j} stays at stage 1, the lowest; plans keep only low ${j} stress.`) : `${F.joint} is added as a limitation at stage 1 for now.`} We'll ask again tomorrow morning.</div>`;
+  return `<div class="top"><button class="btn icon" data-a="closeOverlay" aria-label="Back">‹</button><h1>Report a flare-up</h1></div>
+    <div class="scroll" data-scroll="flare">
+      <div class="over">Where?</div>
+      <div class="chips mt">${JOINTS.map(x => `<button class="chip ${F.joint === x ? "on" : ""}" data-a="flareJoint" data-v="${x}" aria-pressed="${F.joint === x}">${x}</button>`).join("")}</div>
+      <div class="seg mt" style="width:100%">${["Left", "Right", "Both"].map(sd => `<button class="${F.side === sd ? "on" : ""}" data-a="flareSide" data-v="${sd}">${sd}</button>`).join("")}</div>
+      <div class="over mt2">How bad, right now? <span class="muted">0 = nothing · 10 = worst</span></div>
+      <div class="chips mt">${Array.from({ length: 11 }, (_, n) => `<button class="chip n ${d === n ? "on" : ""}" data-a="flareLevel" data-v="${n}" aria-pressed="${d === n}">${n}</button>`).join("")}</div>
+      <div class="over mt2">Any of these?</div>
+      <div class="chips mt">${FLAGS.map(f => `<button class="chip ${F.flags.includes(f) ? "on" : ""}" data-a="flareFlag" data-v="${f}" aria-pressed="${F.flags.includes(f)}">${f}</button>`).join("")}</div>
+      <div class="mt2">${verdict}</div>
+      <p class="t-caption muted">General guidance, not medical advice. IronLog never diagnoses.</p></div>
+    <div class="bottom"><button class="primary" data-a="saveFlare" ${d != null || flagged ? "" : "disabled"}>SAVE</button></div>`;
+}
+
 /* Body limitations (F25): joint, side, stage. The safety filter reads these
    before anything else. Stage-ups are normally offered by the app (F26). */
 function viewLimits() {
   const rows = S.limitations.map((l, i) => `<div class="card"><div class="row between"><b class="t-title">${esc(l.joint)}</b><button class="btn text" data-a="limRemove" data-v="${i}">Remove</button></div>
       <div class="seg mt" style="width:100%">${["Left", "Right", "Both"].map(sd => `<button class="${l.side === sd ? "on" : ""}" data-a="limSide" data-v="${i}:${sd}">${sd}</button>`).join("")}</div>
       <div class="row between mt"><span>Stage</span><div class="stepper" style="width:200px"><button class="btn" data-a="limStage" data-v="${i}:-1" aria-label="Lower stage">−</button><span class="val t-number">${l.stage}</span><button class="btn" data-a="limStage" data-v="${i}:1" aria-label="Higher stage">+</button></div></div>
-      <p class="t-label muted" style="margin:8px 0 0">${esc(ladderText(l.joint, l.stage))}</p></div>`).join("");
+      <p class="t-label muted" style="margin:8px 0 0">${esc(ladderText(l.joint, l.stage))}${l.tempFrom ? ` Lowered from stage ${l.tempFrom} for 2 weeks after a flare-up.` : ""}</p>
+      <button class="btn text" data-a="openFlare" data-v="${esc(l.joint)}">Report a flare-up</button></div>`).join("");
   const free = JOINTS.filter(j => !S.limitations.some(l => l.joint === j));
   return `<div class="top"><button class="btn icon" data-a="closeOverlay" aria-label="Back">‹</button><h1>Body limitations</h1></div>
     <div class="scroll" data-scroll="limits">
       <p class="muted" style="margin-top:0">Tell IronLog which joint needs care. Every plan stays inside its stage — nothing overrides that. Start low: the app offers a step up after 2 good weeks.</p>
+      ${S.redFlags.map(j => `<div class="card warn"><b>${esc(j)}: red flag</b><br><span class="t-label">Exercises that load it are out of your plans. After a doctor or physio has checked it:</span>
+        <br><button class="btn mt" data-a="clearRedFlag" data-v="${esc(j)}">Cleared by a professional</button></div>`).join("")}
       ${rows || `<div class="card muted">No limitations set.</div>`}
       ${free.length ? `<div class="card"><div class="over">Add a joint</div><div class="chips mt">${free.map(j => `<button class="chip" data-a="limAdd" data-v="${j}">+ ${j}</button>`).join("")}</div></div>` : ""}
       <div class="card info"><b>Before you start</b><br>The PAR-Q+ is a free 7-question check. If any answer is yes, talk to a doctor or a qualified exercise professional first.
@@ -1177,6 +1273,70 @@ function viewCompare() {
 /* =====================================================================
    Sheets (bottom sheets)
    ===================================================================== */
+/* Skill detail sheet: level, this week's work per muscle, strength trend,
+   endurance, stretching for the area, last trained, limitations, recent. */
+const fmtL = v => S.units === "lb" ? `${v.toFixed(1)} lb` : `${(v * LB_TO_KG).toFixed(1)} kg`;
+const spark = (vals, w = 96, h = 28) => { const mn = Math.min(...vals), mx = Math.max(...vals), sp = (mx - mn) || 1;
+  return `<svg width="${w}" height="${h}" viewBox="0 0 ${w} ${h}" aria-hidden="true"><polyline fill="none" stroke="var(--series)" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round"
+    points="${vals.map((v, i) => `${(4 + i * (w - 8) / (vals.length - 1)).toFixed(1)},${(h - 4 - (v - mn) / sp * (h - 8)).toFixed(1)}`).join(" ")}"/></svg>`; };
+const weekBars = (vals, unit) => { const mx = Math.max(...vals, 1), lab = ["3 wk ago", "2 wk", "last wk", "this wk"];
+  return `<div class="wkbars" role="img" aria-label="${unit} per week, last 4 weeks: ${vals.join(", ")}">${vals.map((v, i) => `<div><span class="num t-label">${v}</span><i style="height:${Math.max(4, v / mx * 56)}px" class="${i === 3 ? "now" : ""}"></i><span class="t-caption muted">${lab[i]}</span></div>`).join("")}</div>`; };
+const targetTag = n => n < 10 ? `<span class="tag below">Below</span>` : n > 20 ? `<span class="tag above">Above</span>` : `<span class="tag ok">On</span>`;
+function painSection(joints) {
+  const rows = joints.map(j => {
+    const log = S.painLog.filter(p => p.joint === j), last = log.at(-1), lim = S.limitations.find(l => l.joint === j);
+    if (!log.length && !lim) return "";
+    return `<div class="listrow" style="cursor:default;align-items:flex-start"><span class="grow"><b>${j}${last && last.side !== "Both" ? ` (${last.side.toLowerCase()})` : ""}</b>${lim ? ` · stage ${lim.stage}${lim.tempFrom ? ` (lowered from ${lim.tempFrom} for 2 weeks)` : ""}` : ""}<br>
+        <span class="t-label muted">${last ? `Last: <b>${last.level}/10</b> · ${esc(last.kind)}${last.ex ? ` (${esc(last.ex)})` : ""} · ${last.date}` : "No pain reported"}${S.redFlags.includes(j) ? " · <b>red flag: see a professional</b>" : ""}</span></span>
+        ${log.length > 1 ? `<span class="row" style="flex-direction:column;align-items:flex-end">${spark(log.slice(-6).map(p => p.level))}<span class="t-caption muted">last ${Math.min(6, log.length)}</span></span>` : ""}</div>`;
+  }).join("");
+  return `${rows || `<p class="t-label muted" style="margin:6px 0 0">No pain reported for ${joints.join(", ").toLowerCase()} in the last 4 weeks.</p>`}
+    <button class="btn tonal mt" data-a="openFlare" data-v="${joints[0]}">Report a flare-up</button>`;
+}
+function skillSheet(n) {
+  const s = S.skills.find(x => x.n === n), I = SKILL_INFO[n];
+  const head = `<div class="row between"><div><div class="t-title">${n} · level ${s.lvl}</div>
+      <div class="muted t-label">${s.fading ? `<b>Fading in ${s.fading} days</b> — train it this week` : I ? `${setsToGo(s)} sets to level ${s.lvl + 1}` : `${Math.ceil((need(s) - s.xp) / 2)} minutes to level ${s.lvl + 1}`}${s.comeback ? " · comeback ×2" : ""}</div></div>
+      ${s.fading ? '<span class="badge new">FADING</span>' : ""}</div>
+    <div class="bar xp mt ${s.fading ? "fade" : ""}"><i style="width:${s.xp / need(s) * 100}%"></i></div>
+    <div class="t-caption muted">${s.xp} of ${need(s)} XP</div>`;
+  const sec = (title, body) => `<div class="over mt2">${title}</div>${body}`;
+  if (!I) {   // Stamina and Mobility: no body area, so minutes instead of sets
+    const stam = n === "Stamina";
+    const mornings = [...S.stretchWeek.slice(0, 6), S.stretchDone.morning].filter(Boolean).length;
+    const body = stam
+      ? sec("This week", `<div class="statrow"><div><b class="num t-number">95</b><span class="t-label muted">minutes</span></div><div><b class="num t-number">2</b><span class="t-label muted">sessions</span></div><div><b class="num t-number">+190</b><span class="t-label muted">XP</span></div></div>
+          <div class="listrow" style="cursor:default"><span class="grow">Zone 2 walk · Fri 20</span><span class="num">35 min · 3.0 mph · 6 %</span></div>
+          <div class="listrow" style="cursor:default"><span class="grow">Badminton · Sun 22</span><span class="num">60 min</span></div>`)
+        + sec("Minutes per week", weekBars([120, 140, 95, 95], "Minutes"))
+        + sec("Program and test", `<div class="listrow" style="cursor:default"><span class="grow">Cardio program</span><span class="num">week ${S.cardioWeek} of 8</span></div>
+          <div class="listrow" style="cursor:default"><span class="grow">Time before gassed (badminton)</span><span class="num">25 min (+7)</span></div>`)
+      : sec("This week", `<div class="statrow"><div><b class="num t-number">${mornings * 12}</b><span class="t-label muted">minutes</span></div><div><b class="num t-number">${mornings}/7</b><span class="t-label muted">mornings</span></div><div><b class="num t-number">+${mornings * 24}</b><span class="t-label muted">XP</span></div></div>`)
+        + sec("Minutes per week", weekBars([40, 55, 48, mornings * 12], "Minutes"))
+        + sec("Reach test (hand gap, lower = better)", `<div class="listrow" style="cursor:default"><span class="grow">Right hand on top</span>${spark(S.reach.right)}<b class="num">&nbsp;${S.reach.right.at(-1)} cm</b></div>
+          <div class="listrow" style="cursor:default"><span class="grow">Left hand on top</span>${spark(S.reach.left)}<b class="num">&nbsp;${S.reach.left.at(-1)} cm</b></div>`);
+    return `${head}${body}<button class="primary mt2" data-a="closeSheet">CLOSE</button>`;
+  }
+  const total = I.weeks.at(-1);   // sets that trained this skill (a set counts once here, but can count for several muscles below)
+  const map = `<svg class="minimap" viewBox="140 0 930 812" role="img" aria-label="${n} highlighted on the body map">
+      <path d="${BODY.none}" fill="var(--surfaceVar)"/>${["Legs", "Core", "Back", "Arms", "Chest", "Shoulders"].map(k => `<path d="${BODY[k]}" fill="${k === n ? "var(--xp)" : "var(--surfaceVar)"}"/>`).join("")}</svg>`;
+  const lims = S.limitations.filter(l => I.joints.includes(l.joint));
+  const body = sec("This week", `<div class="statrow"><div><b class="num t-number">${total}</b><span class="t-label muted">sets</span></div><div><b class="num t-number">${I.sessions}</b><span class="t-label muted">sessions</span></div><div><b class="num t-number">+${I.xpWeek}</b><span class="t-label muted">XP</span></div></div>
+        ${I.muscles.map(([m, v]) => `<div class="row mt" style="gap:var(--s)"><span style="width:116px">${m}</span><div class="bar grow"><i style="width:${Math.min(100, v / 20 * 100)}%"></i></div><span class="num t-label" style="width:28px;text-align:right">${v}</span>${targetTag(v)}</div>`).join("")}
+        <div class="t-caption muted mt">Per muscle: target 10–20 sets a week. One set can count for several muscles; helper work counts ½.</div>
+        <div class="t-label mt">Last trained: <b>${esc(I.last)}</b> (${I.ago})</div>`)
+    + sec("Sets per week", weekBars(I.weeks, "Sets"))
+    + (I.lifts.length ? sec("Strength · estimated 1RM, 4 weeks", I.lifts.map(([nm, v]) => `<div class="listrow" style="cursor:default"><span class="grow">${esc(nm)}</span>${spark(v)}<b class="num">&nbsp;${fmtL(v.at(-1))}</b><span class="t-label muted">&nbsp;(${v.at(-1) >= v[0] ? "+" : ""}${fmtL(v.at(-1) - v[0])})</span></div>`).join("")) : "")
+    + (I.holds.length ? sec("Endurance", I.holds.map(([nm, v]) => `<div class="listrow" style="cursor:default"><span class="grow">${esc(nm)}</span><b class="num">${esc(v)}</b></div>`).join("")) : "")
+    + (I.note ? `<p class="t-label muted">${esc(I.note)}</p>` : "")
+    + sec("Mobility for this area", `<p class="t-label" style="margin:6px 0 0">${esc(I.stretches)}</p>`)
+    + (lims.length ? sec("Limits", lims.map(l => `<button class="listrow chev" data-a="openLimitsFromSheet"><span class="grow">${esc(l.joint)}${l.side !== "Both" ? ` (${l.side.toLowerCase()})` : ""} · stage ${l.stage}<br><span class="t-label muted">${esc(ladderText(l.joint, l.stage))}</span></span></button>`).join("")) : "")
+    + sec("Pain & joints", painSection(I.joints))
+    + sec("Recent", I.recent.map(([d, t]) => `<div class="listrow" style="cursor:default"><span class="num" style="width:64px;white-space:nowrap">${d}</span><span class="grow t-label">${esc(t)}</span></div>`).join(""));
+  return `${map}${head}${body}
+    <button class="primary mt2" data-a="skillTrain">${s.fading ? `TRAIN ${n.toUpperCase()} NOW` : "TRAIN NOW"}</button><button class="secondary mt" data-a="closeSheet">Close</button>`;
+}
+
 function viewSheet() {
   const sh = S.sheet; if (!sh) return "";
   let inner = "";
@@ -1195,6 +1355,8 @@ function viewSheet() {
       about: ["About", "General guidance, not medical advice. Stop on sharp pain. Exercise pictures: credits listed per image. Prototype: fake data, nothing is saved."],
     }[sh.key] || ["Info", ""];
     inner = `<div class="t-title">${esc(INFO[0])}</div><p>${esc(INFO[1])}</p><button class="primary" data-a="closeSheet">OK</button>`;
+  } else if (sh.kind === "skill") {
+    inner = skillSheet(sh.n);
   } else if (sh.kind === "finish") {
     inner = `<div class="t-title">Finish session?</div><p class="muted">${setsLogged()} of ${setsTotal()} sets logged.</p>
       <button class="primary" data-a="finish">FINISH</button><button class="secondary mt" data-a="closeSheet">Keep going</button>`;
@@ -1278,7 +1440,7 @@ function render() {
   app.className = `app${dark ? " dark" : ""}${S.reduceMotion ? " rm" : ""}`;
   const scrolls = {}; app.querySelectorAll("[data-scroll]").forEach(el => scrolls[el.dataset.scroll] = el.scrollTop);
   const top = S.overlay[S.overlay.length - 1];
-  const OV = { wizard: viewWizard, plan: viewPlan, session: viewSession, review: viewReview, pain: viewPain, settings: viewSettings, equip: viewEquip, recovery: viewRecovery, capture: viewCapture, compare: viewCompare, stretch: viewStretch, limits: viewLimits };
+  const OV = { wizard: viewWizard, plan: viewPlan, session: viewSession, review: viewReview, pain: viewPain, settings: viewSettings, equip: viewEquip, recovery: viewRecovery, capture: viewCapture, compare: viewCompare, stretch: viewStretch, limits: viewLimits, flare: viewFlare };
   let html = top ? `<div class="screen ${S.fresh ? "enter" : ""}">${OV[top]()}</div>` : viewTabs();
   html += viewSheet();
   if (S.reveal) html += viewReveal();
@@ -1355,8 +1517,8 @@ const A = {
   stClose: () => { const st = S.stretch, R = ROUTINE[st.r];
     if (st.phase === "done") return A.stSave();
     S.stretch = null; keepAwake(false); go(() => S.overlay.pop()); snack(`${R.title} stopped · ${st.doneIds.length} of ${R.ids.length} done`); },
-  skillTap: v => { const s = S.skills.find(x => x.n === v); if (!s) return;
-    snack(`${v}: level ${s.lvl} · ${s.fading ? "fading — train it this week to keep it" : setsToGo(s) + " sets to level " + (s.lvl + 1)}${s.comeback ? " · comeback ×2" : ""}`); },
+  skillTap: v => { if (!S.skills.find(x => x.n === v)) return; S.sheet = { kind: "skill", n: v }; render(); },
+  skillTrain: () => { S.sheet = null; A.trainNow(); },
   tab: v => go(() => { S.tab = v; }),
   toggle: v => { S[v] = !S[v]; render(); },
   set: v => { const [k, val] = v.split(":"); S[k] = val; render(); },
@@ -1428,11 +1590,18 @@ const A = {
   painDuring: v => { S.pain.during = +v; render(); },
   painFlag: v => { const f = S.pain.flags, i = f.indexOf(v); i < 0 ? f.push(v) : f.splice(i, 1); render(); },
   savePain: () => { const ex = S.review.painEx, id = exIdByName(ex), P = S.pain; let msg;
+    const j = id && mainJoint(id); if (j) S.painLog.push({ date: "Mon 23", daysAgo: 0, joint: j, side: (S.limitations.find(l => l.joint === j) || {}).side || "Both", level: P.during ?? 0, kind: "session", ex, flags: [...P.flags] });
     if (P.flags.length) { if (id) S.dropped[id] = "a red flag"; msg = `${ex}: out of your plans until cleared — please see a professional`; }
     else if (P.during > 5) { if (id) S.dropped[id] = "pain last time"; msg = `${ex} drops a stage for 2 weeks`; }
     else { if (id) S.painPending = { id, ex, during: P.during }; msg = `Noted (${P.during}/10) — we'll ask tomorrow morning`; }
     S.pain = { during: null, flags: [] }; A._finalize(); snack(msg); render(); },
   morningPain: v => { const p = S.painPending, m = +v, act = painAction(p.during, m);
+    S.painLog.push({ date: "Tue 24", daysAgo: 0, joint: p.joint || mainJoint(p.id), side: p.side || "Both", level: m, kind: "next morning", ex: p.id ? p.ex : undefined });
+    if (p.joint) {   // flare-up: the rule acts on the joint's stage, not one exercise
+      const lim = S.limitations.find(l => l.joint === p.joint);
+      if (act === "drop" && lim && lim.stage > 1 && !lim.tempFrom) { lim.tempFrom = lim.stage; lim.stage--; }
+      snack(act === "drop" ? `${p.joint}: lower stage for 2 weeks` : act === "hold" ? `${p.joint}: hold — no increases this week` : `${m}/10 and settled — back to normal`);
+      S.painPending = null; render(); return; }
     if (act === "drop") S.dropped[p.id] = "pain the next morning";
     const alt = EX[p.id].alts.find(a => fitsLimits(a).ok);
     snack(act === "drop" ? `${p.ex} drops a stage for 2 weeks${alt ? ` — ${EX[alt].name} instead` : ""}` : act === "hold" ? `Hold: ${p.ex} at the same load next time` : `${m}/10 and settled — keep going`);
@@ -1440,6 +1609,24 @@ const A = {
   offerYes: () => { S.offer = null; S.intervalsOn = true; snack("Intervals added — one walk a week, from next week"); render(); },
   offerNo: () => { S.offer = null; snack("Hidden for 7 days"); render(); },
   openLimits: () => go(() => S.overlay.push("limits")),
+  openLimitsFromSheet: () => { S.sheet = null; A.openLimits(); },
+  openFlare: v => { const lim = S.limitations.find(l => l.joint === v); S.sheet = null;
+    S.flare = { joint: v, side: lim ? lim.side : "Both", level: null, flags: [] }; go(() => S.overlay.push("flare")); },
+  flareJoint: v => { const lim = S.limitations.find(l => l.joint === v); S.flare.joint = v; S.flare.side = lim ? lim.side : "Both"; render(); },
+  flareSide: v => { S.flare.side = v; render(); },
+  clearRedFlag: v => { S.redFlags = S.redFlags.filter(j => j !== v); S.painLog.push({ date: "Mon 23", daysAgo: 0, joint: v, side: "Both", level: 0, kind: "red flag cleared" }); snack(`${v} cleared — back in plans, at its current stage`); render(); },
+  flareLevel: v => { S.flare.level = +v; render(); },
+  flareFlag: v => { const f = S.flare.flags, i = f.indexOf(v); i < 0 ? f.push(v) : f.splice(i, 1); render(); },
+  saveFlare: () => { const F = S.flare, j = F.joint; let lim = S.limitations.find(l => l.joint === j), msg;
+    S.painLog.push({ date: "Mon 23", daysAgo: 0, joint: j, side: F.side, level: F.level ?? 0, kind: "flare-up", flags: [...F.flags] });
+    if (F.flags.length) { if (!S.redFlags.includes(j)) S.redFlags.push(j); msg = `${j}: red flag registered — exercises that load it are out until cleared`; }
+    else if (F.level > 5) {
+      if (!lim) { S.limitations.push({ joint: j, side: F.side, stage: 1 }); msg = `${j} flare-up (${F.level}/10) registered — added as a limitation at stage 1`; }
+      else if (lim.stage > 1) { lim.tempFrom = lim.tempFrom || lim.stage; lim.stage--; msg = `${j} flare-up (${F.level}/10) registered — stage ${lim.stage} for 2 weeks`; }
+      else msg = `${j} flare-up (${F.level}/10) registered — stays at stage 1`;
+      S.painPending = { joint: j, side: F.side, ex: `your ${j.toLowerCase()}`, during: F.level };
+    } else { S.painPending = { joint: j, side: F.side, ex: `your ${j.toLowerCase()}`, during: F.level }; msg = `${j} ${F.level}/10 registered — we'll ask tomorrow morning`; }
+    S.flare = null; go(() => S.overlay.pop()); snack(msg); },
   limStage: v => { const [i, d] = v.split(":").map(Number), l = S.limitations[i]; l.stage = Math.max(1, Math.min(4, l.stage + d)); render(); },
   limSide: v => { const [i, sd] = v.split(":"); S.limitations[+i].side = sd; render(); },
   limRemove: v => { const l = S.limitations.splice(+v, 1)[0]; snack(`${l.joint} removed`, () => S.limitations.splice(+v, 0, l)); render(); },

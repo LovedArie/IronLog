@@ -49,10 +49,11 @@
 | UC-28 | Answer "How Was It?" (session review) | Lifter | | Planned | F10 |
 | UC-29 | Do the Morning Stretch (and the weekly reach test) | Lifter | | Planned | F24 |
 | UC-30 | Set Up Body Limitations (joint, side, stage) | Lifter | | Planned | F5, F25 |
-| UC-31 | Report Pain (during, next morning, red flags) | Lifter | | Planned | F25 |
+| UC-31 | Report Pain or a Flare-Up (during a session, any time, next morning, red flags) | Lifter | | Planned | F25 |
 | UC-32 | Accept or Dismiss a "Ready for…" Offer | Lifter | | Planned | F26 |
 | UC-33 | Do a Goal Test | Lifter | | Planned | F26 |
 | UC-34 | Do a Prehab Block or a Sport Warm-Up | Lifter | | Planned | F28 |
+| UC-35 | View a Body Part's Detail | Lifter | | Planned | F12, F25 |
 
 **Key:** ⭐ = written out in full below ("fully dressed": every step plus
 what can go wrong). Steps like "6a" are what-can-go-wrong branches of step 6.

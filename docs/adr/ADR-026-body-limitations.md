@@ -24,7 +24,11 @@ limitation before anything else, and nothing can override it. Replace the
 yes/no pain check with **pain monitoring** (0–10 during, plus a next-morning
 check; 0–3 OK, 4–5 hold, > 5 or worse next day → down a stage for 2 weeks).
 **Red flags** (swelling, heat, locking, giving way, can't take weight) stop
-the exercise and point to a professional.
+the exercise and point to a professional; the joint stays out of plans until
+the user marks it "cleared by a professional". **Flare-ups** can be reported
+any time, outside a session; the same rules then act on the joint's stage.
+Every report goes into a per-joint **pain log**, shown in the body part's
+detail and as a number on the body map.
 
 ## Consequences
 
