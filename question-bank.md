@@ -677,7 +677,7 @@ on your own, or to pull from when you *ask* to be quizzed.
 
 ---
 
-## M — Exercise pictures (2026-11-23, ADR-024 proposed)
+## M — Exercise pictures (2026-11-23; M1–M10 are about ADR-024, later rejected; M11+ about ADR-025)
 
 **M1 🟢 What two pictures does every exercise get, and where are they shown?**
 > *How* (an animated side-view figure) and *which muscles* (front + back
@@ -727,3 +727,27 @@ on your own, or to pull from when you *ask* to be quizzed.
 **M10 🟢 Where do the anime speed lines come from?**
 > The pose a moment ago (t − 0.09 s) vs now: the joint that moved furthest
 > gets three short lines behind it, opposite its direction of motion.
+
+**M11 🟢 Which approach did the project finally choose for exercise pictures, and who decided?**
+> ChatGPT-generated images (ADR-025): an anime character how-to picture and
+> a grey muscle diagram with red/orange highlights per exercise. The owner
+> decided after trying the code-drawn version (ADR-024, rejected).
+
+**M12 🟡 Why are all muscle diagrams coloured from one grey base diagram?**
+> So every diagram has the same figure, pose and framing — only the colours
+> change. That makes them comparable and lets new ones match later (the base
+> is saved as `ironlog-muscles-base.jpg`).
+
+**M13 🔴 Spot the issue: a script downloads 32 images one after another from the same page. What happens in Chrome or Edge?**
+> Only the first downloads. The browser's "multiple automatic downloads"
+> protection blocks the rest without an error on the page. Fix: pack them
+> into one zip (one download), or the user allows the site in settings.
+
+**M14 🟡 Why does `assets/exercises/CREDITS.md` exist for AI-generated images?**
+> Provenance: which tool, when, which prompts, what was checked. It records
+> the rights situation, and it lets anyone make new images that match.
+
+**M15 🟢 Why are the clips made with ffmpeg instead of an AI video tool?**
+> OpenAI shut down its video tool (Sora) in March 2026 and ChatGPT offers no
+> video option on this account; ffmpeg can build clips locally from the two
+> pictures.

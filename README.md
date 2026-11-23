@@ -17,7 +17,8 @@ v0.1 is a desktop logbook. The plan (see [Vision](docs/01_Vision.md) and
 that plays like an MMO**: *Train now* builds a workout from your time,
 situation and equipment; 8 skills level up as you train and decay if you
 stop (gently, with pauses for exams); a weekly quest earns a rest token
-and your own reward; data syncs to your own server.
+and your own reward; every exercise has a **how-to picture** and a
+**muscle diagram**; data syncs to your own server.
 
 | Milestone | Theme |
 |---|---|
@@ -188,6 +189,7 @@ Details and reasoning: **[docs/adr/](docs/adr/README.md)** — one record per de
 | [research/feature-research](docs/research/feature-research.md) | What other lifting apps do, what users love and hate |
 | [TROUBLESHOOTING](docs/TROUBLESHOOTING.md) | Symptom → cause → fix |
 | [DEVELOPING](docs/DEVELOPING.md) | Our git workflow; running on Windows, Android, iPhone |
+| [assets/exercises](assets/exercises/README.md) | Exercise pictures: how-to + muscle diagram per exercise, and how to make more |
 | [RELEASING](docs/RELEASING.md) | CI/CD pipelines and the release routine |
 | [question-bank.md](question-bank.md) | Self-review questions with answers |
 

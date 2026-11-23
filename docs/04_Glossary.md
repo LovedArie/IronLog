@@ -76,9 +76,10 @@
 | **Tombstone** | A record marked `deleted` instead of removed, so deletes sync. | flag | — | — |
 | **Merge** | Combining two copies of a log by record id (union; newer edit wins). | `sync::merge` | — | — |
 | **Invite code** | Secret needed to register on the server. | text | — | — |
-| **Key pose** | One position of an exercise (e.g. top and bottom of a squat) stored as hip, spine angle and hand/foot targets. The picture animates between key poses. | catalog data | 2–3 per exercise | keyframe |
-| **Inverse kinematics (IK)** | Working out a middle joint (knee, elbow) from where a limb starts and where its end must be. | `pose::solveLimb` | target clamped to limb reach | IK |
-| **Muscle map** | Front + back body picture with the exercise's main muscles solid and helper muscles light. | picture | always with a text legend | — |
+| **Key pose** *(ADR-024, rejected — prototype only)* | One position of an exercise (e.g. top and bottom of a squat) stored as hip, spine angle and hand/foot targets. The picture animates between key poses. | catalog data | 2–3 per exercise | keyframe |
+| **Inverse kinematics (IK)** *(prototype only)* | Working out a middle joint (knee, elbow) from where a limb starts and where its end must be. | `pose::solveLimb` | target clamped to limb reach | IK |
+| **How-to picture** | Image of the IronLog character doing an exercise: start pose → end pose, side view. One per exercise. | `ironlog-<id>-how.jpg` | checked by eye for form errors | how picture |
+| **Muscle diagram** | Front + back body diagram for an exercise: main muscles red, helper muscles orange, the rest grey. Always shown with the muscle names as text. | `ironlog-<id>-muscles.jpg` | colours from one grey base diagram | muscle map |
 | **Device token** | Long-lived credential that lets a remembered device get a session without a password. Stored hashed. | text | — | — |
 
 ---

@@ -479,24 +479,21 @@ their own per-muscle targets.
 
 ### 8.16 Exercise pictures
 
-> **Superseded:** the owner chose ChatGPT-generated images (ADR-025): files
-> in `assets/exercises/` listed in `exercises.json`; clips made from them with
-> ffmpeg. The code-drawn design below (ADR-024, rejected) is kept for the record.
-
-Every exercise shows two pictures: **how** (an animated
-side-view figure) and **which muscles** (front + back muscle map).
+Every exercise shows two pictures (ADR-025): a **how-to picture** (the
+IronLog anime character, start pose → end pose) and a **muscle diagram**
+(main muscles red, helpers orange). Both are images made with ChatGPT and
+checked by eye; the code-drawn alternative (ADR-024) was rejected.
 
 | Piece | Where | What it does |
 |---|---|---|
-| Catalog entry (F2) | data | 2–3 key poses, tempo, main + helper muscles, 3 form cues |
-| `pose::solveLimb` | `core/` | 2-bone inverse kinematics: root + target + bone lengths → middle joint |
-| `pose::at(entry, t)` | `core/` | Eased blend between key poses for time *t* in the loop |
-| `PoseAnimator` | `ui-qml/` view model | Ticks while visible; exposes joint points to a QML `Shape` |
-| Muscle map | `ui-qml/` | One shape per muscle group; colour + legend text |
+| Image files | `assets/exercises/ironlog-<id>-how.jpg`, `…-muscles.jpg` | 1200 × 800 JPEG, ~80–130 KB each |
+| `exercises.json` | `assets/exercises/` | Exercise id → files + main/helper muscles; read with the catalog (F2) |
+| Qt resource file | `ui-qml/` (planned) | Bundles the images into the app, so they work offline |
+| Clip per exercise | built with ffmpeg (planned) | Switches between start and end pose at the exercise's tempo, then the muscle diagram |
+| `CREDITS.md` | `assets/exercises/` | Tool, date, prompts, checks — how to make more that match |
 
-Rules: *Reduce motion* → one still (start faint, end solid); the legend
-names the muscles (never colour alone); a gallery test renders every
-exercise so poses are checked by eye once. Demo: `prototypes/ui-prototype/`.
+Rules: the muscle names are always shown as text too (never colour alone);
+a missing diagram falls back to the text legend (plank, dead bug today).
 
 ---
 

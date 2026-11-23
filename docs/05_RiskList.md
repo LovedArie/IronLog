@@ -30,6 +30,8 @@
 | R-20 | **Password and recovery code both lost** → photos on the server can't be opened. | Business | L | M | Code shown at photo-sync setup with "save it in your password manager"; photos on logged-in devices survive and can be re-uploaded. | Accepted |
 | R-21 | **Web app storage cleared** on iPhone (browser policy). | Technical | M | L | Web app treats photos and the log as a cache of the server; re-downloads. | Accepted |
 | R-19 | **Camera capture** behaves differently on Android / WASM / desktop. | Technical | M | M | Test in the I4 spike; fall back to picking an existing photo. | Open |
+| R-22 | **AI pictures show wrong form or anatomy** (extra fingers, knees past toes, wrong muscle coloured) and a novice copies it. | Business | M | H | Every image checked by eye before it is saved (ADR-025); form cues as text next to the picture; regenerate any wrong one. | Mitigated |
+| R-23 | **Picture tool changes or refuses**: ChatGPT's filter refused 2 muscle diagrams; OpenAI shut down its video tool (Sora) in March 2026. | Technical | M | M | Prompts and the grey base diagram saved in `assets/exercises/`; text legend works without a diagram; clips made locally with ffmpeg. | Watching |
 | R-17 | **QHttpServer** (not designed for internet exposure) misbehaves. | Technical | L | M | Loopback only, Caddy in front (Qt's documented limit); fall back to TickTimer's parser if needed. | Open |
 
 **Scale**: H = High, M = Medium, L = Low.

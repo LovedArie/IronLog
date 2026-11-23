@@ -32,7 +32,7 @@ start over.
 
 | Real (same as the planned app) | Fake (stand-ins) |
 |---|---|
-| Exercise pictures (ADR-024): animated form figure from key poses + 2-bone IK, front/back muscle map, cues — 17 exercises | Poses are hand-tuned numbers in `MEDIA`, not catalog data yet |
+| Exercise pictures (ADR-024, **rejected** — kept as an experiment; the app uses the ChatGPT images in `assets/exercises/`, ADR-025): animated form figure from key poses + 2-bone IK, front/back muscle map, cues — 17 exercises | Poses are hand-tuned numbers in `MEDIA`, not catalog data yet |
 | Design tokens: colours, type sizes, 48 px targets, light/dark ([ui-research.md](../../docs/research/ui-research.md)) | Planner: a few hard-coded rules instead of `planner::buildSession()` |
 | Screen flow, one primary button per screen, bottom-aligned | XP and levels: simplified, not game rules v2 exactly |
 | Timers from stored timestamps (survive switching apps) | Camera and photos: drawn outlines, no real camera |
