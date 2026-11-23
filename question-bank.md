@@ -531,3 +531,19 @@ on your own, or to pull from when you *ask* to be quizzed.
 > text in any field. Voice *set logging* ("eighty for eight" → a set) needs
 > real speech-to-text plus a parser — parked as an AI-track item
 > (whisper.cpp on the VPS or phone + a rule-based parser in `core/`).
+
+**V29 🟡 What does turning game mode off change, and what does it never change?**
+> Off: XP, levels, body-map colours, streak and tokens are hidden, and decay
+> is paused. Never changed: plans, logging, progress charts, and the safety
+> rules (progression gates, pain check) — they don't depend on the game.
+
+**V30 🔴 Why can game mode be toggled with zero data migration?**
+> Game state is derived from the log (ADR-014). Off/on is a view choice plus
+> `GameModeChange` records that mark decay-free intervals. Turning it back on
+> recomputes the sheet — every set trained while off still counts.
+
+**V31 🔴 Spot the issue: "when game mode is off, skip the progression-gate check to keep things simple".**
+> Gates are a safety rule from the training plan (e.g. no reverse lunges
+> before 3 pain-free weeks of step-ups), presented *as* unlocks when the game
+> is on. Tying them to the toggle would let a user bypass safety by
+> unchecking a box.

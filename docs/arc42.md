@@ -245,6 +245,7 @@ Here the verification is part of the pipeline.
 | `BodyCheckIn` | `id`, `date`, `bodyweight`, `unit`, `waist?` | "Lean" trend |
 | `ProgressPhoto` | `id`, `date`, `pose` (front / side / back), `fileRef`, `checkInId?` | Image file stored beside the JSON, encrypted (§8.14) |
 | `SessionReview` | `id`, `date`, `overall` (great / good / ok / rough), `energy` (high / normal / low), `joints` (fine / twinge / pain), `note?`, `prefilled` (which answers the app suggested) | Planner input; `joints = pain` → pain check |
+| `GameModeChange` | `id`, `at`, `on` (true / false) | The off-intervals pause decay; the current value is the last record |
 | `TimedSet` | as `StrengthSet` but `seconds` instead of `reps` (plank, wall sit, balance) | Same PR/XP rules on duration |
 | `ExamPeriod` | `id`, `start`, `end` (≤ 21 days) | Pauses decay, lowers quest |
 | `TokenSpend` | `id`, `date`, `note?` | Spent cheat-meal tokens |
@@ -320,6 +321,21 @@ Lean & toned lower, General) are **data files**, not code.
 | Exam mode | pauses all decay; ≤ 21 days; quest target lowered |
 | Weekly quest | complete the program's planned sessions (exam: 2 strength + 1 cardio) |
 | Reward | quest complete → +1 cheat-meal token; bank max 2 |
+
+**Game mode (on/off, per user — ADR-021).** One checkbox, asked at
+onboarding and changeable in settings.
+
+| | Game ON | Game OFF |
+|---|---|---|
+| XP | earned and shown | still computed from the log, not shown |
+| Decay | applies after the grace period | **paused** (like exam mode) |
+| Levels, body map colours, streak, tokens | shown | hidden |
+| Weekly quest | "quest", earns a token | plain "2 of 3 planned sessions done" |
+| Progression gates, pain check, plans | active | **active** — safety rules never depend on the game |
+| Turning back on | — | levels include everything trained while off; nothing lost |
+
+Possible only because game state is derived (ADR-014): the toggle is a
+view choice plus a decay pause, not data to migrate.
 
 ### 8.7 Units
 
@@ -443,6 +459,7 @@ Full reasoning for ADR-001 to 009: [archive/design-notes-v0.1.md](archive/design
 | 018 | **Risk-driven milestones**: platform spike + data v2 first; server after the planner | A |
 | 019 | Personal training documents stay out of the public repo | A |
 | 020 | **Progress photos encrypted end-to-end** (libsodium, key from password); server stores ciphertext only | P |
+| 021 | **Game layer is optional** per user: off hides it and pauses decay; safety rules independent of it | A |
 
 ### Notes on the new decisions
 
@@ -481,6 +498,7 @@ Full reasoning for ADR-001 to 009: [archive/design-notes-v0.1.md](archive/design
 | Q6 | Port 8081 probed from the internet | Times out | `curl` from mobile data |
 | Q7 | Core built on a machine without Qt | Builds and passes | ✅ CI job 1 |
 | Q8 | Same day logged on phone and PC offline, then both sync | All sets present once | Catch2 on `sync::merge` + live test |
+| Q10 | Game off for 60 days of training, then on again | Levels reflect all training; no decay applied for the off period | Catch2 on `game::computeSheet` |
 | Q9 | Someone with root on the VPS opens the photo store | Sees only ciphertext | Inspect `/var/lib/ironlog/photos/` in QA |
 
 ---

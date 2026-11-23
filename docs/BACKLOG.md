@@ -71,7 +71,8 @@ Same rules as TickTimer's backlog, because they worked:
 ## Features — coach
 
 - **F5** Profile + onboarding: goal program, units, equipment per place
-  (home / gym / limited), injuries → starting stages, weekly availability. *(M)*
+  (home / gym / limited), injuries → starting stages, weekly availability,
+  "Play it like a game?" checkbox. *(M)*
 - **F6** Goal programs as data files: Badminton singles, Lean & toned (upper
   focus), Lean & toned (lower focus), General — each with weekly sessions and
   per-muscle weekly set targets. *(M)*
@@ -91,7 +92,9 @@ Same rules as TickTimer's backlog, because they worked:
 
 - **F12** Character sheet: 8 skills, XP from sets/cardio/mobility, level
   curve, total level — all derived from the log (`game::computeSheet`); shown
-  as a **body map** where muscles light up by level. *(M)*
+  as a **body map** where muscles light up by level. **Game mode is a
+  checkbox** (onboarding + settings): off hides XP, levels, streaks and tokens
+  and pauses decay; turning it back on loses nothing (ADR-021). *(M)*
 - **F13** Decay after 10 days, 50 % peak floor, muscle memory ×2, exam mode
   (≤ 21 days, pauses decay, lowers the quest). *(M)*
 - **F14** Weekly quest → cheat-meal token (bank max 2), spend a token,

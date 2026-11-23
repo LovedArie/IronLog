@@ -42,6 +42,7 @@
 | **Constraint stage** | How far a lifter may progress on a constrained area (e.g. knee stage 1–3). Caps exercise choice. | integer | — | — |
 | **Progression gate** | A condition to unlock a harder exercise (e.g. 3 pain-free weeks of step-ups → reverse lunge). | rule | — | unlock |
 | **Pain check** | Reporting sharp pain, pinching or next-day swelling on an exercise; drops it one stage for 2 weeks. | UC-18 | — | — |
+| **Game mode** | Per-user checkbox. Off: game hidden, decay paused, plans and safety rules unchanged. | `GameModeChange` | — | gamification |
 | **Skill** | One of 8 character stats: Arms, Shoulders, Chest, Back, Core, Legs, Stamina, Mobility. | enum | — | — |
 | **XP** | Experience points earned per set, cardio minute or stretch minute. | integer | ≥ 0 | — |
 | **Level** | A skill's rank, from its XP (level L → L+1 costs 50 × L XP). | integer | ≥ 1 | — |

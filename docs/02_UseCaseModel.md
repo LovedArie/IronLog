@@ -41,6 +41,7 @@
 | UC-20 | Register / Log In | Lifter | | Planned | F15 |
 | UC-21 | Sync Devices | Lifter (+ ironlog-server) | | Planned | F16 |
 | UC-22 | Invite a New Lifter | Server admin | | Planned | F17 |
+| UC-23 | Turn Game Mode On / Off | Lifter | | Planned | F5, F12 |
 
 ----|------|---------------|-----------|--------|
 | UC-01 | Log a Set | Lifter | ⭐ | Done (iteration 1) |
