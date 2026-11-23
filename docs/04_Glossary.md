@@ -79,8 +79,8 @@
 | **Tombstone** | A record marked `deleted` instead of removed, so deletes sync. | flag | — | — |
 | **Merge** | Combining two copies of a log by record id (union; newer edit wins). | `sync::merge` | — | — |
 | **Invite code** | Secret needed to register on the server. | text | — | — |
-| **Key pose** *(ADR-024, rejected — prototype only)* | One position of an exercise (e.g. top and bottom of a squat) stored as hip, spine angle and hand/foot targets. The picture animates between key poses. | prototype `MEDIA` | 2–3 per exercise | keyframe |
-| **Inverse kinematics (IK)** *(prototype only)* | Working out a middle joint (knee, elbow) from where a limb starts and where its end must be. | prototype `ik()` | target clamped to limb reach | IK |
+| **Key pose** *(ADR-024, rejected — removed from the prototype 2026-11-23)* | One position of an exercise (e.g. top and bottom of a squat) stored as hip, spine angle and hand/foot targets. The picture animates between key poses. | was `MEDIA` in the prototype (git history) | 2–3 per exercise | keyframe |
+| **Inverse kinematics (IK)** *(ADR-024, rejected — removed 2026-11-23)* | Working out a middle joint (knee, elbow) from where a limb starts and where its end must be. | was `ik()` in the prototype (git history) | target clamped to limb reach | IK |
 
 ---
 

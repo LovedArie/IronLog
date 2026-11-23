@@ -47,7 +47,7 @@ as a setting. A new style = one new draw function; all exercises get it.
 Shown as a thumbnail on each plan row, a card in the guided session, and a
 full how-to sheet with 3 form cues.
 
-Demo: `prototypes/ui-prototype/` (17 exercises).
+Demo: `prototypes/ui-prototype/` (17 exercises) up to commit `674c47d`; removed after, when the prototype switched to the ADR-025 pictures.
 
 ## Consequences
 

@@ -42,6 +42,8 @@ for the muscle picture as an anatomy view, not the character, and for videos.
   positives); those two use the text legend until resolved.
 - Assets are binary files in git (~3 MB for 32 images). Fine at this size;
   revisit (Git LFS) past ~50 MB.
+- The UI prototype shows the real files (plan thumbnail, session card with
+  the clip, how-to sheet); the code-drawn pictures were removed from it.
 
 ## Alternatives considered
 

@@ -772,3 +772,13 @@ on your own, or to pull from when you *ask* to be quizzed.
 > Fry et al. 2003: keeping knees back lowered knee torque a little but
 > raised hip torque about tenfold. Knees past toes is normal for most
 > people; vertical shins are only a choice for users on a knee stage.
+
+**M20 🟡 The prototype loads pictures from `assets/exercises/`. Why does `PIC` switch between two paths?**
+> Published, the files sit next to `index.html` (`assets/exercises/`). In the
+> repo, the page is two folders down (`prototypes/ui-prototype/`), so it needs
+> `../../assets/exercises/`. One shared copy of the files, no duplicates.
+
+**M21 🟢 Why are the clips `muted` and `playsinline`?**
+> Phones only autoplay video that is muted, and iPhone plays inline (not
+> full screen) only with `playsinline`. Reduce motion turns autoplay off and
+> shows a play button instead.

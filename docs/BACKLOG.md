@@ -104,7 +104,8 @@ Same rules as TickTimer's backlog (TickTimer = the owner's earlier Qt timer app,
   - Progression gates (P6) are shown as **unlocks**.
 - **F23** Exercise pictures in the app (ADR-025). Needs F2. *(M)*
   - **Done:** 17 how-to pictures, 15 muscle diagrams and 17 clips in
-    `assets/exercises/`, listed in `exercises.json`.
+    `assets/exercises/`, listed in `exercises.json`. The UI prototype
+    already shows them (plan thumbnail, session card, how-to sheet).
   - **To do:** bundle them as Qt resources; thumbnail on plan rows, card in
     the session, how-to sheet with 3 form cues; plank + dead-bug diagrams
     (ChatGPT's filter refused them).

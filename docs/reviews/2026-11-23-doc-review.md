@@ -23,7 +23,7 @@ reports point to commit `5939378`.
 | Review | Question it answered | Findings | ✅ | 🟡 | ⬜ | ➖ |
 |---|---|---|---|---|---|---|
 | Coherence | Do the docs agree with each other, and do they flow? | 30 | 28 | 1 | 1 | 0 |
-| Readability | Can the owner read them quickly? | 35 + terms | 27 | 4 | 4 | 0 |
+| Readability | Can the owner read them quickly? | 35 + terms | 28 | 4 | 3 | 0 |
 | Content | Are the claims true (code, builds, outside facts)? | 31 | 31 | 0 | 0 | 0 |
 
 Many findings were the same problem seen by two or three agents. They are
@@ -96,7 +96,7 @@ listed under each agent anyway, so each raw report can be traced.
 | R28 | README | No "start here" | ✅ |
 | R29–R30 | BACKLOG | "Skipped" and "Now" as run-ons | ✅ tables |
 | R31 | prototype README | Rejected design in "Real" (= C6) | ✅ |
-| R32 | prototype README | Dense code notes | ⬜ rewrite when the prototype switches to the ADR-025 pictures |
+| R32 | prototype README | Dense code notes | ✅ table (done when the prototype switched to the ADR-025 pictures) |
 | R33 | RELEASING | Chained cells; "Run workflow" vs "Release button" | 🟡 both names defined in Glossary; cells open |
 | R34 | DEVELOPING | 32-word merge-conflict sentence | ✅ 3 steps |
 | R35 | ADR-024, CREDITS | Two long list-sentences | ⬜ |
@@ -183,7 +183,7 @@ warnings, `test_core` 18 cases / 799 assertions, `test_services` 11 cases.
 Small enough to do the next time the file is touched; not worth a backlog id.
 
 - R3 Vision module cells → sub-tables · R25 same opener in every doc ("What
-  this is / Read it when") · R32 prototype code notes as a table · R35
+  this is / Read it when") · R35
   ADR-024 and CREDITS long sentences · C29 link the first ADR/§ mention in
   each doc · term: "session" (login) → "login session" in arc42 §8.8 and
   the Glossary.

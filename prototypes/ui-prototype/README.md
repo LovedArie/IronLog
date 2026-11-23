@@ -11,16 +11,17 @@ has answered the same question.
 | Where | How |
 |---|---|
 | PC | Double-click `index.html` (opens in your browser) |
-| Phone, same Wi-Fi | On the PC: `python -m http.server 8000` in this folder → on the phone: `http://<PC's IP>:8000` (find the IP with `ipconfig`) |
+| Phone, same Wi-Fi | On the PC, in the **repo root**: `python -m http.server 8000` → on the phone: `http://<PC's IP>:8000/prototypes/ui-prototype/` (find the IP with `ipconfig`). The root is needed because the pictures live in `assets/exercises/` |
 | Phone, anywhere | The published link Claude shared in the chat |
 
-One file, no internet, no install. **Fake data, nothing is saved** — reload to
-start over.
+One page, no internet, no install. It loads the exercise pictures and clips
+from `assets/exercises/` (two folders up). **Fake data, nothing is saved** —
+reload to start over.
 
 ## Try this tour
 
 1. **Train now** → 30 min → Normal → Home → plan. Tap a **thumbnail** for the
-   how-to sheet (animation, muscle diagram, form cues). **Start session**. Log sets
+   how-to sheet (clip, how-to picture, muscle diagram, form cues). **Start session**. Log sets
    with ±, watch the rest timer, do the plank hold. **Finish** → *How was it?* → Save.
 2. **You → ⚙ Settings** → turn *Play it like a game* off. Look at Today and You.
 3. **Train now → Cramming** (the 3rd this week) → back on Today: the pause offer.
@@ -36,25 +37,22 @@ start over.
 | Screen flow, one primary button per screen, bottom-aligned | XP and levels: simplified, not game rules v2 exactly |
 | Timers from stored timestamps (survive switching apps) | Camera and photos: drawn outlines, no real camera |
 | Snackbar + Undo, Why? sheets, pre-picked answers | Fingerprint unlock, recovery code, sync |
-| | Exercise pictures: drawn by code (ADR-024, **rejected**). The app uses the ChatGPT how-to pictures, muscle diagrams and clips in `assets/exercises/` (ADR-025) |
+| Exercise pictures and clips: the real files from `assets/exercises/` (ADR-025) | Cues and muscle lists are typed into `MEDIA`, not read from the catalog (F2) |
 
 ## How it's built (for reading the code)
 
-- **One state object `S`** holds everything. Each `view…()` function turns
-  `S` into HTML. `render()` redraws the screen from `S`.
-- **Buttons carry `data-a` (action) and `data-v` (value).** One click handler
-  looks up `A[action](value)`. This is *event delegation*: one listener for
-  the whole app instead of one per button.
-- **Picture styles**: `drawSimple()` and `drawAnime()` draw the same joints;
-  Settings → *Exercise pictures* switches. `drawAnime()` adds cel shading
-  (`cap()` = outline + fill + shade strip), a profile head drawn in a local
-  frame and rotated to the spine, and effects from joint velocity.
-- **Exercise pictures** (`MEDIA`, `joints()`, `ik()`): each exercise is 2–3
-  key poses; `ik()` finds knees and elbows with the law of cosines;
-  `poseAt()` eases between poses; one `requestAnimationFrame` loop redraws
-  only figures on screen.
-- **Timers** store an end time (`restEnds`), not a countdown. A 250 ms tick
-  updates only the numbers, so the screen doesn't flicker.
+| Piece | Code | How it works |
+|---|---|---|
+| State | `S` | One object holds everything |
+| Screens | `view…()` | Each turns `S` into HTML; `render()` redraws from `S` |
+| Buttons | `data-a`, `data-v`, `A` | One click handler runs `A[action](value)` — *event delegation*: one listener for the whole app |
+| Timers | `restEnds` | Store an end time, not a countdown. A 250 ms tick updates only the numbers |
+| Exercise pictures | `PIC`, `howImg()`, `clipVideo()`, `muscleImg()` | `PIC` is the folder: `assets/exercises/` when published, `../../assets/exercises/` in the repo |
+| Clip | `<video autoplay muted loop playsinline>` | Muted, so phones allow autoplay. Reduce motion → still, with a play button |
+| Missing diagram | `NO_DIAGRAM` | Plank and dead bug show a box; the muscle names below still say it all |
+
+*The code-drawn pictures (ADR-024, rejected) were removed on 2026-11-23.
+They are in git history (commit `5e66649` and earlier).*
 
 That's the same shape the QML app will have: state in C++ view models,
 QML screens that only display it, and actions that change the state.
