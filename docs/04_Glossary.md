@@ -43,7 +43,18 @@
 | **Guided session** | Following a session plan step by step while logging. | UC-12 | — | — |
 | **Constraint stage** | How far a lifter may progress on a constrained area (e.g. knee stage 1–3). Caps exercise choice. | integer | — | — |
 | **Progression gate** | A condition to unlock a harder exercise (e.g. 3 pain-free weeks of step-ups → reverse lunge). | rule | — | unlock |
-| **Pain check** | Reporting sharp pain, pinching or next-day swelling on an exercise; drops it one stage for 2 weeks. If it happens again or doesn't settle, the app suggests stopping that exercise and seeing a health professional. General guidance, not medical advice. | UC-18 | — | — |
+| **Pain check** *(replaced by pain monitoring, ADR-026)* | Reporting sharp pain, pinching or next-day swelling on an exercise; drops it one stage for 2 weeks. If it happens again or doesn't settle, the app suggests stopping that exercise and seeing a health professional. General guidance, not medical advice. | UC-18 | — | — |
+| **Body limitation** | A joint that needs care (knee, shoulder, lower back, ankle, hip, wrist, neck), with a side and a stage. Self-reported, never a diagnosis. | `Limitation` | 7 joints | injury, constraint |
+| **Stage ladder** | Per joint: what each stage allows and what unlocks next. A data file. | data | stage 1 … 4 | — |
+| **Joint stress** | How hard an exercise loads a joint: low, medium or high. | per exercise, per joint | — | knee stress |
+| **Pain monitoring** | Rating pain 0–10 during an exercise and the next morning; decides hold, keep or drop a stage. | `PainReport` | 0–10 | pain scale |
+| **Red flag** | A sign to stop and see a professional: swelling, heat, locking, giving way, can't take weight. | list | — | — |
+| **Gate** | Criteria plus a minimum time that unlock an exercise, stage or phase. | data | — | unlock rule |
+| **Trigger** | A condition the app watches; when it's met, an offer appears ("ready for…"). Never automatic. | data | — | — |
+| **Goal test** | A measurement every 4 weeks that shows progress toward a goal (reach, balance, time before gassed). | `GoalTest` | — | re-test, benchmark |
+| **Return ramp** | Lower volume after a long break, rising each week. | rule P9 | — | — |
+| **Prehab block** | A 10–12 min set of exercises that protects a joint or prepares for a sport, with a weekly target. | data | — | knee care, stability |
+| **Sport profile** | Data for a sport: body areas it loads, its warm-up, its weak spots. | data | — | — |
 | **Morning stretch** | The daily guided routine: 12 static stretches, ~12 min, hold timer per side. | `StretchRoutine` | holds 30–60 s | morning routine |
 | **Add-on stretch** | One of 12 extra stretches done after a session or in the evening, picked for areas not stretched yet this week. | stretch id | — | cool-down stretch |
 | **Reach test** | Weekly check after the towel stretch: how far apart the hands are behind the back, per side. | `MobilityEntry.reach` | cm per side, 0 = touching | towel test |
@@ -124,6 +135,8 @@ Short meanings for words the other docs use without explaining.
 | Salt | Random extra input per user |
 | Zone 2 | Easy cardio; you can still talk |
 | Static stretch | Hold one position 15–60 s |
+| PAR-Q+ | Free health check before exercise |
+| Talk test | Can talk, can't sing = easy cardio |
 | Dynamic warm-up | Moving stretches, getting faster |
 | Compound / isolation | Multi-joint / one-joint exercise |
 | RAMP | Warm-up: raise, activate, mobilise, potentiate |

@@ -814,3 +814,39 @@ on your own, or to pull from when you *ask* to be quizzed.
 **M27 🔴 Spot the issue: the cool-down always picks the same 3 stretches.**
 > Some areas (wrists, inner thighs, shins, feet) would never be stretched.
 > P8 picks add-ons for areas not stretched yet this week (body coverage).
+
+**M28 🟡 The owner's plan was built around one knee. How does the app "scale" that to every user?**
+> The knee rule became data: a `Limitation` (joint, side, stage), joint
+> stress per exercise, and a stage ladder per joint. The safety filter checks
+> every limitation. A shoulder is one more row in each table, not new code
+> (ADR-026).
+
+**M29 🔴 Spot the issue: the planner scores exercises on safety, effectiveness and time, and picks the best total.**
+> A high effectiveness score could outweigh a low safety score. Safety must
+> be a **filter** that runs first and can't be overridden; only the
+> remaining choices are scored (P3).
+
+**M30 🟡 Why does pain monitoring ask again the next morning?**
+> Pain that settles overnight usually means the load was tolerable; pain
+> that is worse the next morning means it wasn't. The pain-monitoring model
+> uses both moments (Silbernagel 2007). IronLog uses a stricter 3/10 for "OK".
+
+**M31 🟡 Why are gates "time + criteria", not just "after 4 weeks"?**
+> Time alone doesn't show readiness; two people at week 4 can be in very
+> different places. Rehab research moved from time-based to criteria-based
+> progression. The plan uses both (e.g. "2 weeks, clean form, no pain").
+
+**M32 🟢 What makes a trigger different from an automatic progression?**
+> A trigger only **offers** ("ready for light jogging?") with its reason;
+> the user accepts or dismisses it, and a dismissed offer isn't repeated
+> daily (`TriggerResponse`). The log can be incomplete, so the user decides.
+
+**M33 🔴 Spot the issue: the app tells a user with knee swelling "keep going, it's only 3/10".**
+> Swelling is a red flag. Red flags override the pain number: stop that
+> exercise and suggest a professional (arc42 §8.9).
+
+**M34 🟡 The user's heaviest dumbbell is 25 lb and they do 3×12 easily. What does P11 do, and why not just add sets?**
+> Slower lowering (3 s), then a pause, then a one-leg/one-arm version. That
+> raises difficulty without new equipment. Adding sets raises volume and
+> time, which the student schedule can't afford (K6), and P10 changes one
+> thing at a time.

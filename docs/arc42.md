@@ -255,8 +255,12 @@ Here the verification is part of the pipeline.
 | `PausePeriod` | `id`, `start`, `end`, `reason` (exams / sick / injured / travel) | Stops decay; changes the quest (§8.6); length capped per reason |
 | `RestTokenUse` | `id`, `week` | A rest token spent to keep a missed week in the streak |
 | `UserReward` | `id`, `text`, `since` | The reward the user writes for completing a weekly quest (free text, optional) |
-| `Profile` | goal program, units, equipment sets per place, constraints (knee stage …), weekly availability | Per user |
+| `Profile` | goal program, units, equipment sets per place, weekly availability, sport + usual days, time since regular training | Per user; limitations are their own records |
 | `StretchRoutine` | `id`, name, ordered stretch ids, default hold (s) | Data file, like goal programs (§8.17) |
+| `Limitation` | `id`, `joint` (knee / shoulder / lower back / ankle / hip / wrist / neck), `side` (left / right / both), `stage`, `since`, `note?` | Per user; drives the safety filter (P3, ADR-026). Note stays on the device |
+| `PainReport` | `id`, `at`, `exerciseId`, `limitationId?`, `during` (0–10), `nextMorning?` (0–10), `redFlags` (list) | P7; feeds stages and gates |
+| `GoalTest` | `id`, `date`, `testId` (e.g. reach, balance, time-before-gassed), `value`, `unit` | Every 4 weeks (F26) |
+| `TriggerResponse` | `id`, `at`, `triggerId`, `accepted` (true / false) | So a dismissed offer isn't repeated every day (ADR-027) |
 | `Exercise` | stable `id` slug, name, primary + secondary muscles, equipment set, movement pattern, knee stress (low/med/high), stage, default rep range | Catalog |
 
 Every record also carries `updatedAt` and `deleted` (tombstone) for sync.
@@ -301,12 +305,15 @@ game is a code change that re-scores history; two devices always agree.
 |---|---|---|
 | P1 Session type | Pick what the weekly plan still needs (strength A/B alternation, zone-2 cardio, mobility); avoid hitting a skill hard < 48 h apart | Owner's plan: A/B full-body ×3 |
 | P2 Time budget | Warm-up 5–8 min (RAMP: raise, activate, mobilise, potentiate) + main + 3–5 min stretch; ~3 min per strength set incl. rest; drop one-joint (isolation) exercises first, never the warm-up | Owner's plan: RAMP, 60–90 s rest |
-| P3 Exercise choice | Equipment ⊆ available; knee stress ≤ current knee stage; compound before isolation | Decision report: pain rule, compound-first |
+| P3 Exercise choice | **Filters first** (cannot be overridden): equipment ⊆ available; for **every** body limitation, the exercise's stress on that joint ≤ what its stage allows (ADR-026). **Then score** the rest on the Decision Report's criteria (effectiveness, sustainability, equipment fit, sport transfer, time) and pick the best; compound before isolation | Decision report: K1–K6, pain rule, compound-first |
 | P4 Loads | Double progression: all sets at top of rep range → next available weight (e.g. +5 lb dumbbell) | Owner's plan: "picking weights" |
 | P5 Situation | **Cramming**: shorter, compound-only, no PR attempts, weekly target = exam minimum (2 strength + 1 cardio). **Sore/tired**: mobility + easy zone 2 + light core | Decision report C8 |
 | P6 Gates | Harder variations unlock only after their gate (e.g. reverse lunge after 3–4 pain-free weeks of step-ups; stability stage after 2 clean weeks) | Decision report D3, D7 |
-| P7 Pain check | "Sharp pain, pinching, or swelling next day" → that exercise drops one stage for 2 weeks. Again, or not settling → suggest stopping it and seeing a health professional (§8.9) | Owner's plan: pain rule |
+| P7 Pain monitoring | 0–10 during the exercise and the next morning: 0–3 and settled → OK; 4–5 or still there → hold the load; > 5 or worse next morning → that exercise drops one stage for 2 weeks. Red flags (swelling, heat, locking, giving way, can't take weight) → stop it and suggest a professional (§8.9) | Owner's plan: pain rule; Silbernagel 2007 (stricter: 3/10) |
 | P8 Stretch timing | Static holds only in the morning routine, the session cool-down or the evening — never in a warm-up or right before badminton (warm-ups are dynamic, RAMP). The cool-down picks add-on stretches for areas not stretched yet this week | Decision report D4, D9 |
+| P9 Return ramp | After a long break or a pause > 3 weeks: week 1 at ~60 % of normal sets, +10 % a week (balance-table defaults) | Decision report C2 |
+| P10 One change at a time | A progression step changes one of weight / reps / sets, or time / speed / incline | Owner's plan: treadmill tips |
+| P11 Past the heaviest weight | At the top weight and top reps: 3 s lowering, then a pause, then a one-leg or one-arm version | Home rack limit (C5) |
 
 *Compound = a multi-joint exercise. C8, D3, D7 = sections of the owner's
 private Decision Report (kept out of the repo, ADR-019).*
@@ -382,9 +389,18 @@ suggestions are always weights that physically exist.
 ### 8.9 Safety (health)
 
 The planner never generates something outside the user's constraints (P3,
-P6, P7 are tested). Onboarding asks about injuries and sets conservative
-stages. Every plan screen shows "General guidance, not medical advice;
-stop on sharp pain." Personal plans and reports are **not** in the repo.
+P6, P7 are tested). Every plan screen shows "General guidance, not medical
+advice; stop on sharp pain." Personal plans and reports are **not** in the repo.
+
+| Boundary | How |
+|---|---|
+| Readiness screen | Onboarding links the PAR-Q+ (not copied). Any "yes" → suggest a doctor or qualified exercise professional first; the app still works with conservative stages |
+| Limitations | Self-reported joint + stage (ADR-026). The app never diagnoses or names an injury |
+| Red flags | Swelling, heat or redness, locking, giving way, can't take weight → stop that exercise, suggest a professional |
+| Pain | Monitored 0–10 (P7); pain is never rewarded with XP or praise |
+| Offers, not orders | Stage-ups, jogging, new phases are offers the user accepts (ADR-027) |
+
+Design and sources: [research/plan-to-features.md](research/plan-to-features.md).
 
 ### 8.10 Error handling
 
@@ -598,6 +614,8 @@ Older, longer reasoning for ADR-001 to 009 is also in
 | [023](adr/ADR-023-four-tab-navigation.md) | Four-tab navigation (Today · Log · Progress · You) | Accepted | 2026-11-23 |
 | [024](adr/ADR-024-exercise-pictures-drawn-by-code.md) | Exercise pictures drawn by code (form animation + muscle map) | Rejected | 2026-11-23 |
 | [025](adr/ADR-025-exercise-pictures-from-chatgpt.md) | Exercise pictures generated with ChatGPT (anime character + muscle diagram) | Accepted | 2026-11-23 |
+| [026](adr/ADR-026-body-limitations.md) | Body limitations replace the knee-only stage | Proposed | 2026-11-23 |
+| [027](adr/ADR-027-gates-and-triggers.md) | One engine for gates, goal tests and triggers | Proposed | 2026-11-23 |
 
 **Proposed** decisions are waiting for evidence: ADR-012 (QML) on the I4
 spike, ADR-016 (QHttpServer) on F15.
@@ -651,7 +669,7 @@ See [04_Glossary.md](04_Glossary.md).
 ## Sources
 
 - arc42 template: https://arc42.org
-- [Feature research round 2](research/feature-research-2.md) (game rules v2, pictures) and [UI research](research/ui-research.md) (design system v1, 4 tabs).
+- [Feature research round 2](research/feature-research-2.md) (game rules v2, pictures), [UI research](research/ui-research.md) (design system v1, 4 tabs) and [plan-to-features](research/plan-to-features.md) (body limitations, gates, cardio, sport).
 - Larman, *Applying UML and Patterns* (3rd ed.): Ch. 8 (risk-driven
   iterations), Ch. 13 (Layers), Ch. 17 (Expert, Creator, Controller),
   Ch. 25 (Pure Fabrication).

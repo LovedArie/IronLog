@@ -29,10 +29,10 @@ Same rules as TickTimer's backlog (TickTimer = the owner's earlier Qt timer app,
 | Milestone | Theme | Items | Why in this order |
 |---|---|---|---|
 | **v0.2** | Foundation | I4 F1 F2 F3 F4 | CI/CD is done (I1–I3). Settle the data format once, and answer the riskiest unknown (QML on Android + web) before building on it |
-| **v0.3** | Coach | I7 F5 F6 F7 F11 F8 F9 F10 F23 F24 | The heart of the app: *Train now*. New domain logic → highest design risk |
+| **v0.3** | Coach | I7 F5 F25 F6 F7 F11 F8 F9 F10 F23 F24 | The heart of the app: *Train now*. New domain logic → highest design risk |
 | **v0.4** | Game & body | F12 F13 F14 F18 F21 | Motivation loop + measuring the main goal (lean); depends on activity logging (F11) |
 | **v0.5** | Online | I5 F15 F16 F17 I6 | Proven tech from TickTimer → lower risk, so later |
-| **v0.6** | Progress+ | F19 F20 F22 H1 | Polish and retire the old desktop UI |
+| **v0.6** | Coach+ | F26 F27 F28 H1 | Adapts over time: gates, goal tests, cardio progression and prehab need weeks of history first. Then retire the old desktop UI |
 
 ---
 
@@ -72,7 +72,8 @@ Same rules as TickTimer's backlog (TickTimer = the owner's earlier Qt timer app,
     rest-token use, user reward, progress photo, **session review**,
     **game-mode change** (ADR-010, arc42 §8.1).
 - **F2** Catalog v2: exercise ids and metadata (equipment, primary +
-  secondary muscles, movement pattern, knee stress, stage, rep range);
+  secondary muscles, movement pattern, **stress per joint** (7 joints) + kneeling /
+  impact / deep-bend / overhead flags (ADR-026), stage, rep range);
   seed with the owner's home-kit exercises and stretch routines. *(M)*
 - **F3** Edit a set (kg, reps, RIR, type, note) + undo/redo via `QUndoStack`. *(M)*
 - **F4** Rotating daily backups (keep 7) + CSV export of all records. *(S)*
@@ -82,13 +83,27 @@ Same rules as TickTimer's backlog (TickTimer = the owner's earlier Qt timer app,
 ## Features — coach
 
 - **F5** Profile + onboarding: goal program, units, equipment per place
-  (home / gym / limited), injuries → starting stages, weekly availability,
-  "Play it like a game?" checkbox. *(M)*
+  (home / gym / limited), weekly availability, "Play it like a game?"
+  checkbox. *(M)*
+  - Body limitations → starting stages (F25); PAR-Q+ link.
+  - "How long since you trained regularly?" → return ramp (P9).
+  - Sport and its usual days (F28).
+- **F25** **Body limitations** (ADR-026; plan-to-features F25). *(L)*
+  - Joint + side + stage, for 7 joints. Ladders per joint as data files.
+  - Safety filter: every exercise's joint stress ≤ what each stage allows.
+  - Swaps and cues by limitation (kneeling → pad or standing version).
+  - Pain monitoring 0–10 during + next morning (asked on the next open);
+    > 5 or worse next day → down a stage for 2 weeks. Replaces P7's yes/no.
+  - Red flags → stop and see a professional. Weekly 0–10 rating per limitation.
 - **F6** Goal programs as data files: Badminton singles, Lean & toned (upper
   focus), Lean & toned (lower focus), General — each with weekly sessions and
   per-muscle weekly set targets. *(M)*
-- **F7** Planner v1: `planner::buildSession()` with rules P1–P7 and a reason
-  per item; property test "never exceeds the user's knee stage". *(L)*
+- **F7** Planner v1: `planner::buildSession()` with rules P1–P11 and a reason
+  per item. *(L)*
+  - Property test: "never exceeds any limitation's stage".
+  - P9 return ramp, P10 one change at a time, P11 past the heaviest weight.
+  - Exercise choice: safety filters first, then a score on the Decision
+    Report's criteria (arc42 §8.5).
 - **F8** *Train now* flow (QML). *(M)*
   - Steps: time → situation → gym/home or nearby equipment → plan with XP preview.
   - *Sore* asks which body parts. "Same as last time" skips the steps.
@@ -120,6 +135,22 @@ Same rules as TickTimer's backlog (TickTimer = the owner's earlier Qt timer app,
   - **Reach test** once a week after the towel stretch: hand gap per side →
     chart in Progress → Body.
   - Kept during an exams pause. Static holds never go right before badminton (P8).
+
+## Features — coach+ (adapts over time)
+
+- **F26** **Gates, goal tests and triggers** (ADR-027). Replaces F22. *(M)*
+  - One engine, rules in data files: gates (criteria + minimum time),
+    triggers ("ready for…", stall → deload), goal tests every 4 weeks.
+  - Always an offer the user accepts; never automatic. At most one on Today.
+- **F27** **Cardio program**. *(M)*
+  - Talk-test baseline; a weekly table built from it; one change at a time.
+  - Intervals after 4 weeks of base (a gate); jogging as a trigger, only if
+    no limitation forbids impact.
+- **F28** **Sport profile and prehab blocks**. *(M)*
+  - Sport as data: body areas it loads, RAMP warm-up, weak spots.
+  - No hard legs within 24 h before a sport day; sport warm-up before play.
+  - 10–12 min prehab blocks from limitations + sport, with stages and a
+    weekly target.
 
 ## Features — game
 
@@ -160,10 +191,6 @@ Same rules as TickTimer's backlog (TickTimer = the owner's earlier Qt timer app,
 
 - **F18** Weekly body check-in (weight + waist) with a 4-week trend line —
   the "lean" signal. *(S)*
-- **F19** More PR types (heaviest weight, best set volume, most reps at a
-  weight) + rep-max table per exercise. *(M)*
-- **F20** Plate and warm-up calculator using the user's real equipment
-  (dumbbell jumps, plates, kg/lb). *(S)*
 - **F21** **Progress photos** (Must). *(L)*
   - Front / side / back at the weekly check-in.
   - Side-by-side compare (week 1 vs now) with a pose-alignment overlay.
@@ -171,8 +198,6 @@ Same rules as TickTimer's backlog (TickTimer = the owner's earlier Qt timer app,
     arc42 §8.14). A **recovery code** is shown at the first photo (and in
     settings). Previews are encrypted too.
   - Never in exports or the repo.
-- **F22** Stall detection: e1RM falling over several sessions or sets above
-  the target → planner suggests a deload week. *(M)*
 
 ## Housekeeping
 
@@ -187,6 +212,10 @@ Same rules as TickTimer's backlog (TickTimer = the owner's earlier Qt timer app,
   a logged set. Speech-to-text with whisper.cpp (on the VPS or on the phone) +
   a rule-based parser in `core/`
 - Party view: see your partner's levels (opt-in)
+- **F19** More PR types (heaviest weight, best set volume, most reps at a
+  weight) + rep-max table per exercise *(parked 2026-11-23 for F25–F28)*
+- **F20** Plate and warm-up calculator using the user's real equipment
+  *(parked 2026-11-23)*
 - Achievements beyond unlocks (streaks, milestones)
 - Import from Strong / Hevy CSV
 - Supersets / exercise grouping

@@ -33,10 +33,10 @@ v0.1 is a desktop logbook. The goal ([Vision](docs/01_Vision.md),
 | Milestone | Theme |
 |---|---|
 | v0.2 | Foundation: test build of the phone UI (QML spike), data format v2, exercise catalog v2, edit + undo, backups. *(CI/CD — automatic build, test and release — is already done.)* |
-| v0.3 | Coach: profiles, goal programs, *Train now*, guided sessions, exercise pictures |
+| v0.3 | Coach: profiles, body limitations, goal programs, *Train now*, guided sessions, exercise pictures, daily stretch |
 | v0.4 | Game & body: skills, XP (experience points), slow decay, pauses, quests, streak, body check-ins, photos |
 | v0.5 | Online: server on the owner's rented server (VPS), accounts, sync |
-| v0.6 | Progress+: more PR types, plate/warm-up calculator, stall → deload hint, retire the desktop (Widgets) UI |
+| v0.6 | Coach+: "ready for…" gates and triggers, goal tests every 4 weeks, cardio program, sport profile and prehab blocks, retire the desktop (Widgets) UI |
 
 ## Features
 

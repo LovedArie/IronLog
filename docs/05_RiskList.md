@@ -35,6 +35,7 @@
 | R-21 | **Web app storage cleared** on iPhone (browser policy). | Technical | M | L | Web app treats photos and the log as a cache of the server; re-downloads. | Accepted |
 | R-22 | **AI pictures show wrong form or anatomy** (extra fingers, rounded back under load, wrong muscle coloured) and a novice copies it. | Business | M | H | Every image checked by eye before it is saved (ADR-025); form cues as text next to the picture; regenerate any wrong one. | Mitigated |
 | R-23 | **Picture tool changes or refuses**: ChatGPT's filter refused 2 muscle diagrams; OpenAI closed its video tool (Sora) on 2026-04-26. | Technical | M | M | Template prompts and the grey base diagram saved in `assets/exercises/` (per-exercise pose wording was not saved); text legend works without a diagram; clips made locally with ffmpeg. | Watching |
+| R-24 | **Plan doesn't fit a user's condition**: someone with a limitation the rules don't model follows the plan and gets hurt. | Business | L | H | PAR-Q+ link at onboarding; conservative starting stages; pain monitoring and red flags (ADR-026); offers, never automatic progressions (ADR-027); "not medical advice" on every plan. | Open |
 
 
 ---
