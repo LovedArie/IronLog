@@ -633,3 +633,44 @@ on your own, or to pull from when you *ask* to be quizzed.
 > To test whether the 4-tab layout houses every feature without clutter —
 > on a real phone, cheaply — before writing QML. It's throwaway
 > (`prototypes/`): it answers a question, then gets deleted.
+
+---
+
+## W — Workflow & platforms (2026-11-23)
+
+**W1 🟢 Where do your PC copy and Claude's copy of the code meet?**
+> On GitHub (`main`). Each side only sees the other's work after a `push`,
+> so the rule is *pull before you start, push when a step works*
+> (docs/DEVELOPING.md §1).
+
+**W2 🟡 Two people changed the same file. When does `git pull` merge by itself, and when does it stop?**
+> Different lines (or different files) merge automatically. The same lines
+> changed differently → a *merge conflict*: git writes both versions into the
+> file between `<<<<<<<` and `>>>>>>>` markers; you keep the right one, then
+> `git add` + `git commit`.
+
+**W3 🟡 Why does the iPhone get a web app instead of a native iOS app?**
+> A native iOS build needs a Mac with Xcode and an Apple developer account.
+> Qt for WebAssembly runs the same C++/QML code in Safari, served by Caddy
+> from the VPS on the same address as the API (no CORS). ADR-011.
+
+**W4 🟢 What's the difference between `build/` and `dist/`?**
+> `build/` = CMake's compiled output on your PC. `dist/` = what the Release
+> workflow makes on GitHub's machine: the `.exe` plus every Qt DLL copied in
+> by `windeployqt`, then zipped. Neither goes into git.
+
+**W5 🟡 Why is Inno Setup parked, and what would adding it take?**
+> The phone is the main client and the zip already runs on a PC with no Qt.
+> An installer only adds a Start-menu entry and an uninstaller. Adding it =
+> one `.iss` script + one `iscc` step in `release.yml` after `windeployqt`.
+
+**W6 🟡 In the HTML prototype, why do buttons carry `data-a` / `data-v` instead of each having its own `onclick`?**
+> Event delegation: one click listener on the document looks up the action
+> by name. The screen is redrawn often, so per-button listeners would have
+> to be re-attached after every render; one listener never does.
+
+**W7 🔴 Spot the issue: a rest timer that does `left = left - 1` every second. What breaks on a phone?**
+> When the app goes to the background, the browser/OS pauses or slows
+> timers, so the countdown freezes and is wrong when you come back. Store
+> the **end time** (`restEnds = now + 90 s`) and compute `left = restEnds − now`
+> on each tick — gym usability rule 10.

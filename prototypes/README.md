@@ -22,3 +22,9 @@ so:
 ## When to delete a prototype
 
 Once it has answered its question. Don't keep them around "just in case."
+
+## Current prototypes
+
+| Folder | Question | Status |
+|---|---|---|
+| [ui-prototype/](ui-prototype/README.md) | Does the 4-tab layout (ADR-023) house every feature on a phone? | Clickable HTML, ready to try |

@@ -187,6 +187,7 @@ Details and reasoning: **[docs/adr/](docs/adr/README.md)** — one record per de
 | [BACKLOG](docs/BACKLOG.md) | What's next, ranked, with milestones v0.2–v0.6 |
 | [research/feature-research](docs/research/feature-research.md) | What other lifting apps do, what users love and hate |
 | [TROUBLESHOOTING](docs/TROUBLESHOOTING.md) | Symptom → cause → fix |
+| [DEVELOPING](docs/DEVELOPING.md) | Our git workflow; running on Windows, Android, iPhone |
 | [RELEASING](docs/RELEASING.md) | CI/CD pipelines and the release routine |
 | [question-bank.md](question-bank.md) | Self-review questions with answers |
 

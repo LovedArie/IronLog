@@ -159,6 +159,8 @@ Same rules as TickTimer's backlog, because they worked:
 - Template editor (build your own program in the app)
 - Reminders / notifications
 - Automated off-box backups (VPS → elsewhere)
+- Windows installer (Inno Setup) — the zip is enough while the phone is the
+  main client ([DEVELOPING §5](DEVELOPING.md#5-windows-installer-inno-setup))
 
 ## Skipped (decided 2026-11-23, after feature research)
 
