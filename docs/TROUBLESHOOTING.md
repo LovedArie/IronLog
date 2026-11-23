@@ -235,3 +235,40 @@ countOf(n, tr("set"), tr("sets"))   // "1 set", "17 sets"
 **PREVENT**
 Only use `%n` plurals if the project ships `.ts`/`.qm` translation files
 (even an English one). Otherwise pluralise in code.
+
+---
+
+### CI Windows job: `Failed to locate XML data for Qt version '6.11.3'`
+
+**SYMPTOM**
+The *Install Qt* step of the Windows job fails within a minute:
+```
+aqt list-qt windows desktop --spec 6.11.* --latest-version   ->  6.11.3
+WARNING : Failed to download checksum for the file 'online/qtsdkrepository/
+          windows_x86/desktop/qt6_6113/qt6_6113/Updates.xml'.
+ERROR   : Failed to locate XML data for Qt version '6.11.3'.
+```
+The core-only and Linux jobs pass. (The `python.EXE ... EACCES` lines
+around it are harmless runner noise.)
+
+**CAUSE**
+`jurplel/install-qt-action` uses **aqtinstall** to download Qt. The
+wildcard `6.11.*` resolved to the newest patch (6.11.3), but aqtinstall
+3.3.0 looked for its package list in a folder layout that doesn't match
+where Qt publishes 6.11 builds (per-compiler folders such as
+`qt6_6111/qt6_6111_mingw/`). Each aqtinstall release only knows the Qt
+versions and layouts it was built for, so very new Qt versions often fail
+until aqtinstall catches up.
+
+**FIX**
+Pin a version aqtinstall knows: `version: '6.8.3'` (Qt 6 LTS) in
+`ci.yml` and `release.yml`. Same MinGW 13.1 compiler family as 6.11.
+
+**PREVENT**
+- Never use a wildcard Qt version in CI: `6.11.*` silently became "the
+  newest patch", which is exactly the version tooling knows least.
+- Pin, and bump deliberately: try `version: '6.11.x'` on a branch when
+  aqtinstall releases a new version; merge only if the run is green.
+- Cover the version range with different jobs: Linux = 6.4 (apt, oldest
+  supported), Windows CI = 6.8 LTS, owner's PC = 6.11.
+

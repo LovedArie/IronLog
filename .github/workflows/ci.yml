@@ -3,7 +3,8 @@
 # Three jobs, from fastest to most realistic:
 #   core       Linux, NO Qt. Proves the domain core stays Qt-free (arc42 Q7).
 #   linux-qt   Linux, Qt 6.4 from apt — the OLDEST Qt we claim to support.
-#   windows    Windows, Qt 6.11 MinGW — the owner's real toolchain.
+#   windows    Windows, Qt 6.8 LTS MinGW — the owner's compiler family
+#              (MinGW 13.1, same as Qt 6.11's).
 # Two Qt versions on purpose: together they cover the range CMakeLists.txt
 # promises (find_package(Qt6 6.4 ...)).
 
@@ -67,7 +68,7 @@ jobs:
           path: ${{ runner.temp }}/smoke.png
 
   windows:
-    name: Full build (Windows, Qt 6.11 MinGW)
+    name: Full build (Windows, Qt 6.8 MinGW)
     runs-on: windows-latest
     defaults:
       run:
@@ -78,10 +79,14 @@ jobs:
       # Qt's MinGW build AND Qt's own MinGW 13.1 compiler. The runner's
       # preinstalled MinGW is a newer GCC with a different ABI; mixing them
       # crashes at runtime (same trap as TROUBLESHOOTING "wrong compiler").
-      - name: Install Qt 6.11 + MinGW 13.1
+      # Pinned to 6.8.3 (LTS): the installer behind this action (aqtinstall)
+      # could not locate Qt 6.11.3's package data on 2026-11-23 — see
+      # docs/TROUBLESHOOTING.md. Linux CI covers 6.4, the owner builds 6.11
+      # locally, so 6.4 / 6.8 / 6.11 are all exercised.
+      - name: Install Qt 6.8 LTS + MinGW 13.1
         uses: jurplel/install-qt-action@v4
         with:
-          version: '6.11.*'
+          version: '6.8.3'
           arch: win64_mingw
           tools: 'tools_mingw1310,qt.tools.win64_mingw1310'
           cache: true
