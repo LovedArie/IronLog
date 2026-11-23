@@ -850,3 +850,17 @@ on your own, or to pull from when you *ask* to be quizzed.
 > raises difficulty without new equipment. Adding sets raises volume and
 > time, which the student schedule can't afford (K6), and P10 changes one
 > thing at a time.
+
+**M35 🟢 How does the cardio program set week 1 without a heart-rate strap?**
+> A 10-minute talk test: raise the pace until you can talk but not sing.
+> Research ties the talk test closely to the ventilatory threshold. For the
+> first 2 weeks, "Too easy / About right / Too hard" corrects the start (ADR-029).
+
+**M36 🟡 Why is "no hard legs within 24 h before a sport day" a planner rule and not a tip?**
+> A tip can be ignored; the planner can't forget. The sport profile is data
+> (days, warm-up, weak spots), so the rule works for any sport (ADR-030).
+
+**M37 🔴 Spot the issue: the plan screen says "Inside your limits" but doesn't say what was swapped.**
+> The user can't tell why their usual exercise is gone. Every swap is named
+> with its reason ("Reverse lunge → Low step-up, for your knee"), and the
+> limitation row opens the settings.

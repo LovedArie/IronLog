@@ -3,6 +3,7 @@
 - **Status:** Accepted
 - **Date:** 2026-11-23
 - **Deciders:** owner + Claude (pairing)
+- **See also:** [ADR-026](ADR-026-body-limitations.md), [ADR-027](ADR-027-gates-and-triggers.md), [ADR-031](ADR-031-exercise-choice-filter-then-score.md) refine the rules (now P1–P11). This decision stands.
 
 ## Context
 

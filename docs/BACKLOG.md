@@ -103,9 +103,10 @@ Same rules as TickTimer's backlog (TickTimer = the owner's earlier Qt timer app,
   - Property test: "never exceeds any limitation's stage".
   - P9 return ramp, P10 one change at a time, P11 past the heaviest weight.
   - Exercise choice: safety filters first, then a score on the Decision
-    Report's criteria (arc42 §8.5).
+    Report's criteria (arc42 §8.5, ADR-031).
 - **F8** *Train now* flow (QML). *(M)*
-  - Steps: time → situation → gym/home or nearby equipment → plan with XP preview.
+  - Steps: time → situation (Normal / Cramming / Sore / Before my sport) →
+    gym/home or nearby equipment → plan with XP preview.
   - *Sore* asks which body parts. "Same as last time" skips the steps.
   - A **Why?** sheet on every number.
   - After 3 cramming days in a week, Today offers "Start a pause?".
@@ -124,7 +125,7 @@ Same rules as TickTimer's backlog (TickTimer = the owner's earlier Qt timer app,
   - **To do:** bundle them as Qt resources; thumbnail on plan rows, card in
     the session, how-to sheet with 3 form cues; plank + dead-bug diagrams
     (ChatGPT's filter refused them).
-- **F24** **Daily stretch** (arc42 §8.17). Needs F2 (stretches in the catalog), F11 (logging). *(M)*
+- **F24** **Daily stretch** (arc42 §8.17, ADR-028). Needs F2 (stretches in the catalog), F11 (logging). *(M)*
   - **Morning routine**, every day: 12 stretches, ~12 min. Guided player:
     one stretch per screen, hold timer per side, "switch sides" beep + buzz,
     moves on by itself; pause and skip.
@@ -143,10 +144,11 @@ Same rules as TickTimer's backlog (TickTimer = the owner's earlier Qt timer app,
     triggers ("ready for…", stall → deload), goal tests every 4 weeks.
   - Always an offer the user accepts; never automatic. At most one on Today.
 - **F27** **Cardio program**. *(M)*
-  - Talk-test baseline; a weekly table built from it; one change at a time.
+  - Talk-test baseline; a weekly table built from it; one change at a time
+    (ADR-029). "Too easy / About right / Too hard" for the first 2 weeks.
   - Intervals after 4 weeks of base (a gate); jogging as a trigger, only if
     no limitation forbids impact.
-- **F28** **Sport profile and prehab blocks**. *(M)*
+- **F28** **Sport profile and prehab blocks** (ADR-030). *(M)*
   - Sport as data: body areas it loads, RAMP warm-up, weak spots.
   - No hard legs within 24 h before a sport day; sport warm-up before play.
   - 10–12 min prehab blocks from limitations + sport, with stages and a

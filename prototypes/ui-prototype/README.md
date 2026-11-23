@@ -22,13 +22,20 @@ reload to start over.
 
 1. **Train now** → 30 min → Normal → Home → plan. Tap a **thumbnail** for the
    how-to sheet (clip, how-to picture, muscle diagram, form cues). **Start session**. Log sets
-   with ±, watch the rest timer, do the plank hold. **Finish** → *How was it?* → Save.
-2. **You**: the body map — darker = higher level, the striped back is fading. Tap a part. Then **⚙ Settings** → turn *Play it like a game* off. Look at Today and You.
-3. **Today → Morning stretch → Start**: hold timer per side, a beep to switch sides, then it moves on by itself. Try +15 s on the towel stretch. At the end: the weekly reach test (hand gap in cm). See it in **Progress → Body**.
-4. **Train now → Cramming** (the 3rd this week) → back on Today: the pause offer.
-5. **Progress → Photos** → unlock → *Take photos* (recovery-code prompt) → Compare.
-6. **Log** → Sun 22 → Strength B → delete a set → **Undo**.
-7. Settings → Theme *Dark*, *Reduce motion*, units *kg*.
+   with ±, watch the rest timer, do the plank hold. **Finish** → *How was it?* → Joints: **Pain** →
+   pick the exercise, a number 0–10, maybe a red flag → Save.
+2. **Today**: the next-morning pain check (0–10). A high number drops that exercise a stage;
+   the next plan swaps it ("Swapped for safety").
+3. **Today → Ready for…**: an offer (intervals) with **Why?**, *Add it* or *Not now*.
+4. **You → Programs → Body limitations**: set Knee stage 1, add Shoulder. Then Train now again:
+   reverse lunge becomes step-up; at the gym the bench press is left out.
+5. **Train now → Before my sport**: the badminton RAMP warm-up, no static holds.
+6. **You**: the body map — darker = higher level, the striped back is fading. Tap a part. Then **⚙ Settings** → turn *Play it like a game* off. Look at Today and You.
+7. **Today → Morning stretch → Start**: hold timer per side, a beep to switch sides, then it moves on by itself. Try +15 s on the towel stretch. At the end: the weekly reach test (hand gap in cm). See it, and the **goal tests**, in **Progress → Body**.
+8. **Train now → Cramming** (the 3rd this week) → back on Today: the pause offer.
+9. **Progress → Photos** → unlock → *Take photos* (recovery-code prompt) → Compare.
+10. **Log** → Sun 22 → Strength B → delete a set → **Undo**.
+11. Settings → Theme *Dark*, *Reduce motion*, units *kg*.
 
 ## What's real, what's fake
 
@@ -39,6 +46,8 @@ reload to start over.
 | Timers from stored timestamps (survive switching apps) | Camera and photos: drawn outlines, no real camera |
 | Snackbar + Undo, Why? sheets, pre-picked answers | Fingerprint unlock, recovery code, sync |
 | Exercise pictures and clips: the real files from `assets/exercises/` (ADR-025) | Cues and muscle lists are typed into `MEDIA`, not read from the catalog (F2) |
+| Body limitations: safety filter before anything else, swaps named in the plan, pain 0–10 + next-morning check, red flags (ADR-026) | Joint stress per exercise is typed into `STRESS`; only the knee has a full stage ladder |
+| One "ready for…" offer at a time, with its reason (ADR-027) | The offer, goal-test results, cardio week and prehab block are fixed sample data, not computed |
 
 ## How it's built (for reading the code)
 
@@ -50,6 +59,7 @@ reload to start over.
 | Timers | `restEnds` | Store an end time, not a countdown. A 250 ms tick updates only the numbers |
 | Exercise pictures | `PIC`, `howImg()`, `clipVideo()`, `muscleImg()` | `PIC` is the folder: `assets/exercises/` when published, `../../assets/exercises/` in the repo |
 | Clip | `<video autoplay muted loop playsinline>` | Muted, so phones allow autoplay. Reduce motion → still, with a play button |
+| Body limitations | `S.limitations`, `STRESS`, `fitsLimits()`, `painAction()`, `viewLimits()` | `buildPlan()` runs the safety filter first: each exercise's stress per joint ≤ that limitation's stage, else swap to an allowed alternative or leave it out (the note says which) |
 | Daily stretch | `STRETCH`, `ROUTINE`, `viewStretch()` | Phases ready → hold → switch → hold → next; a second 250 ms timer moves between them. ±15 s is kept in `holdSec` |
 | Body map | `BODY`, `bodyMap()` | Outlines from `assets/game/bodymap-paths.json`; fill = level shade, or stripes when fading; tap → `skillTap` snackbar |
 | Missing diagram | `NO_DIAGRAM` | Plank and dead bug show a box; the muscle names below still say it all |

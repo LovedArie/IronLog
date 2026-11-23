@@ -3,6 +3,7 @@
 - **Status:** Accepted
 - **Date:** 2026-11-23
 - **Deciders:** owner + Claude (pairing)
+- **See also:** body-limitation stages ([ADR-026](ADR-026-body-limitations.md)) and "ready for…" offers ([ADR-027](ADR-027-gates-and-triggers.md)) are derived the same way.
 
 ## Context
 

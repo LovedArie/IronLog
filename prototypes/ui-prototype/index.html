@@ -231,6 +231,9 @@ textarea, input[type=text] { width:100%; min-height:var(--tap); border-radius:va
 .thumbbtn img { width:100%; height:100%; object-fit:cover; display:block; }
 .howto-clip video { width:100%; max-width:300px; aspect-ratio:3/4; margin:0 auto; display:block; border-radius:var(--radius); background:#fff; }
 .bodybar { width:100%; gap:var(--s); align-items:center; min-height:40px; background:none; border:0; padding:0; color:inherit; font:inherit; text-align:left; cursor:pointer; }
+.cue { color:var(--onVar); font-size:12px; line-height:16px; font-weight:600; }
+.thumbbtn.ramp { display:inline-flex; align-items:center; justify-content:center; font-weight:700; font-size:22px; color:var(--onVar); background:var(--surfaceVar); }
+.chip.n { min-width:44px; padding:0 var(--s); justify-content:center; }
 .sday { width:20px; height:20px; border-radius:50%; display:inline-flex; align-items:center; justify-content:center; font-size:11px; font-weight:700;
         background:var(--surfaceVar); color:var(--onVar); }
 .sday.on { background:var(--primary); color:var(--onPrimary); }
@@ -296,6 +299,13 @@ const S = {
   stretchWeek: [true, true, false, true, true, true, false], stretchDone: { morning: false, addons: false },
   holdSec: {},   // per-stretch hold in seconds, once changed with ±15 s (default 30)
   reach: { right: [18, 17, 15, 14, 13, 12, 10, 9], left: [24, 23, 22, 21, 19, 18, 17, 16] }, stretch: null,
+  // Body limitations (F25, ADR-026). Sample data: self-reported, never a diagnosis.
+  limitations: [{ joint: "Knee", side: "Right", stage: 2 }],
+  dropped: {},            // exercise id → why it's out of plans (pain drop or red flag)
+  painPending: null,      // { id, ex, during } → asked again the next morning
+  pain: { during: null, flags: [] },
+  offer: { id: "intervals" },          // one "ready for…" offer (F26, ADR-027)
+  sport: { name: "Badminton", day: "Sat" }, cardioWeek: 3, intervalsOn: false,
   skills: [
     { n: "Chest", lvl: 6, xp: 180 }, { n: "Back", lvl: 4, xp: 140, fading: 3 }, { n: "Legs", lvl: 5, xp: 180, comeback: true },
     { n: "Shoulders", lvl: 5, xp: 120 }, { n: "Arms", lvl: 4, xp: 90 }, { n: "Core", lvl: 5, xp: 200 },
@@ -350,11 +360,41 @@ const EX = {
   hipflex: { name: "Hip flexor stretch", kind: "hold", sets: 2, sec: 45, w: 0, skill: "Mobility", last: "45, 45 s", why: "Tight hips after sitting", whyKey: "plan-sore", alts: [] },
   walk: { name: "Easy treadmill walk", kind: "hold", sets: 1, sec: 600, w: 0, skill: "Stamina", last: "10 min", why: "Zone 2 — easy, recovery pace", whyKey: "plan-sore", alts: [] },
   cablerow: { name: "Cable row", kind: "reps", sets: 3, reps: 10, w: 90, skill: "Back", last: "90 lb × 10, 10, 9", best: e1rm(90, 10), why: "Back is fading — priority", whyKey: "plan-fading", alts: ["dbrow"] },
+  ramp1: { name: "Raise: light jog, side shuffles, skips", kind: "hold", sets: 1, sec: 180, w: 0, skill: "Stamina", last: "—", why: "RAMP 1 — raise heart rate and warmth", whyKey: "sportwarm", alts: [] },
+  ramp2: { name: "Activate: glute bridges, band side steps, 1-leg balance", kind: "hold", sets: 1, sec: 120, w: 0, skill: "Legs", last: "—", why: "RAMP 2 — wake up the knee's helpers", whyKey: "sportwarm", alts: [] },
+  ramp3: { name: "Mobilise: arm circles, twists, leg swings, lunge + reach", kind: "hold", sets: 1, sec: 180, w: 0, skill: "Mobility", last: "—", why: "RAMP 3 — move joints through full range", whyKey: "sportwarm", alts: [] },
+  ramp4: { name: "Potentiate: shadow footwork, ½ → ¾ speed, shadow swings", kind: "hold", sets: 1, sec: 180, w: 0, skill: "Stamina", last: "—", why: "RAMP 4 — build to game speed", whyKey: "sportwarm", alts: [] },
   legpress: { name: "Leg press", kind: "reps", sets: 3, reps: 10, w: 180, skill: "Legs", last: "180 lb × 10, 10, 10", best: e1rm(180, 10), why: "Heavy legs, back supported", whyKey: "plan-compound", alts: ["boxsquat"] },
 };
+/* Body limitations (F25, ADR-026). Joint stress per exercise: 1 low · 2 medium · 3 high.
+   Stage N allows stress ≤ N (stage 4 = everything, jumps after a readiness gate). */
+const JOINTS = ["Knee", "Shoulder", "Lower back", "Ankle", "Hip", "Wrist", "Neck"];
+const STRESS = {
+  boxsquat: { Knee: 1 }, goblet: { Knee: 2, "Lower back": 1 }, wallsit: { Knee: 1 }, dbrow: { "Lower back": 1, Shoulder: 1 },
+  ringrow: { Shoulder: 1, Wrist: 1 }, bandrow: { Shoulder: 1 }, cablerow: { "Lower back": 1, Shoulder: 1 }, dbbench: { Shoulder: 2, Wrist: 1 },
+  pushup: { Shoulder: 2, Wrist: 2 }, revlunge: { Knee: 2, Ankle: 1 }, stepup: { Knee: 1, Ankle: 1 }, plank: { Shoulder: 1, "Lower back": 1 },
+  deadbug: {}, catcow: { Wrist: 1 }, hipflex: { Knee: 1, Hip: 1 }, walk: { Knee: 1, Ankle: 1 }, legpress: { Knee: 2, "Lower back": 1 },
+  ramp1: { Knee: 2, Ankle: 2 }, ramp2: { Knee: 1 }, ramp3: { Shoulder: 1 }, ramp4: { Knee: 2, Ankle: 2, Shoulder: 2 },
+};
+const KNEELING = new Set(["hipflex", "catcow", "revlunge"]);
+const LADDER = {
+  Knee: ["", "Low knee stress: box squat, glute bridge, wall sit, low step-up. Kneeling moves get a pad.",
+         "+ medium: reverse lunge, goblet squat, leg press, higher step-up, single-leg RDL.",
+         "+ high: Bulgarian split squat, deeper squats.", "Everything, incl. forward lunges; jumps only after a readiness gate."],
+};
+const ladderText = (joint, st) => (LADDER[joint] || ["", `Low ${joint.toLowerCase()} stress only.`, `Up to medium ${joint.toLowerCase()} stress.`, `Up to high ${joint.toLowerCase()} stress.`, "Everything, incl. impact (after a readiness gate)."])[st];
+const fitsLimits = id => { for (const l of S.limitations) if (((STRESS[id] || {})[l.joint] || 0) > Math.min(3, l.stage)) return { ok: false, joint: l.joint }; return { ok: true }; };
+const limitsSummary = () => S.limitations.length ? S.limitations.map(l => `${l.joint}${l.side !== "Both" ? ` (${l.side.toLowerCase()})` : ""} · stage ${l.stage}`).join(", ") : "None set";
+const exIdByName = n => Object.keys(EX).find(k => EX[k].name === n);
+// Pain monitoring (P7): during + next morning → keep / hold / drop a stage for 2 weeks.
+const painAction = (during, morning) => (during > 5 || (morning != null && (morning > 5 || morning > during))) ? "drop" : (during >= 4 || (morning != null && morning >= 4)) ? "hold" : "keep";
+
 function buildPlan(w) {
   let ids, title, warm = "Easy treadmill 3′ + RAMP drills", warmMin = 6, notes = [];
-  if (w.situation === "sore") {
+  if (w.situation === "sport") {
+    title = `${S.sport.name} warm-up`; ids = ["ramp1", "ramp2", "ramp3", "ramp4"]; warm = ""; warmMin = 0;
+    notes.push(`Before ${S.sport.name.toLowerCase()}: moving warm-up only (RAMP). No static holds — they can lower power for a while. Stretch after play.`);
+  } else if (w.situation === "sore") {
     title = "Recovery"; ids = ["catcow", "hipflex", "deadbug", "walk"]; warm = "Gentle walk 2′"; warmMin = 2;
     notes.push(`Sore: ${[...w.sore].join(", ") || "all over"} — no heavy work today.`);
   } else if (w.situation === "cramming") {
@@ -367,14 +407,27 @@ function buildPlan(w) {
   } else {
     title = "Strength B · home"; ids = ["boxsquat", "dbrow", "revlunge", "plank"];
   }
-  if (w.time <= 20 && ids.length > 3) ids = ids.slice(0, 3);
+  // Safety filters first (P3, ADR-026/031): every body limitation + pain drops. Nothing overrides them.
+  const swaps = [];
+  ids = ids.map(id => {
+    const f = fitsLimits(id);
+    if (f.ok && !S.dropped[id]) return id;
+    const reason = S.dropped[id] ? S.dropped[id] : `your ${f.joint.toLowerCase()}`;
+    const alt = EX[id].alts.find(a => fitsLimits(a).ok && !S.dropped[a] && !ids.includes(a));
+    swaps.push(alt ? `${EX[id].name} → ${EX[alt].name} (for ${reason})` : `${EX[id].name} left out (for ${reason})`);
+    return alt || null;
+  }).filter(Boolean);
+  if (swaps.length) notes.push(`Swapped for safety: ${swaps.join(" · ")}`);
+  if (w.situation !== "sport" && w.time <= 20 && ids.length > 3) ids = ids.slice(0, 3);
+  const knee = S.limitations.some(l => l.joint === "Knee");
   const main = ids.map(id => {
-    const e = { id, ...EX[id] };
+    const e = { id, ...EX[id], cue: KNEELING.has(id) && knee ? "Pad your knee (folded mat), or skip the kneeling part" : "" };
     if (w.time <= 20 && e.sets > 2) e.sets -= 1;
     return e;
   });
   const xp = main.reduce((a, e) => a + (e.kind === "reps" ? e.sets * 10 : Math.round(e.sets * e.sec / 60 * 2) + 10), 0);
-  return { title, time: w.time, situation: w.situation, place: w.place, nearby: [...(w.nearby || [])], warm, warmMin, main, stretchMin: 4, xp, notes };
+  const time = w.situation === "sport" ? 11 : w.time;
+  return { title, time, situation: w.situation, place: w.place, nearby: [...(w.nearby || [])], warm, warmMin, main, stretchMin: w.situation === "sport" ? 0 : 4, xp, notes };
 }
 
 /* =====================================================================
@@ -477,6 +530,12 @@ const totalLevel = () => S.skills.reduce((a, s) => a + s.lvl, 0);
    Why? sheet — every number explains itself (ADR-023 fix #4)
    ===================================================================== */
 const WHY = {
+  "offer": ["Why this offer?", ["Gate passed: 4 weeks of zone-2 walks, all done.", "No pain above 3/10 in those 4 weeks.", "It's an offer, not a change: nothing happens unless you add it. \"Not now\" hides it for 7 days.", "Source: your fitness plan (intervals from week 5) and Decision Report D1."]],
+  "cardio": ["Cardio program", ["Week 1 came from a 10-minute talk test: you can talk, but not sing.", "Every 2 weeks one thing changes: time, then speed, then incline — never two at once.", "Intervals unlock after 4 weeks of base. Jogging is offered only if no limitation forbids impact.", "Don't hold the rails — light fingertip balance is fine."]],
+  "sport": ["Sport days", ["Your sport days come first: no hard leg session within 24 h before.", "Before play: Train now → Before my sport gives the moving warm-up (RAMP).", "Static stretches go after play, not before.", "The game counts toward Stamina XP."]],
+  "prehab": ["Prehab blocks", ["10–12 minutes, chosen from your limitations and your sport.", "Knee stability, stage 1: single-leg balance, slow step-downs. Stage 2 adds single-leg RDL.", "Move up after 2 weeks of clean form and no knee pain (an offer).", "Best after cardio or on rest days. Not part of the quest — it never threatens your streak."]],
+  "goaltests": ["Goal tests", ["Each goal gets a number, tested every 4 weeks.", "Lasting a whole game → time before you get gassed. Knee control → single-leg balance. Flexibility → the reach test.", "Results show here and can pass gates (e.g. phase 2 needs 30 s balance on each leg).", "A test gives +10 XP to the skill it tests."]],
+  "sportwarm": ["Sport warm-up (RAMP)", ["Raise, Activate, Mobilise, Potentiate — about 11 minutes.", "Moving, never holding: static holds before play can lower power.", "Ends near game speed, so the first rally isn't the warm-up."]],
   "reach": ["Weekly reach test", ["Measures the real goal of the towel stretch: getting your hands closer behind your back.", "Once a week is enough — day-to-day changes are noise.", "Each side is tracked on its own; one side is usually tighter.", "The chart is in Progress → Body. Lower = better."]],
   "stretch": ["Why stretch in the morning?", ["Daily static holds bring back range of motion (like reaching behind your back). Most people notice a change in 2–4 weeks.", "Holds can lower power for 10–15 minutes, so they're never right before badminton. Before play, the warm-up uses moving stretches instead.", "30 s per side. Tight spots (towel, hip flexor, hamstring): work up to 45–60 s with +15 s.", "Mild tension, never pain. An exams pause keeps the morning stretch.", "Source: your fitness plan (Part 1) and Decision Report D4."]],
   "xp": ["How XP works", ["Each working set: +10 XP to its main muscle, +5 to helper muscles.", "Cardio and stretching: +2 XP per minute (+3 for intervals or badminton).", "A personal record: +25 XP.", "Level L → L+1 costs 50 × L XP.", "Game rules v2 — the numbers can be tuned; the app tells you when they change."]],
@@ -633,8 +692,14 @@ function viewToday() {
       <div class="bar mt"><i style="width:${items.length ? done / items.length * 100 : 0}%"></i></div>
       <div class="chips mt">${sessionList}</div></div>`);
   }
-  // Card 2: exactly one notice, by priority (pause > pause offer > fading warning)
-  if (S.pause) {
+  // Card 2: exactly one notice, by priority (morning pain check > pause > pause offer > "ready for…" offer > fading warning)
+  if (S.painPending) {
+    const p = S.painPending;
+    cards.push(`<div class="card info"><div class="t-title">How does it feel this morning?</div>
+      <div class="muted">After ${esc(p.ex)} yesterday (${p.during}/10 during). 0 = nothing, 10 = worst.</div>
+      <div class="chips mt">${Array.from({ length: 11 }, (_, n) => `<button class="chip n" data-a="morningPain" data-v="${n}">${n}</button>`).join("")}</div>
+      <p class="t-caption muted">Prototype: asked now. The app asks on your first open the next morning.</p></div>`);
+  } else if (S.pause) {
     cards.push(`<div class="card info"><div class="t-title">Paused · ${esc(S.pause.reason)}</div>
       <div class="muted">${S.pause.days} days · nothing fades · ${S.pause.reason === "Exams" ? "quest: 2 strength + 1 cardio" : S.pause.reason === "Travel" ? "quest: 1 session" : "no quest this week"}</div>
       <div class="row mt"><button class="btn" data-a="endPause">End pause</button></div></div>`);
@@ -642,6 +707,11 @@ function viewToday() {
     cards.push(`<div class="card info"><div class="t-title">${S.crammingThisWeek} cramming days this week</div>
       <div class="muted">Exams coming? A pause lowers the weekly target to 2 strength + 1 cardio${S.game ? " and stops fading" : ""}.</div>
       <div class="row mt"><button class="btn tonal" data-a="openPause" data-v="Exams">Start exams pause</button><button class="btn text" data-a="dismissPauseOffer">Not now</button></div></div>`);
+  } else if (S.offer) {
+    cards.push(`<div class="card"><div class="row between"><span class="over">Ready for…</span><button class="whybtn" data-a="why" data-v="offer">Why?</button></div>
+      <div class="t-title mt">Intervals, once a week</div>
+      <div class="muted">4 weeks of zone 2 walks done, no pain. Add 6 × (1 min faster + 2 min easy) to one walk a week?</div>
+      <div class="row mt"><button class="btn tonal" data-a="offerYes">Add it</button><button class="btn text" data-a="offerNo">Not now</button></div></div>`);
   } else {
     const back = S.skills.find(s => s.n === "Back");
     if (back.fading) cards.push(`<div class="card warn"><div class="row"><span class="grow">${S.game ? `<b>Back starts fading in ${back.fading} days.</b>` : "<b>Back not trained for 11 days.</b>"} Train now will add a back move.</span>
@@ -661,7 +731,7 @@ function viewToday() {
   return `<div class="top"><h1>Today</h1><span class="t-label muted">Mon 23 Nov · <span style="color:var(--ok)">●</span> Synced</span></div>
     <div class="scroll" data-scroll="today">${cards.slice(0, 3).join("")}</div>
     <div class="bottom"><button class="primary" data-a="trainNow">▶  TRAIN NOW</button>
-      <button class="secondary" data-a="sameAsLast">Same as last time: ${L.time}′ · ${L.situation === "normal" ? `Normal · ${L.place === "gym" ? "Gym" : "Home"}` : L.situation === "cramming" ? "Cramming" : "Sore"}</button></div>`;
+      <button class="secondary" data-a="sameAsLast">Same as last time: ${L.time}′ · ${L.situation === "normal" ? `Normal · ${L.place === "gym" ? "Gym" : "Home"}` : L.situation === "cramming" ? "Cramming" : L.situation === "sport" ? "Before my sport" : "Sore"}</button></div>`;
 }
 
 function viewLog() {
@@ -710,6 +780,11 @@ function viewProgress() {
       <div class="card"><div class="row between"><span class="over">Behind-the-back reach · 8 weeks</span><span class="t-label muted">lower = better</span></div>
         ${lineChart(S.reach.left, { h: 120, label: "Towel stretch hand gap, left hand on top, centimetres", lowerIsBetter: true })}
         <div class="t-label">Hand gap · left on top <b class="num">${S.reach.left.at(-1)} cm</b> (${S.reach.left.at(-1) - S.reach.left[0]}) · right on top <b class="num">${S.reach.right.at(-1)} cm</b> (${S.reach.right.at(-1) - S.reach.right[0]})</div></div>
+      <div class="card"><div class="row between"><span class="over">Goal tests · every 4 weeks</span><span class="t-label muted">next in 5 days</span></div>
+        <div class="listrow" style="cursor:default"><span class="grow">Badminton: time before gassed</span><b class="num">25 min</b><span class="t-label muted">&nbsp;(+7)</span></div>
+        <div class="listrow" style="cursor:default"><span class="grow">Single-leg balance</span><b class="num">30 s</b><span class="t-label muted">&nbsp;each leg ✓</span></div>
+        <div class="listrow" style="cursor:default"><span class="grow">Reach test</span><span class="t-label muted">weekly · chart above</span></div>
+        <button class="btn text" data-a="why" data-v="goaltests">How goal tests work</button></div>
       <button class="card listrow chev" data-a="seg" data-v="photos" style="width:100%"><span class="grow"><b>Progress photos</b><br><span class="muted t-label">last: 1 week ago</span></span></button>`;
   } else {
     if (!S.photosUnlocked) {
@@ -734,11 +809,17 @@ function viewProgress() {
 function viewYou() {
   const items = questItems(), done = questDone();
   const unlocks = `<button class="listrow chev" data-a="why" data-v="unlock"><span class="grow"><b>${S.game ? "Unlocks (2)" : "New exercises available"}</b><br><span class="muted t-label">Reverse lunge — 3 pain-free weeks · Ring row</span></span></button>`;
+  const programs = `<div class="card"><div class="over">Programs</div>
+      <button class="listrow chev" data-a="info" data-v="program"><span class="grow"><b>Badminton singles</b><br><span class="muted t-label">Strength A/B, 3 a week</span></span></button>
+      <button class="listrow chev" data-a="why" data-v="cardio"><span class="grow"><b>Cardio · week ${S.cardioWeek} of 8</b><br><span class="muted t-label">30 min · 2.8–3.0 mph · 5–6 % · next step: speed only${S.intervalsOn ? " · + intervals weekly" : ""}</span></span></button>
+      <button class="listrow chev" data-a="why" data-v="sport"><span class="grow"><b>Sport · ${esc(S.sport.name)}</b><br><span class="muted t-label">${S.sport.day} · no hard legs the day before</span></span></button>
+      <button class="listrow chev" data-a="why" data-v="prehab"><span class="grow"><b>Prehab · knee stability, stage 1</b><br><span class="muted t-label">2 of 3 this week · 10–12 min</span></span></button>
+      <button class="listrow chev" data-a="openLimits"><span class="grow"><b>Body limitations</b><br><span class="muted t-label">${esc(limitsSummary())}</span></span></button></div>`;
   if (!S.game) {
     const cells = Array.from({ length: 84 }, (_, i) => `<i class="${[0, 2, 4, 7, 9, 10, 15, 17, 19, 22, 24, 28, 30, 32, 35, 37, 38, 43, 45, 47, 50, 52, 56, 58, 60, 63, 65, 66, 71, 73, 75, 77, 78, 79].includes(i) ? (i % 3 ? "d2" : "d1") : ""}"></i>`).join("");
     return `<div class="top"><h1>You</h1><button class="btn icon" data-a="openSettings" aria-label="Settings">${ICON.gear}</button></div>
       <div class="scroll" data-scroll="you-off">
-        <button class="card listrow chev" data-a="info" data-v="program" style="width:100%"><span class="grow"><span class="over">Program</span><br><b>Badminton singles</b></span></button>
+        ${programs}
         <div class="card"><div class="row between"><span class="over">This week</span><span class="t-label num">${done} of ${items.length} planned</span></div>
           <div class="bar mt"><i style="width:${items.length ? done / items.length * 100 : 0}%"></i></div>
           <div class="chips mt">${items.map(x => `<span class="chip" style="min-height:36px;pointer-events:none">${x.done ? "✓" : "○"} ${esc(x.n)}</span>`).join("")}</div></div>
@@ -761,6 +842,7 @@ function viewYou() {
           <div class="bar xp grow ${s.fading ? "fade" : ""}"><i style="width:${s.xp / need(s) * 100}%"></i></div>
           <span class="t-label num" style="width:64px;text-align:right">${s.fading ? "fading" : setsToGo(s)}${s.comeback ? " ×2" : ""}</span></div>`).join("")}
         <button class="btn text mt" data-a="toggle" data-v="showAllSkills">${S.showAllSkills ? "Show top 3" : "Show all 8 skills"}</button></div>
+      ${programs}
       <div class="card">${unlocks}</div>
     </div>`;
 }
@@ -768,6 +850,25 @@ function viewYou() {
 /* =====================================================================
    Views — full-screen flows (overlays)
    ===================================================================== */
+/* Body limitations (F25): joint, side, stage. The safety filter reads these
+   before anything else. Stage-ups are normally offered by the app (F26). */
+function viewLimits() {
+  const rows = S.limitations.map((l, i) => `<div class="card"><div class="row between"><b class="t-title">${esc(l.joint)}</b><button class="btn text" data-a="limRemove" data-v="${i}">Remove</button></div>
+      <div class="seg mt" style="width:100%">${["Left", "Right", "Both"].map(sd => `<button class="${l.side === sd ? "on" : ""}" data-a="limSide" data-v="${i}:${sd}">${sd}</button>`).join("")}</div>
+      <div class="row between mt"><span>Stage</span><div class="stepper" style="width:200px"><button class="btn" data-a="limStage" data-v="${i}:-1" aria-label="Lower stage">−</button><span class="val t-number">${l.stage}</span><button class="btn" data-a="limStage" data-v="${i}:1" aria-label="Higher stage">+</button></div></div>
+      <p class="t-label muted" style="margin:8px 0 0">${esc(ladderText(l.joint, l.stage))}</p></div>`).join("");
+  const free = JOINTS.filter(j => !S.limitations.some(l => l.joint === j));
+  return `<div class="top"><button class="btn icon" data-a="closeOverlay" aria-label="Back">‹</button><h1>Body limitations</h1></div>
+    <div class="scroll" data-scroll="limits">
+      <p class="muted" style="margin-top:0">Tell IronLog which joint needs care. Every plan stays inside its stage — nothing overrides that. Start low: the app offers a step up after 2 good weeks.</p>
+      ${rows || `<div class="card muted">No limitations set.</div>`}
+      ${free.length ? `<div class="card"><div class="over">Add a joint</div><div class="chips mt">${free.map(j => `<button class="chip" data-a="limAdd" data-v="${j}">+ ${j}</button>`).join("")}</div></div>` : ""}
+      <div class="card info"><b>Before you start</b><br>The PAR-Q+ is a free 7-question check. If any answer is yes, talk to a doctor or a qualified exercise professional first.
+        <br><a href="https://doi.org/10.14288/hfjc.v12i4.295" target="_blank" rel="noopener">Open the PAR-Q+</a></div>
+      <p class="t-caption muted">General guidance, not medical advice. IronLog never diagnoses — it only uses what you tell it. Red flags (swelling, locking, giving way…) → see a professional.</p>
+    </div>`;
+}
+
 /* Daily stretch player (F24). One stretch per screen; the timer runs from a
    stored end time, so it keeps going if you switch apps. After the last side
    it moves on by itself — hands stay on the stretch, not the phone. */
@@ -839,7 +940,7 @@ function viewWizard() {
       <p class="muted t-label mt">Outlined: last time. Tap a time to go on.</p>`;
   } else if (step === 2) {
     q = `<div class="t-label muted">${w.time} min</div><div class="t-headline">How is today?</div>
-      ${[["normal", "Normal day", "Full plan for your goal"], ["cramming", "Cramming", "Short, compound-only, no PRs"], ["sore", "Sore / tired", "Mobility + easy cardio"]]
+      ${[["normal", "Normal day", "Full plan for your goal"], ["cramming", "Cramming", "Short, compound-only, no PRs"], ["sore", "Sore / tired", "Mobility + easy cardio"], ["sport", "Before my sport", `${S.sport.name} warm-up only — no static holds`]]
         .map(([k, t, d]) => `<button class="choice ${k === L.situation ? "last" : ""}" data-a="wizSit" data-v="${k}"><span class="t-title">${t}</span><span class="muted">${d}</span></button>`).join("")}`;
   } else if (w.situation === "normal") {
     q = `<div class="t-label muted">${w.time} min · Normal</div><div class="t-headline">Where are you training?</div>
@@ -865,19 +966,20 @@ function viewWizard() {
 function viewPlan() {
   const p = S.plan;
   const exRow = (e, i) => `<div class="listrow" style="cursor:default;align-items:flex-start">
-      <button class="thumbbtn" data-a="howto" data-v="${e.id}" aria-label="How to do ${esc(e.name)}">${howImg(e.id)}</button>
+      ${MEDIA[e.id] ? `<button class="thumbbtn" data-a="howto" data-v="${e.id}" aria-label="How to do ${esc(e.name)}">${howImg(e.id)}</button>` : `<span class="thumbbtn ramp" aria-hidden="true">${esc(e.name[0])}</span>`}
       <span class="grow"><b>${i + 1}. ${esc(e.name)}</b> ${e.isNew ? '<span class="badge new">NEW</span>' : ""}<br>
         <span class="num">${e.sets} × ${e.kind === "hold" ? (e.sec >= 120 ? `${e.sec / 60} min` : `${e.sec} s`) : e.reps}${e.w ? " · " + fmtW(e.w) : ""}</span><br>
-        <span class="why">why: ${esc(e.why)}</span></span>
+        <span class="why">why: ${esc(e.why)}</span>${e.cue ? `<br><span class="cue">⚑ ${esc(e.cue)}</span>` : ""}</span>
       <span class="row" style="flex-direction:column;gap:4px">${e.alts.length ? `<button class="whybtn" data-a="swap" data-v="${i}">Swap</button>` : ""}<button class="whybtn" data-a="why" data-v="${e.whyKey}">Why?</button></span></div>`;
   return `<div class="top"><button class="btn icon" data-a="closeOverlay" aria-label="Back">‹</button><h1>Today's plan</h1><span class="t-label muted">${p.time} min</span></div>
     <div class="scroll" data-scroll="plan">
-      <div class="muted t-label">${p.situation === "cramming" ? `Nearby: ${esc(p.nearby.join(", ") || "nothing")}` : p.place === "gym" ? "Gym" : "Home"} · ${p.situation === "normal" ? "Normal" : p.situation === "cramming" ? "Cramming" : "Sore / tired"}${S.game ? ` · about +${p.xp} XP` : ""}</div>
+      <div class="muted t-label">${p.situation === "cramming" ? `Nearby: ${esc(p.nearby.join(", ") || "nothing")}` : p.place === "gym" ? "Gym" : "Home"} · ${p.situation === "normal" ? "Normal" : p.situation === "cramming" ? "Cramming" : p.situation === "sport" ? "Before my sport" : "Sore / tired"}${S.game ? ` · about +${p.xp} XP` : ""}</div>
+      ${S.limitations.length ? `<button class="listrow chev" data-a="openLimits"><span class="grow t-label">Inside your limits: <b>${esc(limitsSummary())}</b></span></button>` : ""}
       ${p.notes.map(n => `<div class="card info t-label">${esc(n)}</div>`).join("")}
-      <div class="card"><div class="row between"><span class="over">Warm-up</span><span class="t-label">${p.warmMin} min</span></div><div class="muted">${esc(p.warm)}</div></div>
-      <div class="card"><div class="row between"><span class="over">Main</span><span class="t-label">${p.time - p.warmMin - p.stretchMin} min</span></div>${p.main.map(exRow).join("")}</div>
-      <div class="card"><div class="row between"><span class="over">Stretch</span><span class="t-label">${p.stretchMin} min</span></div><div class="muted">Static holds after the session — areas not stretched yet this week:</div>
-        <div class="chips mt">${coolDownPicks().map(id => `<span class="chip" style="min-height:36px;pointer-events:none">${esc(STRETCH[id].name)}</span>`).join("")}</div></div>
+      ${p.warmMin ? `<div class="card"><div class="row between"><span class="over">Warm-up</span><span class="t-label">${p.warmMin} min</span></div><div class="muted">${esc(p.warm)}</div></div>` : ""}
+      <div class="card"><div class="row between"><span class="over">${p.situation === "sport" ? "Warm-up · RAMP" : "Main"}</span><span class="t-label">${p.time - p.warmMin - p.stretchMin} min</span></div>${p.main.map(exRow).join("")}</div>
+      ${p.stretchMin ? `<div class="card"><div class="row between"><span class="over">Stretch</span><span class="t-label">${p.stretchMin} min</span></div><div class="muted">Static holds after the session — areas not stretched yet this week:</div>
+        <div class="chips mt">${coolDownPicks().map(id => `<span class="chip" style="min-height:36px;pointer-events:none">${esc(STRETCH[id].name)}</span>`).join("")}</div></div>` : `<div class="card"><div class="over">After play</div><div class="muted">Static stretches after the game: wrists, inner thighs, back of the shoulder (add-on stretches).</div></div>`}
       <p class="t-caption muted mt">ⓘ General guidance, not medical advice. Stop on sharp pain.</p>
     </div>
     <div class="bottom"><button class="primary" data-a="startSession">START SESSION</button></div>`;
@@ -959,12 +1061,23 @@ function viewReview() {
 }
 
 function viewPain() {
-  const r = S.review;
-  return `<div class="top"><button class="btn icon" data-a="closeOverlay" aria-label="Back">‹</button><h1>Which exercise hurt?</h1></div>
-    <div class="scroll"><div class="chips">${[...r.exNames, "Not sure"].map(n => `<button class="chip ${r.painEx === n ? "on" : ""}" data-a="painEx" data-v="${esc(n)}">${esc(n)}</button>`).join("")}</div>
-      <div class="card info mt2">That exercise drops one stage for 2 weeks — the easier version comes back in your plans.</div>
-      <p class="muted">Sharp pain, pinching or swelling the next day? Talk to a professional before training it again.</p></div>
-    <div class="bottom"><button class="primary" data-a="savePain" ${r.painEx ? "" : "disabled"}>SAVE</button></div>`;
+  const r = S.review, P = S.pain, flagged = P.flags.length > 0, d = P.during;
+  const FLAGS = ["Swelling", "Heat or redness", "Locking", "Giving way", "Can't take weight"];
+  const verdict = flagged ? `<div class="card warn"><b>Stop this exercise.</b> A red flag means: please see a doctor or physio before training it again. It stays out of your plans until you say it's cleared.</div>`
+    : d == null ? "" : d <= 3 ? `<div class="card info">${d}/10 — OK. Keep it; we'll ask again tomorrow morning.</div>`
+    : d <= 5 ? `<div class="card info">${d}/10 — hold. Same load next time, no increase. We'll ask again tomorrow morning.</div>`
+    : `<div class="card info">${d}/10 — too much. It drops a stage for 2 weeks; the easier version comes back.</div>`;
+  return `<div class="top"><button class="btn icon" data-a="closeOverlay" aria-label="Back">‹</button><h1>Pain check</h1></div>
+    <div class="scroll" data-scroll="pain">
+      <div class="over">Which exercise?</div>
+      <div class="chips mt">${[...r.exNames, "Not sure"].map(n => `<button class="chip ${r.painEx === n ? "on" : ""}" data-a="painEx" data-v="${esc(n)}">${esc(n)}</button>`).join("")}</div>
+      <div class="over mt2">How bad, during? <span class="muted">0 = nothing · 10 = worst</span></div>
+      <div class="chips mt">${Array.from({ length: 11 }, (_, n) => `<button class="chip n ${d === n ? "on" : ""}" data-a="painDuring" data-v="${n}" aria-pressed="${d === n}">${n}</button>`).join("")}</div>
+      <div class="over mt2">Any of these?</div>
+      <div class="chips mt">${FLAGS.map(f => `<button class="chip ${P.flags.includes(f) ? "on" : ""}" data-a="painFlag" data-v="${f}" aria-pressed="${P.flags.includes(f)}">${f}</button>`).join("")}</div>
+      <div class="mt2">${verdict}</div>
+      <p class="t-caption muted">General guidance, not medical advice. IronLog never diagnoses.</p></div>
+    <div class="bottom"><button class="primary" data-a="savePain" ${r.painEx && (d != null || flagged) ? "" : "disabled"}>SAVE</button></div>`;
 }
 
 function viewReveal() {
@@ -985,7 +1098,7 @@ function viewSettings() {
   const nav = (label, value, a, v) => `<button class="listrow chev" data-a="${a}" data-v="${v || ""}"><span class="grow">${label}</span><span class="t-label muted">${value}</span></button>`;
   return `<div class="top"><button class="btn icon" data-a="closeOverlay" aria-label="Back">‹</button><h1>Settings</h1></div>
     <div class="scroll" data-scroll="settings">
-      <div class="card"><div class="over">Profile</div>${nav("Goal program", "Badminton singles", "info", "program")}${nav("Training days", "3 a week", "info", "days")}${nav("Injuries &amp; limits", "1 area", "info", "injuries")}</div>
+      <div class="card"><div class="over">Profile</div>${nav("Goal program", "Badminton singles", "info", "program")}${nav("Training days", "3 a week", "info", "days")}${nav("Body limitations", esc(limitsSummary()), "openLimits")}${nav("Sport", `${esc(S.sport.name)} · ${S.sport.day}`, "why", "sport")}</div>
       <div class="card"><div class="over">Places &amp; equipment</div>${nav("Home", "DB 5–25 lb, bands…", "openEquip", "home")}${nav("Gym", "full gym", "openEquip", "gym")}${nav("Limited", "cramming checklist", "openEquip", "limited")}</div>
       <div class="card"><div class="over">Training</div>
         <div class="listrow" style="cursor:default"><span class="grow">Units</span>${seg("units", ["kg", "lb"])}</div>
@@ -1165,7 +1278,7 @@ function render() {
   app.className = `app${dark ? " dark" : ""}${S.reduceMotion ? " rm" : ""}`;
   const scrolls = {}; app.querySelectorAll("[data-scroll]").forEach(el => scrolls[el.dataset.scroll] = el.scrollTop);
   const top = S.overlay[S.overlay.length - 1];
-  const OV = { wizard: viewWizard, plan: viewPlan, session: viewSession, review: viewReview, pain: viewPain, settings: viewSettings, equip: viewEquip, recovery: viewRecovery, capture: viewCapture, compare: viewCompare, stretch: viewStretch };
+  const OV = { wizard: viewWizard, plan: viewPlan, session: viewSession, review: viewReview, pain: viewPain, settings: viewSettings, equip: viewEquip, recovery: viewRecovery, capture: viewCapture, compare: viewCompare, stretch: viewStretch, limits: viewLimits };
   let html = top ? `<div class="screen ${S.fresh ? "enter" : ""}">${OV[top]()}</div>` : viewTabs();
   html += viewSheet();
   if (S.reveal) html += viewReveal();
@@ -1258,7 +1371,7 @@ const A = {
   trainNow: () => go(() => { S.wiz = { step: 1, time: S.last.time, situation: null, place: null, nearby: [...S.last.nearby], sore: [] }; S.overlay.push("wizard"); }),
   sameAsLast: () => go(() => { S.wiz = { ...S.last, nearby: [...S.last.nearby], sore: [] }; S.plan = buildPlan(S.wiz); S.overlay.push("plan"); }),
   wizTime: v => go(() => { S.wiz.time = +v; S.wiz.step = 2; }),
-  wizSit: v => go(() => { S.wiz.situation = v; S.wiz.step = 3; if (v === "cramming") S.crammingThisWeek++; }),
+  wizSit: v => go(() => { S.wiz.situation = v; if (v === "sport") { A._build(); return; } S.wiz.step = 3; if (v === "cramming") S.crammingThisWeek++; }),
   wizPlace: v => go(() => { S.wiz.place = v; A._build(); }),
   wizNear: v => { const n = S.wiz.nearby; if (v === "None") S.wiz.nearby = n.includes("None") ? [] : ["None"]; else { S.wiz.nearby = n.filter(x => x !== "None"); const i = S.wiz.nearby.indexOf(v); i < 0 ? S.wiz.nearby.push(v) : S.wiz.nearby.splice(i, 1); } render(); },
   wizSore: v => { const n = S.wiz.sore, i = n.indexOf(v); i < 0 ? n.push(v) : n.splice(i, 1); render(); },
@@ -1312,9 +1425,27 @@ const A = {
   rev: v => { const [k, o] = v.split(":"); S.review[k] = o; render(); },
   saveReview: () => { if (S.review.joints === "Pain" && !S.review.painEx) { go(() => S.overlay.push("pain")); return; } A._finalize(); },
   painEx: v => { S.review.painEx = v; render(); },
-  savePain: () => { A._finalize(); snack(`${S.review.painEx === "Not sure" ? "Noted" : S.review.painEx + " steps down for 2 weeks"} — we'll ask next time how it feels`); render(); },
+  painDuring: v => { S.pain.during = +v; render(); },
+  painFlag: v => { const f = S.pain.flags, i = f.indexOf(v); i < 0 ? f.push(v) : f.splice(i, 1); render(); },
+  savePain: () => { const ex = S.review.painEx, id = exIdByName(ex), P = S.pain; let msg;
+    if (P.flags.length) { if (id) S.dropped[id] = "a red flag"; msg = `${ex}: out of your plans until cleared — please see a professional`; }
+    else if (P.during > 5) { if (id) S.dropped[id] = "pain last time"; msg = `${ex} drops a stage for 2 weeks`; }
+    else { if (id) S.painPending = { id, ex, during: P.during }; msg = `Noted (${P.during}/10) — we'll ask tomorrow morning`; }
+    S.pain = { during: null, flags: [] }; A._finalize(); snack(msg); render(); },
+  morningPain: v => { const p = S.painPending, m = +v, act = painAction(p.during, m);
+    if (act === "drop") S.dropped[p.id] = "pain the next morning";
+    const alt = EX[p.id].alts.find(a => fitsLimits(a).ok);
+    snack(act === "drop" ? `${p.ex} drops a stage for 2 weeks${alt ? ` — ${EX[alt].name} instead` : ""}` : act === "hold" ? `Hold: ${p.ex} at the same load next time` : `${m}/10 and settled — keep going`);
+    S.painPending = null; render(); },
+  offerYes: () => { S.offer = null; S.intervalsOn = true; snack("Intervals added — one walk a week, from next week"); render(); },
+  offerNo: () => { S.offer = null; snack("Hidden for 7 days"); render(); },
+  openLimits: () => go(() => S.overlay.push("limits")),
+  limStage: v => { const [i, d] = v.split(":").map(Number), l = S.limitations[i]; l.stage = Math.max(1, Math.min(4, l.stage + d)); render(); },
+  limSide: v => { const [i, sd] = v.split(":"); S.limitations[+i].side = sd; render(); },
+  limRemove: v => { const l = S.limitations.splice(+v, 1)[0]; snack(`${l.joint} removed`, () => S.limitations.splice(+v, 0, l)); render(); },
+  limAdd: v => { S.limitations.push({ joint: v, side: "Both", stage: 1 }); snack(`${v} added at stage 1 — the safest start`); render(); },
   _finalize: () => go(() => {
-    const s = S.session, kind = s.plan.situation === "sore" ? "cardio" : "str";
+    const s = S.session, kind = ["sore", "sport"].includes(s.plan.situation) ? "cardio" : "str";
     const wasComplete = questComplete();
     const item = questItems().find(x => !x.done && x.k === kind) || questItems().find(x => !x.done);
     if (item) item.done = true;

@@ -16,6 +16,7 @@ participant "TrainNowViewModel" as VM
 participant "TrainingController" as TC
 participant "planner::buildSession()\n(core, pure)" as PL
 participant "Catalog" as CAT
+participant "body::\n(core, pure)" as BODY
 participant "game::\n(core, pure)" as GM
 
 Owner -> UI : tap "Train now"
@@ -28,12 +29,15 @@ Owner -> UI : dumbbells, bands, mat
 UI -> VM : request(25 min, Cramming, equipment)
 VM -> TC : planSession(context)
 TC -> PL : buildSession(profile, context,\nhistory, catalog, today)
-PL -> CAT : exercises where\nequipment ⊆ nearby AND\nkneeStress ≤ knee stage
-CAT --> PL : candidates
-PL -> PL : R1 pick type: what the\nweekly quest still needs
-PL -> PL : R2 time budget: 5 warm-up\n+ 17 main + 3 stretch
-PL -> PL : R3 compound first, skip\nPR attempts (cramming)
-PL -> PL : R4 loads: double progression\nfrom last performance
+PL -> BODY : allowed stress per joint\n(each limitation's stage today)
+BODY --> PL : knee ≤ medium
+PL -> CAT : exercises where\nequipment ⊆ nearby AND\njoint stress ≤ allowed (every joint)
+CAT --> PL : candidates (+ swaps, cues)
+PL -> PL : score the rest\n(K1–K6, safety already filtered)
+PL -> PL : P1 pick type: what the\nweekly quest still needs
+PL -> PL : P2 time budget: 5 warm-up\n+ 17 main + 3 stretch
+PL -> PL : P3 order: compound first, skip\nPR attempts (cramming)
+PL -> PL : P4 + P10 loads: double progression,\none change at a time
 PL --> TC : SessionPlan + "why" per item
 TC -> GM : previewXp(plan)
 GM --> TC : Legs +60, Back +40, Core +20

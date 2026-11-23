@@ -39,7 +39,7 @@ vision: [01_Vision.md](01_Vision.md). Use cases: [02_UseCaseModel.md](02_UseCase
 |---|---|---|
 | Log | Strength sets, cardio, badminton, stretching; edit + undo | ✅ sets only |
 | Progress | PRs, e1RM chart, weekly sets per muscle, body check-ins, progress photos | ✅ first three |
-| Coach | Goal programs, *Train now* planner, guided session | planned |
+| Coach | Goal programs, *Train now* planner, guided session, session review, body limitations + pain monitoring, daily stretch, exercise pictures; later (v0.6): "ready for…" gates and goal tests, cardio program, sport + prehab | planned (prototype ✅) |
 | Game | 8 skills, XP, gentle decay, pauses, weekly quest, rest token + own reward, weekly streak, unlocks | planned |
 | Online | Accounts, sync via the owner's VPS | planned |
 | Platforms | Android, web (WASM), Windows from one codebase | ✅ Windows/Linux desktop |
@@ -48,7 +48,7 @@ vision: [01_Vision.md](01_Vision.md). Use cases: [02_UseCaseModel.md](02_UseCase
 
 | # | Quality | Why it matters here | Scenario |
 |---|---|---|---|
-| QG1 | **Safety of advice** | The app tells people with injuries what to lift. | Q4 |
+| QG1 | **Safety of advice** | The app tells people with a joint that needs care what to lift. | Q4, Q12, Q13 |
 | QG2 | **Data durability** | Months of training history must survive crashes, phone loss and sync conflicts. | Q3, Q8 |
 | QG3 | **Speed of use** | "Too many taps per set" is the #1 complaint about other apps (research). | Q1, Q2 |
 | QG4 | **Fair, explainable game rules** | A game that punishes exam weeks or can't explain its numbers kills motivation. | Q5 |
@@ -60,6 +60,7 @@ vision: [01_Vision.md](01_Vision.md). Use cases: [02_UseCaseModel.md](02_UseCase
 |---|---|
 | Owner (student, badminton) | Plans that fit his day and body; motivation; works offline |
 | Partner | Simple onboarding, own private data |
+| Any user with a limitation, a sport or a long break | Plans inside their limits, a slow ramp back, their sport days respected |
 | Developer (owner) | Clean layers, tests, docs; skills for a C++/AI career |
 | Future readers (recruiters) | A codebase that shows good engineering judgment |
 
@@ -74,6 +75,7 @@ vision: [01_Vision.md](01_Vision.md). Use cases: [02_UseCaseModel.md](02_UseCase
 | Technical | Existing **Hetzner CX23** VPS (Ubuntu, x86_64), **Caddy**, **systemd**, no Docker, shared with TickTimer (the owner's earlier Qt timer app, with its own sync server on the same VPS) | New app = subdomain + loopback port + systemd unit + Caddy block (TickTimer `ROLLOUT.md` §2i) |
 | Organizational | One developer, student schedule | Small iterations; risk-driven order |
 | Organizational | Public GitHub repo | No personal health data or secrets in the repo |
+| Regulatory / ethical | General training guidance, **not** a medical device | No diagnosis; self-reported limitations; red flags point to a professional; PAR-Q+ linked at onboarding (§8.9) |
 | Conventions | UP artifacts (Larman), arc42, TickTimer-style backlog and troubleshooting log | See `08_DevelopmentCase.md` |
 
 ---
@@ -105,6 +107,9 @@ vision: [01_Vision.md](01_Vision.md). Use cases: [02_UseCaseModel.md](02_UseCase
 |---|---|---|
 | Phone + web + desktop from one codebase | **Qt Quick (QML) UI** over the existing C++ layers | ADR-012 |
 | Safe, explainable plans | **Rule-based planner** as a pure C++ function; rules come from the owner's written training decisions | 8.5, ADR-013 |
+| Safe for any joint, not just a knee | **Body limitations as data**; the safety filter runs first and can't be overridden | 8.18, ADR-026 |
+| Plans that adapt over weeks | **One engine** for gates, goal tests and "ready for…" triggers, over derived state | 8.19, ADR-027 |
+| New programs without new code | **Training content as data files**: catalog, programs, ladders, routines, sports, rules | 8.22 |
 | Fair game that can be rebalanced | **XP and levels are derived** from the log, never stored | 8.6, ADR-014 |
 | Works offline, syncs safely | **Local-first** + TickTimer's revisioned-document protocol + **record-level merge** on the client | 8.3, ADR-015 |
 | Reuse a proven server setup | Same VPS pattern as TickTimer; **QHttpServer** bound to loopback behind Caddy | 7, ADR-016 |
@@ -120,7 +125,8 @@ vision: [01_Vision.md](01_Vision.md). Use cases: [02_UseCaseModel.md](02_UseCase
 
 | Block | Tech | Responsibility | Status |
 |---|---|---|---|
-| `core/` | Pure C++17 | All training knowledge: log, catalog, stats, planner, game, sync merge | ✅ log, catalog, stats |
+| `core/` | Pure C++17 | All training knowledge: log, catalog, stats, body limitations, planner, rules engine, game, sync merge | ✅ log, catalog, stats |
+| `data/` | JSON, bundled as Qt resources | Training content: exercise catalog, goal programs, stage ladders, stretch routines, sport profiles, gates and triggers (§8.22) | planned |
 | `services/` | Qt Core + Network | Controller (every write), JSON store, sync, auth, view models | ✅ controller, store |
 | `ui-qml/` | Qt Quick | Phone-first screens: tabs **Today · Log · Progress · You** (ADR-023); Train now questions, guided session + mini bar, "How was it?", Why? sheet | planned |
 | `ui/` | Qt Widgets | v0.1 desktop UI; retired when QML reaches parity | ✅ |
@@ -135,10 +141,12 @@ be one-way.)
 
 | Module | Main types | Job | Status |
 |---|---|---|---|
-| `log` | `SetEntry`, `Workout`, `TrainingLog` → v2: `CardioEntry`, `MobilityEntry`, `BodyCheckIn`, `PausePeriod`, `RestTokenUse`, `UserReward` | What happened | ✅ sets |
-| `catalog` | `Exercise`, `ExerciseLibrary`, `MuscleGroup` → v2: equipment, secondary muscles, movement pattern, knee stress, stage | What exists | ✅ basic |
+| `log` | `SetEntry`, `Workout`, `TrainingLog` → v2: `CardioEntry`, `MobilityEntry`, `BodyCheckIn`, `PausePeriod`, `RestTokenUse`, `UserReward`, `PainReport`, `GoalTest`, `TriggerResponse` | What happened | ✅ sets |
+| `catalog` | `Exercise`, `ExerciseLibrary`, `MuscleGroup` → v2: equipment, secondary muscles, movement pattern, **stress per joint** + kneeling / impact / deep-bend / overhead flags, stage, variants | What exists | ✅ basic |
+| `body` | `Limitation`, `StageLadder`, `currentStage()`, `painAction()` | What the body allows today (ADR-026) | planned |
 | `stats` | free functions | PRs, e1RM history, weekly sets, last set | ✅ |
-| `planner` | `Profile`, `TrainContext`, `SessionPlan`, `buildSession()` | What to do today | planned |
+| `planner` | `Profile`, `TrainContext`, `SessionPlan`, `buildSession()`: safety filters → score → order → progress (P1–P11) | What to do today | planned |
+| `rules` | `Gate`, `Trigger`, `GoalTestSpec`, `evaluate(log, profile, rules, today)` | What's next: unlocks, offers, tests due (ADR-027) | planned |
 | `game` | `SkillSheet`, `xpFor()`, `applyDecay()`, `weeklyQuest()` | Levels and rewards | planned |
 | `sync` | `merge(local, remote)` | Combine two copies of a log | planned |
 | `Date` | value type | Calendar math | ✅ |
@@ -174,8 +182,11 @@ Controller = one entry point for all actions · ctor = constructor.
 ![Train now](../diagrams/rendered/sequence_train_now.png)
 
 1. Three answers: time, situation, equipment (pre-filled from last time).
-2. `planner::buildSession()` — pure function — filters the catalog, fits the
-   time budget, orders compound-first, sets loads, attaches a "why" to each item.
+2. `planner::buildSession()` — pure function — first applies the **safety
+   filters** (equipment, every body limitation's stage), then scores the
+   remaining exercises, fits the time budget, orders compound-first, sets
+   loads (one change at a time), adds limitation cues ("pad your knee"), and
+   attaches a "why" to each item.
 3. `game::previewXp()` shows what the session is worth.
 4. *Start* opens the guided session; every logged set takes the UC-01 path.
 
@@ -193,6 +204,26 @@ saves atomically → emits `logChanged()` → all views reload.
    (pure function), `PUT` again with the server's revision.
 5. Only if a record was **edited differently on both sides** does the user
    choose (rare: sets are mostly appended).
+
+### R5 — Pain, then the next morning
+
+1. In the session, "Joints: pain" opens the pain sheet: which exercise,
+   0–10, any red flag.
+2. A red flag → that exercise is removed today, and the sheet suggests a
+   professional. Nothing else is decided automatically.
+3. Next app open, the next morning: "How's your knee this morning? 0–10".
+4. `body::painAction(during, nextMorning)` (pure): 0–3 and settled → keep;
+   4–5 or still there → hold the load; > 5 or worse → that exercise drops a
+   stage for 2 weeks. The result is a `PainReport`; stages are derived.
+
+### R6 — A "ready for…" offer
+
+1. On open, `rules::evaluate(log, profile, rules, today)` lists gates that
+   just passed and triggers whose conditions hold (all derived).
+2. Today shows **one** offer, with its reason: "4 weeks of zone 2 done.
+   Add one interval session a week?" → Accept / Not now.
+3. The answer is stored as a `TriggerResponse`; "Not now" hides it for 7
+   days. Accepting changes the program from the next plan on.
 
 ### R4 — Opening the app on a new day
 
@@ -292,8 +323,8 @@ Every record also carries `updatedAt` and `deleted` (tombstone) for sync.
 
 ### 8.4 Derived state
 
-XP, levels, decay, quest progress and **earned** tokens are computed from
-the log on demand. Only *inputs* are stored (sets, cardio, pauses,
+XP, levels, decay, quest progress, **earned** tokens, body-limitation
+stages and open "ready for…" offers are computed from the log on demand. Only *inputs* are stored (sets, cardio, pauses,
 rest-token uses, the user's reward text). Consequences: nothing to sync or corrupt; rebalancing the
 game is a code change that re-scores history; two devices always agree.
 
@@ -305,10 +336,10 @@ game is a code change that re-scores history; two devices always agree.
 |---|---|---|
 | P1 Session type | Pick what the weekly plan still needs (strength A/B alternation, zone-2 cardio, mobility); avoid hitting a skill hard < 48 h apart | Owner's plan: A/B full-body ×3 |
 | P2 Time budget | Warm-up 5–8 min (RAMP: raise, activate, mobilise, potentiate) + main + 3–5 min stretch; ~3 min per strength set incl. rest; drop one-joint (isolation) exercises first, never the warm-up | Owner's plan: RAMP, 60–90 s rest |
-| P3 Exercise choice | **Filters first** (cannot be overridden): equipment ⊆ available; for **every** body limitation, the exercise's stress on that joint ≤ what its stage allows (ADR-026). **Then score** the rest on the Decision Report's criteria (effectiveness, sustainability, equipment fit, sport transfer, time) and pick the best; compound before isolation | Decision report: K1–K6, pain rule, compound-first |
+| P3 Exercise choice | **Filters first** (cannot be overridden): equipment ⊆ available; for **every** body limitation, the exercise's stress on that joint ≤ what its stage allows (ADR-026). **Then score** the rest on the Decision Report's criteria (effectiveness, sustainability, equipment fit, sport transfer, time) and pick the best; compound before isolation (ADR-031) | Decision report: K1–K6, pain rule, compound-first |
 | P4 Loads | Double progression: all sets at top of rep range → next available weight (e.g. +5 lb dumbbell) | Owner's plan: "picking weights" |
-| P5 Situation | **Cramming**: shorter, compound-only, no PR attempts, weekly target = exam minimum (2 strength + 1 cardio). **Sore/tired**: mobility + easy zone 2 + light core | Decision report C8 |
-| P6 Gates | Harder variations unlock only after their gate (e.g. reverse lunge after 3–4 pain-free weeks of step-ups; stability stage after 2 clean weeks) | Decision report D3, D7 |
+| P5 Situation | **Cramming**: shorter, compound-only, no PR attempts, weekly target = exam minimum (2 strength + 1 cardio). **Sore/tired**: mobility + easy zone 2 + light core. **Before my sport**: the sport's RAMP warm-up only, no static holds (§8.21) | Decision report C8 |
+| P6 Gates | Harder variations unlock only after their gate (e.g. reverse lunge after 3–4 pain-free weeks of step-ups; stability stage after 2 clean weeks). Gates are data, evaluated by the rules engine (§8.19) | Decision report D3, D7 |
 | P7 Pain monitoring | 0–10 during the exercise and the next morning: 0–3 and settled → OK; 4–5 or still there → hold the load; > 5 or worse next morning → that exercise drops one stage for 2 weeks. Red flags (swelling, heat, locking, giving way, can't take weight) → stop it and suggest a professional (§8.9) | Owner's plan: pain rule; Silbernagel 2007 (stricter: 3/10) |
 | P8 Stretch timing | Static holds only in the morning routine, the session cool-down or the evening — never in a warm-up or right before badminton (warm-ups are dynamic, RAMP). The cool-down picks add-on stretches for areas not stretched yet this week | Decision report D4, D9 |
 | P9 Return ramp | After a long break or a pause > 3 weeks: week 1 at ~60 % of normal sets, +10 % a week (balance-table defaults) | Decision report C2 |
@@ -330,7 +361,9 @@ Lean & toned lower, General) are **data files**, not code.
 | XP: strength set | +10 primary skill, +5 each secondary (half-set rule) |
 | XP: PR | +25 primary skill |
 | XP: cardio / badminton | +2 / min zone 2; +3 / min intervals or badminton |
-| XP: mobility | +2 / min |
+| XP: mobility | +2 / min (daily stretch, add-ons, cool-down) |
+| XP: prehab block | its sets count like strength sets; a goal test gives +10 to the skill it tests |
+| No XP | for pain reports, red flags or skipped exercises — pain is never rewarded |
 | Level curve | level L → L+1 costs 50 × L XP (fast early, slower later) |
 | Total level | sum of skill levels |
 | Progress display | "N sets to next level" on every skill (competence feedback) |
@@ -578,6 +611,82 @@ every area gets covered over a week.
 **Game.** Stretch minutes give Mobility XP (+2 per minute, §8.6). The
 routine is not a quest item, so missing a morning never costs a streak.
 
+
+### 8.18 Body limitations and pain monitoring (F25, ADR-026)
+
+The owner's plan was built around one knee. The app generalizes it: a
+**limitation** is a joint, a side and a stage. Design and sources:
+[plan-to-features F25](research/plan-to-features.md#f25-body-limitations-the-knee-scaled).
+
+| Piece | Rule |
+|---|---|
+| Joints | knee, shoulder, lower back, ankle, hip, wrist, neck; left / right / both |
+| Joint stress | every exercise: low / medium / high per joint, plus flags kneeling, impact, deep bend, overhead |
+| Stage ladder | per joint (data): the highest stress each stage allows, and what unlocks next. Example, knee: 1 = box squat, bridge, wall sit, low step-up · 2 = reverse lunge, higher step-up, single-leg RDL · 3 = Bulgarian split squat · 4 = forward lunge, then jumps (after a readiness gate) |
+| Safety filter (P3) | stress ≤ the stage's limit for **every** limitation; runs before scoring; can't be overridden |
+| Swaps and cues | a filtered exercise is swapped for the closest allowed variant; kneeling → "pad your knee" or the standing version; the swap is named in the plan ("for your knee") |
+| Pain monitoring (P7) | 0–10 during and next morning: 0–3 settled → keep · 4–5 or still there → hold · > 5 or worse → down one stage for 2 weeks |
+| Red flags | swelling, heat or redness, locking, giving way, can't take weight → stop that exercise, suggest a professional |
+| Weekly rating | 0–10 per limitation in the body check-in; used by gates (§8.19) |
+| Stage up | a gate: 2 weeks, all planned sessions, no pain > 3, weekly rating ≤ 2 → an **offer**, never automatic |
+
+### 8.19 Gates, goal tests and triggers (F26, ADR-027)
+
+One engine replaces scattered "revisit when" rules (old P6, F22).
+`rules::evaluate(log, profile, rules, today) → {passedGates, offers, testsDue}`
+is pure, like the game.
+
+| Kind | Example from the owner's plan, scaled | Result |
+|---|---|---|
+| Gate (time + criteria) | Reverse lunge after 3–4 pain-free weeks of step-ups; stability stage after 2 clean weeks; phase 2 (jumps) after 6–8 weeks, no pain, 3×10 loaded reverse lunges, 30 s single-leg balance | Unlock (game on: an unlock moment) |
+| Trigger | Walk 40 min at a steady pace and incline for 2 weeks + 8 pain-free weeks → "try light jogging?"; e1RM falling 3 sessions → "lighter week?"; 3–4 months on full-body A/B → "try an upper/lower split?" | An offer on Today (max one), with its reason |
+| Goal test | Time before getting gassed in your sport; reach test; single-leg balance; reps of a test exercise | Due every 4 weeks; charted in Progress |
+
+Rules are data with a small, closed condition language: comparisons over
+derived stats, "for N weeks", "and". No scripting.
+
+### 8.20 Cardio program (F27, ADR-029)
+
+From the plan's treadmill part, scaled to any starting point.
+
+| Step | Rule |
+|---|---|
+| Baseline | 10-minute talk test: raise the pace until you can talk but not sing; that speed + incline is week 1. After each session for 2 weeks: "Too easy / About right / Too hard" adjusts the next step |
+| Weekly table | 2 weeks per step: +5 min until 40–45 min, then speed, then incline. **One change at a time** (P10) |
+| Session | 5 min easy → main block → 5 min easy; no holding the rails |
+| Intervals | a gate after 4 weeks of base: once a week, 6 × (1 min faster + 2 min easy) |
+| Jogging | a trigger (§8.19), only if no limitation forbids impact |
+| Logged as | `CardioEntry` (minutes, speed, incline, zone); Stamina XP |
+
+### 8.21 Sport profile and prehab blocks (F28, ADR-030)
+
+| Piece | Rule |
+|---|---|
+| Sport profile (data) | body areas it loads, a RAMP warm-up, its weak spots. Badminton: wrists and forearms, inner thighs, back of the shoulder, spine rotation, knee control |
+| Sport days | from the profile; no hard leg session within 24 h before; the sport counts toward Stamina |
+| "Before my sport" | Train now situation → the sport's RAMP warm-up only (raise, activate, mobilise, potentiate); no static holds (P8) |
+| Prehab block | 10–12 min, from limitations + sport, with stages and a weekly target (e.g. 3×): core (curl-up, side plank, bird dog → suitcase carry, dead bug, Pallof press); knee (single-leg balance, slow step-down → single-leg RDL → split squat); hip (band side steps, side-lying leg raise) |
+| Placement | after cardio or on rest days; counts in the weekly plan, not the quest |
+
+### 8.22 Training content as data
+
+Everything a coach would write lives in versioned JSON files under `data/`,
+bundled as Qt resources and read by `catalog`, `planner`, `body` and
+`rules`.
+
+| File | Holds |
+|---|---|
+| `exercises.json` | catalog: muscles, equipment, joint stress + flags, stage, variants, cues, pictures (F2, F23) |
+| `programs/*.json` | goal programs: weekly sessions, set targets, phases (F6) |
+| `ladders/*.json` | one per joint: stage limits and unlocks (F25) |
+| `stretches.json` | morning routine and add-ons (F24) |
+| `sports/*.json` | sport profiles and warm-ups (F28) |
+| `rules/*.json` | gates, triggers, goal tests (F26) |
+
+Each file has a `version`; the app says "rules updated" when one changes,
+like the game's balance table. A coach or physio program could ship as
+data later, without new code.
+
 ---
 
 ## 9. Architecture decisions
@@ -616,6 +725,10 @@ Older, longer reasoning for ADR-001 to 009 is also in
 | [025](adr/ADR-025-exercise-pictures-from-chatgpt.md) | Exercise pictures generated with ChatGPT (anime character + muscle diagram) | Accepted | 2026-11-23 |
 | [026](adr/ADR-026-body-limitations.md) | Body limitations replace the knee-only stage | Proposed | 2026-11-23 |
 | [027](adr/ADR-027-gates-and-triggers.md) | One engine for gates, goal tests and triggers | Proposed | 2026-11-23 |
+| [028](adr/ADR-028-daily-stretch.md) | Daily stretch — static in the morning, moving before play | Proposed | 2026-11-23 |
+| [029](adr/ADR-029-cardio-program.md) | Cardio program from a talk-test baseline | Proposed | 2026-11-23 |
+| [030](adr/ADR-030-sport-profile-and-prehab.md) | Sport profiles and prehab blocks as data | Proposed | 2026-11-23 |
+| [031](adr/ADR-031-exercise-choice-filter-then-score.md) | Exercise choice — safety filters first, then a score | Proposed | 2026-11-23 |
 
 **Proposed** decisions are waiting for evidence: ADR-012 (QML) on the I4
 spike, ADR-016 (QHttpServer) on F15.
@@ -629,7 +742,7 @@ spike, ADR-016 (QHttpServer) on F15.
 | Q1 | Owner logs a repeat set mid-workout | ≤ 3 taps or 1 key combo | QA checklist |
 | Q2 | *Train now* on a phone, offline | Plan shown < 1 s after the last answer | Timed in QA |
 | Q3 | App killed while saving | Previous file intact | ✅ `test_services` |
-| Q4 | Planner with knee stage 1 and any input | Never returns a knee-stress-high exercise | Property test over many contexts |
+| Q4 | Planner with **any** set of body limitations and any input | Never returns an exercise whose stress on a limited joint is above that stage's limit | Property test over many contexts and limitation sets |
 | Q5 | 21 days without training during an exams pause | No decay; streak kept | Catch2 |
 | Q6 | Port 8081 probed from the internet | Times out | `curl` from mobile data |
 | Q7 | Core built on a machine without Qt | Builds and passes | ✅ CI job 1 |
@@ -637,6 +750,10 @@ spike, ADR-016 (QHttpServer) on F15.
 | Q9 | Someone with root on the VPS opens the photo store | Sees only ciphertext | Inspect `/var/lib/ironlog/photos/` in QA |
 | Q10 | Game off for 60 days of training, then on again | Levels reflect all training; no decay applied for the off period | Catch2 on `game::computeSheet` |
 | Q11 | User forgets the password, has the recovery code | All photos back on every device; none re-uploaded | Live test: reset via code, open on a 2nd client |
+| Q12 | Pain 6/10 during reverse lunges, worse next morning | Reverse lunge drops one stage for 2 weeks; the next plan uses the stage-below exercise | Catch2 on `body::painAction` + planner |
+| Q13 | A red flag (swelling) is reported | That exercise is removed today and the "see a professional" message shows; no XP | Catch2 + QA |
+| Q14 | User taps "Not now" on a trigger | The same offer doesn't show again for 7 days | Catch2 on `rules::evaluate` |
+| Q15 | Back after a 4-week pause | Week 1 plans ~60 % of normal sets, rising each week (P9) | Catch2 on the planner |
 
 ---
 
@@ -646,7 +763,8 @@ Full register: [05_RiskList.md](05_RiskList.md). Top risks:
 
 | Risk | Mitigation |
 |---|---|
-| Generated plans cause injury | Rules from written decisions, gates, pain check, tests (Q4) |
+| Generated plans cause injury | Rules from written decisions; safety filter for every body limitation; pain monitoring + red flags; gates (Q4, Q12, Q13) |
+| A user's condition doesn't fit the rules (R-24) | PAR-Q+ link, conservative stages, offers never automatic, "not medical advice" |
 | QML + Android + WASM is new territory | Spike first (backlog I4) |
 | Sync merge loses data | Ids, tombstones, pure merge with tests, server backups |
 | Gamification backfires (decay feels like punishment) | Game rules v2: 14-day grace, warning, pauses, comeback bonus, floor, weekly streak, game can be turned off |

@@ -33,12 +33,18 @@ package "services/   (Qt Core + Network)" as SVC #FFF8E1 {
 
 package "core/   (pure C++17 — no Qt)" as CORE #E8F5E9 {
   component "log\nSetEntry, Workout,\nCardio, Mobility, BodyCheckIn" as LOG #C8E6C9
-  component "catalog\nExercise metadata:\nequipment, muscles,\nknee stress, stage" as CAT #C8E6C9
+  component "catalog\nExercise metadata:\nequipment, muscles,\njoint stress, stage" as CAT #C8E6C9
+  component "body\nlimitations, stage ladders,\npain monitoring" as BODY
   component "stats\nPRs, e1RM, weekly sets" as ST #C8E6C9
-  component "planner\nrules → SessionPlan" as PL
+  component "planner\nsafety filters → score →\norder → progress\n→ SessionPlan" as PL
+  component "rules\ngates, goal tests,\nready-for offers" as RU
   component "game\nXP, levels, gentle decay,\npauses, quests, streak" as GM
   component "sync::merge\nrecord-level merge" as MG
   component "Date" as DT #C8E6C9
+}
+
+package "data/   (JSON as Qt resources)" as DATA #F3E5F5 {
+  component "exercises · programs · ladders\nstretches · sports · rules" as DF
 }
 
 package "server/   (separate executable)" as SERVER #FCE4EC {
@@ -58,6 +64,15 @@ TC --> GM
 VM --> ST
 PL --> CAT
 PL --> LOG
+PL --> BODY
+TC --> RU
+VM --> RU
+RU --> LOG
+RU --> BODY
+BODY --> LOG
+CAT ..> DF : reads
+BODY ..> DF : reads
+RU ..> DF : reads
 GM --> LOG
 GM --> CAT
 ST --> LOG
@@ -65,9 +80,15 @@ LOG --> DT
 HS --> SS
 
 note right of GM
-  XP and levels are DERIVED:
-  recomputed from the log,
-  never stored or synced.
+  XP, levels, stages and offers
+  are DERIVED: recomputed from
+  the log, never stored or synced.
+end note
+
+note right of PL
+  Safety filters (equipment,
+  every body limitation) run
+  first and can't be overridden.
 end note
 
 note bottom of SERVER

@@ -54,3 +54,7 @@ table; the **reasoning lives here**.
 | [025](ADR-025-exercise-pictures-from-chatgpt.md) | Exercise pictures generated with ChatGPT (anime character + muscle diagram) | Accepted | 2026-11-23 |
 | [026](ADR-026-body-limitations.md) | Body limitations replace the knee-only stage | Proposed | 2026-11-23 |
 | [027](ADR-027-gates-and-triggers.md) | One engine for gates, goal tests and triggers | Proposed | 2026-11-23 |
+| [028](ADR-028-daily-stretch.md) | Daily stretch — static in the morning, moving before play | Proposed | 2026-11-23 |
+| [029](ADR-029-cardio-program.md) | Cardio program from a talk-test baseline | Proposed | 2026-11-23 |
+| [030](ADR-030-sport-profile-and-prehab.md) | Sport profiles and prehab blocks as data | Proposed | 2026-11-23 |
+| [031](ADR-031-exercise-choice-filter-then-score.md) | Exercise choice — safety filters first, then a score | Proposed | 2026-11-23 |
