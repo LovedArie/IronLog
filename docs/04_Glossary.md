@@ -59,6 +59,12 @@
 | **Session review** | The end-of-session "How was it?" answers (overall, energy, joints, note). | `SessionReview` | — | check-in |
 | **Pre-picked answer** | A review answer the app suggests from session data; one tap confirms it. | flag | joints never pre-picked as pain | autofill |
 | **Progress photo** | Front, side or back photo taken at a check-in; encrypted on the device before sync. | `ProgressPhoto` | — | — |
+| **Envelope encryption** | One random key encrypts the data; that key is itself locked ("enveloped") by other keys. Changing a password re-locks only the small key. | design | — | key wrapping |
+| **Photo key** | Random key that encrypts all of a user's photos and previews. | 256-bit | never stored unlocked | data key |
+| **Lock key** | Key derived from the password that locks/unlocks envelope A. Never leaves the device. | 256-bit | — | wrapping key, KEK |
+| **Login key** | Key derived from the password and sent at login instead of the password. The server stores only its hash. | 256-bit | — | auth key |
+| **Recovery code** | Random code shown once when photo sync is turned on; opens envelope B if the password is forgotten. | text, grouped | keep it in a password manager or on paper | backup code |
+| **Envelope A / B** | The photo key locked with the lock key (A) or the recovery code (B); both stored on the server. | blob | — | — |
 | **Timed set** | A set measured in seconds instead of reps (plank, wall sit, balance hold). | `TimedSet` | 1–600 s | hold |
 | **Streak** | Consecutive weeks with the weekly quest completed; rest days count; paused weeks and rest-token weeks keep it. | derived | — | — |
 | **Body map** | Picture of the body where each muscle group is coloured by its skill level. | UI | — | — |

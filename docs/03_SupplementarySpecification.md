@@ -16,8 +16,10 @@
   or skip a progression gate; every plan screen says "general guidance, not
   medical advice; stop on sharp pain". (arc42 §8.9, Risk R-11)
 - **Security (v2)**: HTTPS between devices and Caddy; server on loopback
-  only; invite-only registration; salted, stretched password hashes; each
-  user reads and writes only their own log. (arc42 §8.8)
+  only; invite-only registration; the password never leaves the device (a
+  derived login key is sent and hashed again); progress photos use envelope
+  encryption with a recovery code; each user reads and writes only their
+  own data. (arc42 §8.8, §8.14)
 - **Game fairness (v2)**: every XP, level and token can be explained from
   logged records; no decay during a pause; no food rewards, no "cheat" wording. (arc42 §8.6)
 

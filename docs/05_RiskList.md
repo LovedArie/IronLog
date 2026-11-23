@@ -26,7 +26,9 @@
 | R-14 | **Sync merge loses or duplicates sets.** | Technical | M | H | Record ids + tombstones; pure `sync::merge` with exhaustive tests; nightly server backups. | Open |
 | R-15 | **Health data exposure**: public repo, shared VPS. | Business | L | H | Personal plans never committed (ADR-019); HTTPS; server on loopback; invite-only; per-user data. | Open |
 | R-16 | **"Lean" can't be measured** without food tracking; users may feel no progress. | Business | M | M | Weekly body weight + waist trend (F18); explain in the Vision. | Accepted |
-| R-18 | **Progress photos leak** (stolen phone, server breach, wrong user). | Business | L | H | End-to-end encryption (ADR-020), per-user keys, never exported or committed; optional app lock. | Open |
+| R-18 | **Progress photos leak** (stolen phone, server breach, wrong user). | Business | L | H | Envelope encryption (ADR-020): per-user photo key, server never sees the password; never exported or committed; optional app lock. | Open |
+| R-20 | **Password and recovery code both lost** → photos on the server can't be opened. | Business | L | M | Code shown at photo-sync setup with "save it in your password manager"; photos on logged-in devices survive and can be re-uploaded. | Accepted |
+| R-21 | **Web app storage cleared** on iPhone (browser policy). | Technical | M | L | Web app treats photos and the log as a cache of the server; re-downloads. | Accepted |
 | R-19 | **Camera capture** behaves differently on Android / WASM / desktop. | Technical | M | M | Test in the I4 spike; fall back to picking an existing photo. | Open |
 | R-17 | **QHttpServer** (not designed for internet exposure) misbehaves. | Technical | L | M | Loopback only, Caddy in front (Qt's documented limit); fall back to TickTimer's parser if needed. | Open |
 

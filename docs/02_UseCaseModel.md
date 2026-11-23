@@ -42,6 +42,8 @@
 | UC-21 | Sync Devices | Lifter (+ ironlog-server) | | Planned | F16 |
 | UC-22 | Invite a New Lifter | Server admin | | Planned | F17 |
 | UC-23 | Turn Game Mode On / Off | Lifter | | Planned | F5, F12 |
+| UC-24 | Turn On Photo Sync (save the recovery code) | Lifter | | Planned | F21 |
+| UC-25 | Reset Password with the Recovery Code | Lifter | | Planned | F15, F21 |
 
 ----|------|---------------|-----------|--------|
 | UC-01 | Log a Set | Lifter | ⭐ | Done (iteration 1) |

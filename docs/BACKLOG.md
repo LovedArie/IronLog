@@ -107,10 +107,13 @@ Same rules as TickTimer's backlog, because they worked:
 ## Features — online
 
 - **F15** `ironlog-server` (QHttpServer, 127.0.0.1): register with invite,
-  login, device tokens, `GET/PUT /log` with revisions + 409, `/version`.
+  `/prelogin` + login with a **derived login key** (server never sees the
+  password), device tokens, `GET/PUT /log` with revisions + 409, photo and
+  envelope endpoints, `/version`.
   Live test against a real process. *(L)*
 - **F16** Sync client: dirty flag on `logChanged()`, push/pull, `sync::merge`
-  by record id on 409; status shown in the UI. *(L)*
+  by record id on 409; status shown in the UI; decide whether the log blob
+  is encrypted too (arc42 §8.14). *(L)*
 - **F17** Partner flow: invite → register → onboarding → her own plans and
   levels, fully separate data. *(S)*
 
@@ -124,8 +127,10 @@ Same rules as TickTimer's backlog, because they worked:
   (dumbbell jumps, plates, kg/lb). *(S)*
 - **F21** **Progress photos** (Must): front/side/back at the weekly check-in,
   side-by-side compare (week 1 vs now) with a pose-alignment overlay;
-  stored on the device, synced **encrypted end-to-end** (ADR-020), never in
-  exports or the repo. *(L)*
+  stored on the device, synced with **envelope encryption** (ADR-020):
+  random photo key locked by the password-derived lock key and by a
+  **recovery code** shown when photo sync is turned on; encrypted previews;
+  password change re-locks one envelope. Never in exports or the repo. *(L)*
 - **F22** Stall detection: e1RM falling over several sessions or sets above
   the target → planner suggests a deload week. *(M)*
 

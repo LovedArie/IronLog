@@ -577,3 +577,35 @@ on your own, or to pull from when you *ask* to be quizzed.
 > XP is derived, so changing the balance table re-scores history and levels
 > can shift. A version number + "Game rules updated — levels recalculated"
 > tells the user why, instead of numbers silently moving.
+
+**V37 🟡 What is envelope encryption, and why use it for photos?**
+> One random photo key encrypts every photo; that key is then locked twice
+> (lock key from the password → envelope A; recovery code → envelope B).
+> Changing the password re-locks one small envelope instead of re-encrypting
+> thousands of photos, and there's a second way in if the password is lost.
+
+**V38 🔴 How can the server check a login without ever seeing the password?**
+> The client runs Argon2id on the password and splits the result with a KDF
+> into a login key (sent; the server stores a hash of it) and a lock key
+> (never sent). The server can verify the login key but can't turn it back
+> into the password or the lock key. Contrast: TickTimer sends the password.
+
+**V39 🟡 How does a photo taken on Android show up on the iPhone web app?**
+> Same C++ code and libsodium on every platform. The iPhone logs in, derives
+> the lock key, downloads envelope A, opens the photo key, then downloads and
+> decrypts photos and previews in the browser — treating them as a cache.
+
+**V40 🟡 Why does the app upload an encrypted preview with each photo?**
+> The server only holds ciphertext, so it can't make thumbnails. The device
+> makes one before encrypting, so galleries load quickly everywhere.
+
+**V41 🔴 Spot the issue: "derive the photo key directly from the password".**
+> Then every password change means re-encrypting and re-uploading every
+> photo, and a forgotten password loses everything — no recovery code
+> possible. Envelope encryption separates "the key that encrypts" from "the
+> keys that unlock it".
+
+**V42 🔴 Why does `/prelogin` return a fake salt for unknown users?**
+> The client needs the salt before it can derive the login key. Returning
+> "no such user" would let anyone check who has an account; a stable fake
+> salt makes known and unknown names look the same.

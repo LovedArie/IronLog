@@ -243,7 +243,7 @@ Here the verification is part of the pipeline.
 | `CardioEntry` | `id`, `at`, `kind` (treadmill / walk / run / bike / badminton), `minutes`, `speed?`, `incline?`, `zone?` | Feeds Stamina |
 | `MobilityEntry` | `id`, `at`, `routineId`, `minutes` | Feeds Mobility |
 | `BodyCheckIn` | `id`, `date`, `bodyweight`, `unit`, `waist?` | "Lean" trend |
-| `ProgressPhoto` | `id`, `date`, `pose` (front / side / back), `fileRef`, `checkInId?` | Image file stored beside the JSON, encrypted (§8.14) |
+| `ProgressPhoto` | `id`, `date`, `pose` (front / side / back), `fileRef`, `previewRef`, `checkInId?` | Image + preview stored beside the JSON, encrypted (§8.14) |
 | `SessionReview` | `id`, `date`, `overall` (great / good / ok / rough), `energy` (high / normal / low), `joints` (fine / twinge / pain), `note?`, `prefilled` (which answers the app suggested) | Planner input; `joints = pain` → pain check |
 | `GameModeChange` | `id`, `at`, `on` (true / false) | The off-intervals pause decay; the current value is the last record |
 | `TimedSet` | as `StrengthSet` but `seconds` instead of `reps` (plank, wall sit, balance) | Same PR/XP rules on duration |
@@ -362,9 +362,11 @@ suggestions are always weights that physically exist.
 - HTTPS only between devices and Caddy; the server binds 127.0.0.1.
   Qt's docs say Qt HTTP Server should not be exposed to the internet —
   Caddy is the only thing that talks to it.
-- Invite code on `/register`; passwords as salted, stretched hashes
-  (PBKDF2, like TickTimer); session tokens in memory; device tokens stored
-  hashed; login brake in the server (stock Caddy has no rate limiting).
+- Invite code on `/register`. **Unlike TickTimer, the password never
+  reaches the server**: the client derives a *login key* from it (§8.14)
+  and the server stores a salted, stretched hash of that key. Session
+  tokens in memory; device tokens stored hashed; login brake in the server
+  (stock Caddy has no rate limiting).
 - Each user can only read and write their own log.
 
 ### 8.9 Safety (health)
@@ -410,20 +412,52 @@ The app stores which answers were suggested (`prefilled`), so later
 analysis can tell "confirmed" from "chosen". Voice notes use the phone
 keyboard's dictation: no speech code in v1.
 
-### 8.14 Progress photos (privacy)
+### 8.14 Progress photos (privacy) — envelope encryption
 
-Body photos are the most sensitive data IronLog holds.
+Body photos are the most sensitive data IronLog holds. Design approved by
+the owner 2026-11-23 (ADR-020).
+
+![Photo keys](../diagrams/rendered/photo_keys.png)
+
+**The keys** (libsodium, the library EyesOff already uses):
+
+| Key | Made from | Lives | Job |
+|---|---|---|---|
+| Master key | `crypto_pwhash` (Argon2id) of the password + a per-user salt | memory only | Parent of the two sub-keys |
+| Login key | `crypto_kdf` sub-key 1 of the master key | sent at login; server stores only a hash of it | Proves who you are — **the server never sees the password** |
+| Lock key | `crypto_kdf` sub-key 2 of the master key | **never leaves the device** | Locks/unlocks envelope A |
+| Photo key | random 256-bit, made once | inside the envelopes; in memory while unlocked | Encrypts every photo and preview |
+| Recovery code | random, shown **once** when photo sync is turned on (e.g. `K7QF-2MZD-…`) | the user's password manager or paper | Backup way in |
+| Recovery keys | Argon2id of the recovery code → auth + unlock sub-keys | memory only | Auth proves the code to the server; unlock opens envelope B |
+
+**What the server stores** (all useless without the password or the code):
+hash of the login key · hash of the recovery auth key · envelope A (photo
+key locked with the lock key) · envelope B (photo key locked with the
+recovery unlock key) · encrypted photos and encrypted previews.
+
+**Flows**
+
+| Situation | What happens |
+|---|---|
+| New device (Android, web, Windows) | Log in → derive lock key → download envelope A → open it → photos decrypt on the device |
+| Change password | New master key → new login key + **re-lock envelope A only**; one request; no photo is re-uploaded |
+| Forgot password | Enter recovery code → server checks the recovery auth key → open envelope B → choose a new password → new envelope A |
+| Lost password **and** code | Server photos can't be opened by anyone. Photos still on a logged-in device are fine (and can be re-uploaded under a new key) |
+
+**Other rules**
 
 | Rule | How |
 |---|---|
-| Stored on the device first | Image files in the app's private data folder, named by record id |
-| **Encrypted before they leave the device** | libsodium secretbox (the EyesOff approach), key derived from the user's password (Argon2id). The VPS only ever stores ciphertext — "the server stays dumb" applies to photos too |
-| Synced separately from the log | `PUT /photos/<id>` as opaque blobs; the log references them by id, so a photo never travels inside the JSON |
-| Never exported or committed | Not in CSV export, not in backups that leave the device unencrypted, never in the repo |
-| Per user | The partner's photos are encrypted with her own key; the owner (also server admin) cannot read them |
+| Encryption | Photos: `crypto_secretstream_xchacha20poly1305` (built for large files). Envelopes: `crypto_secretbox` |
+| Previews | The server can't make thumbnails, so the device makes a small preview, encrypts it, and uploads it next to the photo — galleries load fast everywhere |
+| Synced separately | `PUT/GET /photos/<id>` and `/photos/<id>/preview` as opaque blobs; the log only references photo ids |
+| Login salt | `GET /prelogin?user=` returns the salt + Argon2id settings needed before login; unknown users get a stable fake salt so the endpoint doesn't reveal who has an account |
+| Web app (iPhone) | Browser storage may be cleared, so decrypted photos are a cache, downloaded again when needed; the password is asked again when opening photos in a new browser session |
+| Never exported or committed | Not in CSV export, never in the repo |
+| Per user | The partner has her own photo key; the owner, as server admin, cannot read her photos |
 
-Trade-off: a forgotten password means photos can't be recovered from the
-server (same as EyesOff). Status: ADR-020 *proposed*.
+**Open for F16:** the training log could be locked with the same machinery
+(the server would then store an encrypted log blob). Decide when building sync.
 
 ### 8.13 Training rules already in v0.1 ✅
 
@@ -471,7 +505,7 @@ Full reasoning for ADR-001 to 009: [archive/design-notes-v0.1.md](archive/design
 | 017 | **systemd, no Docker**, same VPS as TickTimer | A |
 | 018 | **Risk-driven milestones**: platform spike + data v2 first; server after the planner | A |
 | 019 | Personal training documents stay out of the public repo | A |
-| 020 | **Progress photos encrypted end-to-end** (libsodium, key from password); server stores ciphertext only | P |
+| 020 | **Progress photos: envelope encryption** — random photo key locked twice (password-derived lock key, recovery code); server never sees the password; encrypted previews | A |
 | 021 | **Game layer is optional** per user: off hides it and pauses decay; safety rules independent of it | A |
 | 022 | **Game rules v2** (evidence-based): gentler decay, Pause with reasons, weekly forgiving streak, rest token + user-written reward instead of a cheat-meal token; rules versioned | A |
 
@@ -514,6 +548,7 @@ Full reasoning for ADR-001 to 009: [archive/design-notes-v0.1.md](archive/design
 | Q8 | Same day logged on phone and PC offline, then both sync | All sets present once | Catch2 on `sync::merge` + live test |
 | Q10 | Game off for 60 days of training, then on again | Levels reflect all training; no decay applied for the off period | Catch2 on `game::computeSheet` |
 | Q9 | Someone with root on the VPS opens the photo store | Sees only ciphertext | Inspect `/var/lib/ironlog/photos/` in QA |
+| Q11 | User forgets the password, has the recovery code | All photos back on every device; none re-uploaded | Live test: reset via code, open on a 2nd client |
 
 ---
 

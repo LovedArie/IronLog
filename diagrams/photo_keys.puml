@@ -1,0 +1,55 @@
+@startuml photo_keys
+' arc42 §8.14 — how progress photos are locked (envelope encryption).
+' The server stores only scrambled data and never sees the password.
+' Render: plantuml -tpng diagrams/*.puml -o rendered
+
+title Progress photos — envelope encryption (ADR-020)
+
+skinparam shadowing false
+skinparam defaultFontName Arial
+skinparam componentStyle rectangle
+skinparam ArrowColor #444444
+
+package "On the user's device (any: Android, web, Windows)" as DEV #E8F5E9 {
+  component "password" as PW
+  component "master key\nArgon2id(password, salt)" as MK
+  component "login key\n(sub-key 1)" as LK
+  component "lock key\n(sub-key 2)\nnever leaves the device" as WK
+  component "recovery code\nshown once at\nphoto-sync setup" as RC
+  component "recovery keys\nArgon2id(code, salt_r)\n→ auth + unlock" as RK
+  component "photo key\n(random 256-bit)" as PK
+  component "photo + small preview\nencrypted with photo key" as PH
+}
+
+package "On the VPS (ironlog-server) — ciphertext only" as SRV #FCE4EC {
+  database "hash(login key)\nhash(recovery auth key)" as H
+  database "envelope A =\nphoto key locked\nwith lock key" as EA
+  database "envelope B =\nphoto key locked\nwith recovery unlock key" as EB
+  database "encrypted photos\n+ encrypted previews" as EP
+}
+
+PW --> MK
+MK --> LK : KDF
+MK --> WK : KDF
+LK --> H : sent at login,\nhashed again
+WK --> EA : locks / unlocks
+RC --> RK
+RK --> EB : locks / unlocks
+RK --> H : recovery proof
+PK --> PH : encrypts
+PK ..> EA : wrapped as
+PK ..> EB : wrapped as
+PH --> EP : upload
+
+note bottom of SRV
+  Root on the VPS sees: password-derived hashes,
+  two locked envelopes, scrambled files. Nothing usable.
+end note
+
+note right of DEV
+  New device: log in → derive lock key → open envelope A.
+  Password change: re-lock envelope A only (photos untouched).
+  Forgot password: recovery code → open envelope B → new password.
+end note
+
+@enduml
