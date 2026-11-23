@@ -1,0 +1,30 @@
+# Exercise pictures
+
+Two pictures per exercise (ADR-025):
+
+| File | Shows |
+|---|---|
+| `ironlog-<id>-how.jpg` | **How**: the IronLog character in side view, start pose → end pose |
+| `ironlog-<id>-muscles.jpg` | **Muscles**: front + back muscle diagram; main muscles red, helpers orange |
+
+`exercises.json` lists every exercise with its two files and its muscles.
+The app shows the muscle names as text too (never colour alone).
+
+All images: 1200 × 800 JPEG, made with ChatGPT image generation on
+2026-11-23 and checked by eye for form and anatomy errors. How they were
+made, and how to make more that match: [CREDITS.md](CREDITS.md).
+
+## Missing
+
+| Exercise | Missing | Why |
+|---|---|---|
+| Plank, Dead bug | muscle diagram | ChatGPT's content filter refused these two (false positive on the body diagram). Owner to decide: retry later, or use the app's text legend only |
+
+## Adding an exercise
+
+1. In the ChatGPT chat "Create Box Squat Image", ask for the next exercise
+   with the same wording as the others (see CREDITS.md).
+2. In the chat "Edit Muscle Diagram", ask for the new muscle colours.
+3. Check both pictures (form, fingers, right muscles), save as
+   `ironlog-<id>-how.jpg` / `ironlog-<id>-muscles.jpg` (1200 × 800), add a
+   line to `exercises.json`.

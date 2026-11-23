@@ -136,10 +136,11 @@ Same rules as TickTimer's backlog, because they worked:
   random photo key locked by the password-derived lock key and by a
   **recovery code** prompted at the first photo (and in settings); encrypted previews;
   password change re-locks one envelope. Never in exports or the repo. *(L)*
-- **F23** Exercise pictures for every catalog exercise (ADR-024): animated
-  form figure from key poses (2-bone IK) + front/back muscle map + 3 form
-  cues; thumbnail on plan rows, card in the session, how-to sheet. Gallery
-  test renders all poses. Needs F2. *(M)*
+- **F23** Exercise pictures for every catalog exercise (ADR-025): ChatGPT
+  how-picture + muscle diagram per exercise (`assets/exercises/`, 32 made),
+  a short clip per exercise made with ffmpeg from the two pictures, 3 form
+  cues; thumbnail on plan rows, card in the session, how-to sheet. Open:
+  plank + dead-bug diagrams (ChatGPT filter refused). Needs F2. *(M)*
 - **F22** Stall detection: e1RM falling over several sessions or sets above
   the target → planner suggests a deload week. *(M)*
 

@@ -1,0 +1,242 @@
+{
+  "version": 1,
+  "generated": "2026-11-23",
+  "source": "ChatGPT image generation (owner's account)",
+  "exercises": [
+    {
+      "id": "boxsquat",
+      "name": "Box squat",
+      "how": "ironlog-boxsquat-how.jpg",
+      "muscles": "ironlog-boxsquat-muscles.jpg",
+      "main": [
+        "quads",
+        "glutes"
+      ],
+      "helpers": [
+        "hamstrings",
+        "abs"
+      ]
+    },
+    {
+      "id": "goblet",
+      "name": "Goblet squat",
+      "how": "ironlog-goblet-how.jpg",
+      "muscles": "ironlog-goblet-muscles.jpg",
+      "main": [
+        "quads",
+        "glutes"
+      ],
+      "helpers": [
+        "abs",
+        "upper back"
+      ]
+    },
+    {
+      "id": "wallsit",
+      "name": "Wall sit",
+      "how": "ironlog-wallsit-how.jpg",
+      "muscles": "ironlog-wallsit-muscles.jpg",
+      "main": [
+        "quads"
+      ],
+      "helpers": [
+        "glutes",
+        "calves"
+      ]
+    },
+    {
+      "id": "dbrow",
+      "name": "DB row",
+      "how": "ironlog-dbrow-how.jpg",
+      "muscles": "ironlog-dbrow-muscles.jpg",
+      "main": [
+        "lats",
+        "upper back"
+      ],
+      "helpers": [
+        "biceps",
+        "rear shoulders",
+        "forearms"
+      ]
+    },
+    {
+      "id": "ringrow",
+      "name": "Ring row",
+      "how": "ironlog-ringrow-how.jpg",
+      "muscles": "ironlog-ringrow-muscles.jpg",
+      "main": [
+        "lats",
+        "upper back"
+      ],
+      "helpers": [
+        "biceps",
+        "rear shoulders",
+        "abs"
+      ]
+    },
+    {
+      "id": "bandrow",
+      "name": "Band row",
+      "how": "ironlog-bandrow-how.jpg",
+      "muscles": "ironlog-bandrow-muscles.jpg",
+      "main": [
+        "upper back",
+        "lats"
+      ],
+      "helpers": [
+        "rear shoulders",
+        "biceps"
+      ]
+    },
+    {
+      "id": "cablerow",
+      "name": "Cable row",
+      "how": "ironlog-cablerow-how.jpg",
+      "muscles": "ironlog-cablerow-muscles.jpg",
+      "main": [
+        "lats",
+        "upper back"
+      ],
+      "helpers": [
+        "biceps",
+        "rear shoulders",
+        "lower back"
+      ]
+    },
+    {
+      "id": "dbbench",
+      "name": "DB bench press",
+      "how": "ironlog-dbbench-how.jpg",
+      "muscles": "ironlog-dbbench-muscles.jpg",
+      "main": [
+        "chest"
+      ],
+      "helpers": [
+        "triceps",
+        "front shoulders"
+      ]
+    },
+    {
+      "id": "pushup",
+      "name": "Push-up",
+      "how": "ironlog-pushup-how.jpg",
+      "muscles": "ironlog-pushup-muscles.jpg",
+      "main": [
+        "chest"
+      ],
+      "helpers": [
+        "triceps",
+        "front shoulders",
+        "abs"
+      ]
+    },
+    {
+      "id": "revlunge",
+      "name": "Reverse lunge",
+      "how": "ironlog-revlunge-how.jpg",
+      "muscles": "ironlog-revlunge-muscles.jpg",
+      "main": [
+        "quads",
+        "glutes"
+      ],
+      "helpers": [
+        "hamstrings",
+        "calves"
+      ]
+    },
+    {
+      "id": "stepup",
+      "name": "Low step-up",
+      "how": "ironlog-stepup-how.jpg",
+      "muscles": "ironlog-stepup-muscles.jpg",
+      "main": [
+        "quads",
+        "glutes"
+      ],
+      "helpers": [
+        "hamstrings",
+        "calves"
+      ]
+    },
+    {
+      "id": "plank",
+      "name": "Plank",
+      "how": "ironlog-plank-how.jpg",
+      "muscles": null,
+      "main": [
+        "abs"
+      ],
+      "helpers": [
+        "obliques",
+        "front shoulders",
+        "glutes"
+      ]
+    },
+    {
+      "id": "deadbug",
+      "name": "Dead bug",
+      "how": "ironlog-deadbug-how.jpg",
+      "muscles": null,
+      "main": [
+        "abs"
+      ],
+      "helpers": [
+        "obliques",
+        "hip flexors"
+      ]
+    },
+    {
+      "id": "catcow",
+      "name": "Cat-cow",
+      "how": "ironlog-catcow-how.jpg",
+      "muscles": "ironlog-catcow-muscles.jpg",
+      "main": [
+        "lower back",
+        "upper back"
+      ],
+      "helpers": [
+        "abs"
+      ]
+    },
+    {
+      "id": "hipflex",
+      "name": "Hip flexor stretch",
+      "how": "ironlog-hipflex-how.jpg",
+      "muscles": "ironlog-hipflex-muscles.jpg",
+      "main": [
+        "hip flexors"
+      ],
+      "helpers": [
+        "quads"
+      ]
+    },
+    {
+      "id": "walk",
+      "name": "Easy treadmill walk",
+      "how": "ironlog-walk-how.jpg",
+      "muscles": "ironlog-walk-muscles.jpg",
+      "main": [
+        "calves",
+        "quads"
+      ],
+      "helpers": [
+        "hamstrings",
+        "glutes"
+      ]
+    },
+    {
+      "id": "legpress",
+      "name": "Leg press",
+      "how": "ironlog-legpress-how.jpg",
+      "muscles": "ironlog-legpress-muscles.jpg",
+      "main": [
+        "quads",
+        "glutes"
+      ],
+      "helpers": [
+        "hamstrings",
+        "calves"
+      ]
+    }
+  ]
+}

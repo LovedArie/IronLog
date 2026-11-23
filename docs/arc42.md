@@ -477,9 +477,13 @@ https://pubmed.ncbi.nlm.nih.gov/35291645/) suggests 12–20. It's a starting
 point and a parameter (`stats::VolumeTarget`); goal programs (F6) will set
 their own per-muscle targets.
 
-### 8.16 Exercise pictures — drawn by code
+### 8.16 Exercise pictures
 
-Every exercise shows two pictures (ADR-024, proposed): **how** (an animated
+> **Superseded:** the owner chose ChatGPT-generated images (ADR-025): files
+> in `assets/exercises/` listed in `exercises.json`; clips made from them with
+> ffmpeg. The code-drawn design below (ADR-024, rejected) is kept for the record.
+
+Every exercise shows two pictures: **how** (an animated
 side-view figure) and **which muscles** (front + back muscle map).
 
 | Piece | Where | What it does |
@@ -528,7 +532,8 @@ Older, longer reasoning for ADR-001 to 009 is also in
 | [021](adr/ADR-021-optional-game.md) | Game layer is optional per user | Accepted | 2026-11-23 |
 | [022](adr/ADR-022-game-rules-v2.md) | Game rules v2 (evidence-based) | Accepted | 2026-11-23 |
 | [023](adr/ADR-023-four-tab-navigation.md) | Four-tab navigation (Today · Log · Progress · You) | Accepted | 2026-11-23 |
-| [024](adr/ADR-024-exercise-pictures-drawn-by-code.md) | Exercise pictures drawn by code (form animation + muscle map) | Proposed | 2026-11-23 |
+| [024](adr/ADR-024-exercise-pictures-drawn-by-code.md) | Exercise pictures drawn by code (form animation + muscle map) | Rejected | 2026-11-23 |
+| [025](adr/ADR-025-exercise-pictures-from-chatgpt.md) | Exercise pictures generated with ChatGPT (anime character + muscle diagram) | Accepted | 2026-11-23 |
 
 **Proposed** decisions are waiting for evidence: ADR-012 (QML) on the I4
 spike, ADR-016 (QHttpServer) on F15.

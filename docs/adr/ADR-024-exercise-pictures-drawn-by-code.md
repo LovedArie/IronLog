@@ -1,6 +1,6 @@
 # ADR-024: Exercise pictures drawn by code (form animation + muscle map)
 
-- **Status:** Proposed — waiting for the owner's verdict on the prototype demo
+- **Status:** Rejected (2026-11-23) — owner disliked the look; superseded by [ADR-025](ADR-025-exercise-pictures-from-chatgpt.md)
 - **Date:** 2026-11-23
 - **Deciders:** owner + Claude (pairing)
 
