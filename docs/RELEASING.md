@@ -11,7 +11,7 @@
 | Workflow | File | Runs when | Does |
 |---|---|---|---|
 | **CI** | `.github/workflows/ci.yml` | every push to `main`, every pull request | Core-only build (no Qt) · Linux + Qt 6.4 build, tests, app screenshot · Windows + Qt 6.8 LTS MinGW build and tests |
-| **Release** | `.github/workflows/release.yml` | a tag like `v0.2.0` is pushed | Checks tag = `project(VERSION)` · builds + tests on Windows · `windeployqt` · smoke-tests the zip with no Qt on PATH · publishes a GitHub Release |
+| **Release** | `.github/workflows/release.yml` | a tag like `v0.2.0` is pushed, **or** the *Run workflow* button | Checks tag = `project(VERSION)` · builds + tests on Windows · `windeployqt` · smoke-tests the zip with no Qt on PATH · publishes a GitHub Release |
 
 See them run: repo → **Actions** tab.
 
@@ -23,14 +23,19 @@ See them run: repo → **Actions** tab.
    *Proof:* `grep -n "VERSION 0" CMakeLists.txt` shows the new number.
 2. **Commit and push** to `main`.
    *Proof:* CI is green on that commit (Actions tab, or the badge in the README).
-3. **Tag and push the tag**:
-   ```bash
-   git tag v0.2.0
-   git push origin v0.2.0
-   ```
+3. **Start the release** — either way works:
+   - **Button (no git needed, works from a phone):** repo → **Actions** →
+     **Release** → **Run workflow** → type `0.2.0` → **Run workflow**.
+     The workflow creates the `v0.2.0` tag itself, on the commit it tested.
+   - **Tag from your PC:**
+     ```bash
+     git tag v0.2.0
+     git push origin v0.2.0
+     ```
    *Proof:* the **Release** workflow starts in the Actions tab.
-4. **Wait for the release job.** It refuses to publish if the tag and
-   `CMakeLists.txt` disagree — fix step 1 and re-tag.
+4. **Wait for the release job** (~5 min). It refuses to publish if the
+   version and `CMakeLists.txt` disagree, if the version isn't `X.Y.Z`, or
+   (button) if that tag already exists — fix and start again.
    *Proof:* `https://github.com/LovedArie/IronLog/releases/latest` shows
    `IronLog-v0.2.0-windows.zip`.
 5. **Download it yourself** and run `IronLog.exe` on your PC.

@@ -1,10 +1,10 @@
-# CD — on a version tag (v0.2.0, v1.0.0, ...) build the Windows app,
-# package it with its DLLs, and publish a GitHub Release.
-#
-# The release routine (docs/RELEASING.md):
-#   1. bump project(VERSION) in CMakeLists.txt, commit, push
-#   2. git tag v0.2.0 && git push origin v0.2.0
-#   3. this workflow does the rest — and refuses if 1 and 2 disagree.
+# CD — build the Windows app, package it with its DLLs, and publish a
+# GitHub Release. Two ways to start it (docs/RELEASING.md):
+#   A. push a tag:        git tag v0.2.0 && git push origin v0.2.0
+#   B. press a button:    Actions → Release → Run workflow → version 0.2.0
+#      (the workflow then creates the tag itself — no local git needed)
+# Either way it refuses unless the version matches project(VERSION) in
+# CMakeLists.txt, and (for B) unless that tag doesn't exist yet.
 #
 # Later milestones add: Android APK (v0.3), web bundle (v0.3), and the VPS
 # deploy + /version check (v0.5, backlog I6).
@@ -14,6 +14,11 @@ name: Release
 on:
   push:
     tags: ['v*.*.*']
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Version to release, e.g. 0.2.0 — must equal project(VERSION) in CMakeLists.txt'
+        required: true
 
 permissions:
   contents: write   # needed to create the release
@@ -30,16 +35,32 @@ jobs:
       - uses: actions/checkout@v4
 
       # TickTimer lesson: a version is an ACT, declared once by a human.
-      # The tag and CMakeLists.txt must agree, or nothing ships.
-      - name: Check tag matches project(VERSION)
+      # The requested version and CMakeLists.txt must agree, or nothing ships.
+      # The button's text arrives via env, never pasted into the script with
+      # ${{ }} — that would let a crafted input run shell code (Actions
+      # "script injection"). Then it must look like 1.2.3 or we stop.
+      - name: Decide the tag and check it against project(VERSION)
+        env:
+          INPUT_VERSION: ${{ inputs.version }}
         run: |
-          TAG="${GITHUB_REF_NAME#v}"
+          if [ "$GITHUB_EVENT_NAME" = "workflow_dispatch" ]; then
+            if ! [[ "$INPUT_VERSION" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+              echo "::error::Version must look like 1.2.3, got '$INPUT_VERSION'"; exit 1
+            fi
+            TAG="v$INPUT_VERSION"
+            if git ls-remote --exit-code --tags origin "refs/tags/$TAG" >/dev/null; then
+              echo "::error::Tag $TAG already exists. Bump the version."; exit 1
+            fi
+          else
+            TAG="$GITHUB_REF_NAME"
+          fi
           CMAKE_VERSION="$(sed -n 's/^ *VERSION \([0-9.]*\).*/\1/p' CMakeLists.txt | head -1)"
           echo "tag=$TAG  CMakeLists.txt=$CMAKE_VERSION"
-          if [ "$TAG" != "$CMAKE_VERSION" ]; then
-            echo "::error::Tag v$TAG does not match project(VERSION $CMAKE_VERSION). Bump CMakeLists.txt first."
+          if [ "${TAG#v}" != "$CMAKE_VERSION" ]; then
+            echo "::error::$TAG does not match project(VERSION $CMAKE_VERSION). Bump CMakeLists.txt first."
             exit 1
           fi
+          echo "TAG=$TAG" >> "$GITHUB_ENV"
 
       # Pinned to 6.8.3 (LTS): the installer behind this action (aqtinstall)
       # could not locate Qt 6.11.3's package data on 2026-11-23 — see
@@ -77,7 +98,7 @@ jobs:
           Copy-Item build/IronLog.exe dist/IronLog/
           windeployqt --compiler-runtime --no-translations dist/IronLog/IronLog.exe
           Copy-Item README.md dist/IronLog/
-          Compress-Archive -Path dist/IronLog -DestinationPath "IronLog-$env:GITHUB_REF_NAME-windows.zip"
+          Compress-Archive -Path dist/IronLog -DestinationPath "IronLog-$env:TAG-windows.zip"
 
       # Proof point: the packaged exe starts with a PATH that has NO Qt and
       # no MinGW on it — only Windows itself — so every DLL must come from
@@ -107,7 +128,10 @@ jobs:
       - name: Publish the GitHub Release
         env:
           GH_TOKEN: ${{ github.token }}
+        # --target: when started by the button, the tag doesn't exist yet;
+        # gh creates it on exactly the commit this run built and tested.
         run: |
-          gh release create "$GITHUB_REF_NAME" "IronLog-${GITHUB_REF_NAME}-windows.zip" \
-            --title "IronLog ${GITHUB_REF_NAME#v}" \
+          gh release create "$TAG" "IronLog-${TAG}-windows.zip" \
+            --target "$GITHUB_SHA" \
+            --title "IronLog ${TAG#v}" \
             --generate-notes
