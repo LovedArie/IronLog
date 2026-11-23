@@ -1,0 +1,103 @@
+# CI — build and test IronLog on every push to main and every pull request.
+#
+# Three jobs, from fastest to most realistic:
+#   core       Linux, NO Qt. Proves the domain core stays Qt-free (arc42 Q7).
+#   linux-qt   Linux, Qt 6.4 from apt — the OLDEST Qt we claim to support.
+#   windows    Windows, Qt 6.11 MinGW — the owner's real toolchain.
+# Two Qt versions on purpose: together they cover the range CMakeLists.txt
+# promises (find_package(Qt6 6.4 ...)).
+
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:   # "Run workflow" button in the Actions tab
+
+# A newer push to the same branch cancels the older, now-pointless run.
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  core:
+    name: Core only (Linux, no Qt)
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - name: Configure (app OFF — no Qt on this machine)
+        run: cmake -S . -B build -DIRONLOG_BUILD_APP=OFF -DCMAKE_BUILD_TYPE=Release
+      - name: Build
+        run: cmake --build build --parallel
+      - name: Test
+        run: ctest --test-dir build --output-on-failure
+
+  linux-qt:
+    name: Full build (Linux, Qt 6.4)
+    runs-on: ubuntu-24.04
+    env:
+      # No display on a CI machine: Qt GUI programs must use the offscreen
+      # platform plugin (TickTimer lesson: encode it in CI, not in memory).
+      QT_QPA_PLATFORM: offscreen
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install Qt 6 from apt
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends qt6-base-dev qt6-base-dev-tools libgl-dev
+      - name: Configure
+        run: cmake -S . -B build -DCMAKE_BUILD_TYPE=Release
+      - name: Build
+        run: cmake --build build --parallel
+      - name: Test
+        run: ctest --test-dir build --output-on-failure
+      - name: Smoke test — launch the real app and screenshot it
+        run: |
+          ./build/IronLog --data "$RUNNER_TEMP/smoke.json" --demo --tab progress \
+                          --screenshot "$RUNNER_TEMP/smoke.png"
+          test -s "$RUNNER_TEMP/smoke.png"   # file exists and isn't empty
+      - name: Keep the screenshot
+        uses: actions/upload-artifact@v4
+        with:
+          name: smoke-screenshot-linux
+          path: ${{ runner.temp }}/smoke.png
+
+  windows:
+    name: Full build (Windows, Qt 6.11 MinGW)
+    runs-on: windows-latest
+    defaults:
+      run:
+        shell: bash
+    steps:
+      - uses: actions/checkout@v4
+
+      # Qt's MinGW build AND Qt's own MinGW 13.1 compiler. The runner's
+      # preinstalled MinGW is a newer GCC with a different ABI; mixing them
+      # crashes at runtime (same trap as TROUBLESHOOTING "wrong compiler").
+      - name: Install Qt 6.11 + MinGW 13.1
+        uses: jurplel/install-qt-action@v4
+        with:
+          version: '6.11.*'
+          arch: win64_mingw
+          tools: 'tools_mingw1310,qt.tools.win64_mingw1310'
+          cache: true
+
+      - name: Put Qt's MinGW first on PATH
+        run: |
+          MINGW="$(cygpath -u "$IQTA_TOOLS")/mingw1310_64/bin"
+          echo "$(cygpath -w "$MINGW")" >> "$GITHUB_PATH"
+      - name: Prove which compiler we got
+        run: g++ --version
+
+      - name: Configure
+        run: cmake -S . -B build -G "MinGW Makefiles" -DCMAKE_BUILD_TYPE=Release
+      - name: Build
+        run: cmake --build build --parallel
+      - name: Test
+        # Qt's bin (added by install-qt-action) and MinGW's bin are both on
+        # PATH, so the test .exes find their DLLs — no -1073741515 here.
+        run: ctest --test-dir build --output-on-failure

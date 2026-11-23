@@ -1,0 +1,89 @@
+# CD — on a version tag (v0.2.0, v1.0.0, ...) build the Windows app,
+# package it with its DLLs, and publish a GitHub Release.
+#
+# The release routine (docs/RELEASING.md):
+#   1. bump project(VERSION) in CMakeLists.txt, commit, push
+#   2. git tag v0.2.0 && git push origin v0.2.0
+#   3. this workflow does the rest — and refuses if 1 and 2 disagree.
+#
+# Later milestones add: Android APK (v0.3), web bundle (v0.3), and the VPS
+# deploy + /version check (v0.5, backlog I6).
+
+name: Release
+
+on:
+  push:
+    tags: ['v*.*.*']
+
+permissions:
+  contents: write   # needed to create the release
+
+jobs:
+  windows-release:
+    name: Windows zip → GitHub Release
+    runs-on: windows-latest
+    defaults:
+      run:
+        shell: bash
+    steps:
+      - uses: actions/checkout@v4
+
+      # TickTimer lesson: a version is an ACT, declared once by a human.
+      # The tag and CMakeLists.txt must agree, or nothing ships.
+      - name: Check tag matches project(VERSION)
+        run: |
+          TAG="${GITHUB_REF_NAME#v}"
+          CMAKE_VERSION="$(sed -n 's/^ *VERSION \([0-9.]*\).*/\1/p' CMakeLists.txt | head -1)"
+          echo "tag=$TAG  CMakeLists.txt=$CMAKE_VERSION"
+          if [ "$TAG" != "$CMAKE_VERSION" ]; then
+            echo "::error::Tag v$TAG does not match project(VERSION $CMAKE_VERSION). Bump CMakeLists.txt first."
+            exit 1
+          fi
+
+      - name: Install Qt 6.11 + MinGW 13.1
+        uses: jurplel/install-qt-action@v4
+        with:
+          version: '6.11.*'
+          arch: win64_mingw
+          tools: 'tools_mingw1310,qt.tools.win64_mingw1310'
+          cache: true
+      - name: Put Qt's MinGW first on PATH
+        run: |
+          MINGW="$(cygpath -u "$IQTA_TOOLS")/mingw1310_64/bin"
+          echo "$(cygpath -w "$MINGW")" >> "$GITHUB_PATH"
+
+      - name: Configure, build, test
+        run: |
+          cmake -S . -B build -G "MinGW Makefiles" -DCMAKE_BUILD_TYPE=Release
+          cmake --build build --parallel
+          ctest --test-dir build --output-on-failure
+
+      # windeployqt copies every Qt DLL + the platforms/ plugin folder next
+      # to the exe; --compiler-runtime adds MinGW's libstdc++ & co. Without
+      # this the zip would fail on a PC with no Qt (exit code -1073741515).
+      - name: Package with windeployqt
+        run: |
+          mkdir -p dist/IronLog
+          cp build/IronLog.exe dist/IronLog/
+          windeployqt --compiler-runtime --no-translations dist/IronLog/IronLog.exe
+          cp README.md dist/IronLog/
+          cd dist && 7z a "../IronLog-${GITHUB_REF_NAME}-windows.zip" IronLog
+
+      # Proof point: the packaged exe starts with a PATH that has NO Qt on
+      # it — only Windows itself — so every DLL must come from the zip.
+      # It uses the real "windows" platform plugin that windeployqt shipped
+      # (not "offscreen", which the zip deliberately doesn't contain).
+      - name: Smoke test the packaged app
+        run: |
+          cd dist/IronLog
+          PATH="/c/Windows/system32:/c/Windows" \
+            ./IronLog.exe --data "$RUNNER_TEMP/smoke.json" --demo --screenshot "$RUNNER_TEMP/smoke.png"
+          test -s "$RUNNER_TEMP/smoke.png"
+
+      - name: Publish the GitHub Release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release create "$GITHUB_REF_NAME" "IronLog-${GITHUB_REF_NAME}-windows.zip" \
+            --title "IronLog ${GITHUB_REF_NAME#v}" \
+            --generate-notes
