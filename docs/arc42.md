@@ -38,7 +38,7 @@ vision: [01_Vision.md](01_Vision.md). Use cases: [02_UseCaseModel.md](02_UseCase
 | Module | Core capability | Status |
 |---|---|---|
 | Log | Strength sets, cardio, badminton, stretching; edit + undo | ✅ sets only |
-| Progress | PRs, e1RM chart, weekly sets per muscle, body check-ins | ✅ first three |
+| Progress | PRs, e1RM chart, weekly sets per muscle, body check-ins, progress photos | ✅ first three |
 | Coach | Goal programs, *Train now* planner, guided session | planned |
 | Game | 8 skills, XP, decay, exam mode, weekly quest, cheat-meal token, unlocks | planned |
 | Online | Accounts, sync via the owner's VPS | planned |
@@ -243,6 +243,8 @@ Here the verification is part of the pipeline.
 | `CardioEntry` | `id`, `at`, `kind` (treadmill / walk / run / bike / badminton), `minutes`, `speed?`, `incline?`, `zone?` | Feeds Stamina |
 | `MobilityEntry` | `id`, `at`, `routineId`, `minutes` | Feeds Mobility |
 | `BodyCheckIn` | `id`, `date`, `bodyweight`, `unit`, `waist?` | "Lean" trend |
+| `ProgressPhoto` | `id`, `date`, `pose` (front / side / back), `fileRef`, `checkInId?` | Image file stored beside the JSON, encrypted (§8.14) |
+| `TimedSet` | as `StrengthSet` but `seconds` instead of `reps` (plank, wall sit, balance) | Same PR/XP rules on duration |
 | `ExamPeriod` | `id`, `start`, `end` (≤ 21 days) | Pauses decay, lowers quest |
 | `TokenSpend` | `id`, `date`, `note?` | Spent cheat-meal tokens |
 | `Profile` | goal program, units, equipment sets per place, constraints (knee stage …), weekly availability | Per user |
@@ -362,6 +364,21 @@ Server errors use distinct codes (`auth`, `forbidden`, `conflict`,
 No core function reads the clock. `today` / `now` is a parameter
 (TickTimer lesson: a test that failed only after 5 PM).
 
+### 8.14 Progress photos (privacy)
+
+Body photos are the most sensitive data IronLog holds.
+
+| Rule | How |
+|---|---|
+| Stored on the device first | Image files in the app's private data folder, named by record id |
+| **Encrypted before they leave the device** | libsodium secretbox (the EyesOff approach), key derived from the user's password (Argon2id). The VPS only ever stores ciphertext — "the server stays dumb" applies to photos too |
+| Synced separately from the log | `PUT /photos/<id>` as opaque blobs; the log references them by id, so a photo never travels inside the JSON |
+| Never exported or committed | Not in CSV export, not in backups that leave the device unencrypted, never in the repo |
+| Per user | The partner's photos are encrypted with her own key; the owner (also server admin) cannot read them |
+
+Trade-off: a forgotten password means photos can't be recovered from the
+server (same as EyesOff). Status: ADR-020 *proposed*.
+
 ### 8.13 Training rules already in v0.1 ✅
 
 | Rule | Definition | Where |
@@ -408,6 +425,7 @@ Full reasoning for ADR-001 to 009: [archive/design-notes-v0.1.md](archive/design
 | 017 | **systemd, no Docker**, same VPS as TickTimer | A |
 | 018 | **Risk-driven milestones**: platform spike + data v2 first; server after the planner | A |
 | 019 | Personal training documents stay out of the public repo | A |
+| 020 | **Progress photos encrypted end-to-end** (libsodium, key from password); server stores ciphertext only | P |
 
 ### Notes on the new decisions
 
@@ -446,6 +464,7 @@ Full reasoning for ADR-001 to 009: [archive/design-notes-v0.1.md](archive/design
 | Q6 | Port 8081 probed from the internet | Times out | `curl` from mobile data |
 | Q7 | Core built on a machine without Qt | Builds and passes | ✅ CI job 1 |
 | Q8 | Same day logged on phone and PC offline, then both sync | All sets present once | Catch2 on `sync::merge` + live test |
+| Q9 | Someone with root on the VPS opens the photo store | Sees only ciphertext | Inspect `/var/lib/ironlog/photos/` in QA |
 
 ---
 

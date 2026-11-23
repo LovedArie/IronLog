@@ -491,3 +491,26 @@ on your own, or to pull from when you *ask* to be quizzed.
 > backups/CSV, I3 release CD. CI first protects everything; the spike comes
 > before more code is built on a UI decision that might change.
 
+**V21 🟡 Why are progress photos encrypted on the device rather than just sent over HTTPS?**
+> HTTPS protects photos in transit only; on the VPS they'd sit readable by
+> anyone with root (including the owner, for the partner's photos). Encrypting
+> on the device with a key from the user's password means the server stores
+> ciphertext only (ADR-020) — the same "dumb server" rule as the log.
+
+**V22 🔴 Trade-off of end-to-end encrypted photos?**
+> Forgotten password = photos on the server can't be recovered, and the
+> server can't make thumbnails. Same trade-off EyesOff accepted.
+
+**V23 🟡 Why do timed sets matter for this owner specifically?**
+> His plan has about ten timed exercises (planks, side planks, wall sits,
+> balance holds, McGill holds). With reps-only logging they can't be recorded,
+> earn XP, or show progress.
+
+**V24 🟡 Why did "keyboard-first entry" become "one-tap repeat last set"?**
+> The research assumed a desktop app. Phone-first changes the fastest input:
+> big +/− steppers and repeating the last set beat keyboard shortcuts.
+
+**V25 🟢 Name three research features deliberately skipped, and one reason each.**
+> Programmable progression rules (planner rules cover it) · AI-generated
+> workouts (black box; ADR-013) · nutrition logging (scope creep, users
+> dislike it in workout apps).

@@ -53,7 +53,12 @@
 | **Weekly quest** | The week's planned sessions; completing it earns a token. | derived | — | quest |
 | **Cheat-meal token** | Reward for a completed weekly quest. Bank at most 2. | integer | 0–2 | token |
 | **Derived state** | Values recomputed from the log (XP, levels, quests, earned tokens), never stored. | — | — | — |
-| **Body check-in** | Weekly body weight + waist entry; the "lean" trend. | `BodyCheckIn` | — | weigh-in |
+| **Body check-in** | Weekly body weight + waist entry (+ progress photos); the "lean" trend. | `BodyCheckIn` | — | weigh-in |
+| **Progress photo** | Front, side or back photo taken at a check-in; encrypted on the device before sync. | `ProgressPhoto` | — | — |
+| **Timed set** | A set measured in seconds instead of reps (plank, wall sit, balance hold). | `TimedSet` | 1–600 s | hold |
+| **Streak** | Consecutive weeks with the weekly quest completed; exam weeks don't break it. | derived | — | — |
+| **Body map** | Picture of the body where each muscle group is coloured by its skill level. | UI | — | — |
+| **Deload** | A planned lighter week after a stall, to recover and resume progress. | planner hint | — | — |
 | **Revision** | Server counter for a user's log; bumps on every successful push. | integer | ≥ 0 | — |
 | **Tombstone** | A record marked `deleted` instead of removed, so deletes sync. | flag | — | — |
 | **Merge** | Combining two copies of a log by record id (union; newer edit wins). | `sync::merge` | — | — |

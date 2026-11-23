@@ -49,9 +49,9 @@ part by part, and rewards consistency — synced to your own server.
 | Module | What it does |
 |---|---|
 | **Coach** | **Goal programs** (Badminton singles · Lean & toned, upper focus · Lean & toned, lower focus · General fitness). **Train now**: asks time → today's situation → gym or home / what's nearby, then builds a session. **Guided session**: follow the plan, log as you go, rest timer. Progression and pain checks. |
-| **Game** | **Character sheet** with 8 skills: Arms, Shoulders, Chest, Back, Core, Legs, Stamina, Mobility. XP from every set, minute of cardio and stretch. **Decay** after a grace period, paused by **exam mode**; **muscle memory** doubles XP while you climb back. **Weekly quest** → **cheat-meal token**. **Unlocks**: harder exercises open when progression gates are passed. |
-| **Log** | Strength sets (weight, reps, RIR, set type, note), cardio (treadmill time/speed/incline), badminton, stretching. Edit + undo. |
-| **Progress** | PRs, estimated-1RM charts, weekly sets per muscle, weekly body weight + waist trend. |
+| **Game** | **Character sheet** (a **body map** that lights up by level) with 8 skills: Arms, Shoulders, Chest, Back, Core, Legs, Stamina, Mobility. XP from every set, minute of cardio and stretch. **Decay** after a grace period, paused by **exam mode**; **muscle memory** doubles XP while you climb back. **Weekly quest** → **cheat-meal token**. **Unlocks**: harder exercises open when progression gates are passed. **Streak + heat map** (exam weeks don't break it). |
+| **Log** | Strength sets (weight, reps, RIR, set type, note), **timed holds** (plank, wall sit, balance), cardio (treadmill time/speed/incline), badminton, stretching. One-tap "repeat last set". Edit + undo. |
+| **Progress** | PRs, estimated-1RM charts, weekly sets per muscle, weekly body weight + waist trend, **progress photos** (private, encrypted) with side-by-side compare, stall → deload hint. |
 | **Online** | Accounts on the owner's VPS (invite-only), sync across devices, works offline. |
 | **Platforms** | Android app, web app (for iPhone), Windows desktop — one codebase. |
 
@@ -81,7 +81,7 @@ Train now
 ## Out of scope (for v1)
 
 - **Food logging and calorie counting.** "Lean" is tracked with weekly body
-  weight + waist instead. Cheat-meal tokens reward consistency; they are
+  weight + waist + progress photos instead. Cheat-meal tokens reward consistency; they are
   not a diet tool.
 - Social feeds, leaderboards with strangers, public sharing.
 - Wearables / heart-rate devices.
@@ -117,3 +117,4 @@ Train now
 |---------|------|-------------|--------|
 | Inception draft | 2026-11-23 | v0.1: desktop logbook with PRs, weekly volume, chart | Claude (pairing) |
 | v2 | 2026-11-23 | Coach + game + online, phone-first, after feature research and owner interview | Claude (pairing) with owner |
+| v2.1 | 2026-11-23 | Research triage: progress photos (Must), timed holds, fast phone logging, body map, streak, stall/deload | Claude (pairing) with owner |
