@@ -37,6 +37,12 @@ Each exercise then: *"Start again from the GREY diagram, identical. Color
 ONLY: MAIN in bright red = … HELPERS in orange = … All other muscle groups
 stay light grey. No text."*
 
+**Recoloured afterwards:** red → `#2F5BD0` (dark blue, main) and orange →
+`#8FAAF0` (light blue, helpers), by hue, keeping the white lines, so the
+diagrams follow the design system's colour-blind rule (one hue, dark vs
+light). New diagrams: generate in red/orange as above, then run the same
+recolour (hue < 15° or > 340° → main; 15–50° → helper).
+
 An earlier realistic skin-off anatomy chart was dropped: ChatGPT's content
 filter refused most edits of it. Three diagrams (cat-cow, hip flexor,
 walk) were made in a second chat from a pasted copy of the same diagram.

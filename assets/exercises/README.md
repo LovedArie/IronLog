@@ -5,7 +5,7 @@ Two pictures per exercise (ADR-025):
 | File | Shows |
 |---|---|
 | `ironlog-<id>-how.jpg` | **How**: the IronLog character in side view, start pose → end pose |
-| `ironlog-<id>-muscles.jpg` | **Muscles**: front + back muscle diagram; main muscles red, helpers orange |
+| `ironlog-<id>-muscles.jpg` | **Muscles**: front + back muscle diagram; main muscles dark blue, helpers light blue |
 | `clips/ironlog-<id>-clip.mp4` | **Clip** (~7 s, 720 × 960): start ↔ end pose twice, then the muscles with their names. Built by `tools/make_clips.py` |
 
 `ironlog-muscles-base.jpg` is the plain grey diagram every muscle picture

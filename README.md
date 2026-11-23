@@ -2,9 +2,16 @@
 
 [![CI](https://github.com/LovedArie/IronLog/actions/workflows/ci.yml/badge.svg)](https://github.com/LovedArie/IronLog/actions/workflows/ci.yml)
 
-A desktop **bodybuilding training log** in C++17 and Qt 6. Log your sets, see
-personal records the moment you hit them, check weekly volume per muscle group,
-and watch your estimated 1RM climb on a chart.
+IronLog is becoming a **phone-first training coach** (see *Where it's going*).
+Today, **v0.1.0 is a desktop training log** in C++17 and Qt 6:
+
+- Log your sets.
+- See personal records (PRs) the moment you hit them.
+- Check weekly sets per muscle group.
+- Watch your **e1RM** climb on a chart. *(e1RM = estimated one-rep max: the most you could lift once.)*
+
+> **Start here:** [Vision](docs/01_Vision.md) (what and why) →
+> [BACKLOG](docs/BACKLOG.md) (what's next) → [DEVELOPING](docs/DEVELOPING.md) (how we work).
 
 ![Session tab](docs/screenshots/session.png)
 
@@ -12,21 +19,24 @@ and watch your estimated 1RM climb on a chart.
 
 ## Where it's going
 
-v0.1 is a desktop logbook. The plan (see [Vision](docs/01_Vision.md) and
-[Backlog](docs/BACKLOG.md)) turns it into a **phone-first training coach
-that plays like an MMO**: *Train now* builds a workout from your time,
-situation and equipment; 8 skills level up as you train and decay if you
-stop (gently, with pauses for exams); a weekly quest earns a rest token
-and your own reward; every exercise has a **how-to picture** and a
-**muscle diagram**; data syncs to your own server.
+v0.1 is a desktop logbook. The goal ([Vision](docs/01_Vision.md),
+[Backlog](docs/BACKLOG.md)) is a **phone-first training coach**:
+
+- **Train now** builds today's workout from your time, place and equipment.
+- **Game (optional):** 8 skills level up as you train, like skills in an MMO
+  (online role-playing game). They fade slowly if you stop. A **Pause**
+  protects exam weeks.
+- **Weekly quest:** finish it to earn a rest token and your own reward.
+- **Pictures:** each exercise has a how-to picture, a muscle diagram and a short clip.
+- **Sync:** your data lives on your own server.
 
 | Milestone | Theme |
 |---|---|
-| v0.2 | Foundation: CI/CD, data format v2, QML/Android/web spike |
-| v0.3 | Coach: profiles, goal programs, *Train now*, guided sessions |
-| v0.4 | Game & body: skills, XP, gentle decay, pauses, quests, streak, check-ins, photos |
-| v0.5 | Online: server on the VPS, accounts, sync |
-| v0.6 | Progress+: body check-ins, more PRs, calculators |
+| v0.2 | Foundation: test build of the phone UI (QML spike), data format v2, exercise catalog v2, edit + undo, backups. *(CI/CD — automatic build, test and release — is already done.)* |
+| v0.3 | Coach: profiles, goal programs, *Train now*, guided sessions, exercise pictures |
+| v0.4 | Game & body: skills, XP (experience points), slow decay, pauses, quests, streak, body check-ins, photos |
+| v0.5 | Online: server on the owner's rented server (VPS), accounts, sync |
+| v0.6 | Progress+: more PR types, plate/warm-up calculator, stall → deload hint, retire the desktop (Widgets) UI |
 
 ## Features
 
@@ -121,7 +131,7 @@ IronLog --data test.json --date 2026-11-17 --tab week --screenshot week.png
 
 ```
 IronLog/
-├── .github/workflows/      ci.yml (every push) · release.yml (on version tag)
+├── .github/workflows/      ci.yml (every push to main, every pull request) · release.yml (version tag or Release button)
 ├── CMakeLists.txt          3 libraries/executables, one per layer
 ├── include/                headers (declarations)
 │   ├── core/               Date, Exercise, SetEntry, Workout, Stats, SampleData
@@ -131,8 +141,12 @@ IronLog/
 ├── src/                    sources (definitions), same three folders
 ├── tests/                  test_core.cpp, test_services.cpp
 ├── diagrams/               PlantUML sources + rendered/ PNGs
-├── docs/                   UP artifacts 01–08, arc42, BACKLOG, research/, troubleshooting
-├── prototypes/             throwaway experiments (empty)
+├── assets/exercises/       exercise pictures (how-to + muscles), clips/, exercises.json, CREDITS
+├── assets/game/            body map colour key (game)
+├── tools/                  make_clips.py (builds the exercise clips)
+├── docs/                   UP artifacts 01–08, arc42, adr/, BACKLOG, DEVELOPING, RELEASING,
+│                           TROUBLESHOOTING, research/, archive/
+├── prototypes/             throwaway experiments (ui-prototype/: clickable 4-tab phone UI)
 └── question-bank.md        self-review Q&A for this project
 ```
 
@@ -153,6 +167,9 @@ Details and reasoning: **[docs/adr/](docs/adr/README.md)** — one record per de
    optional QtCharts module — one less thing to install.
 5. **Never lose data.** `QSaveFile` writes atomically. An unreadable file is
    renamed to `ironlog.json.unreadable-<time>` before anything new is saved.
+6. **v2 decisions** (phone UI in QML, rule-based planner, game state worked
+   out from the log, encrypted photos, ChatGPT exercise pictures):
+   ADR-010 to ADR-025 in [docs/adr/](docs/adr/README.md).
 
 ---
 
@@ -178,7 +195,7 @@ Details and reasoning: **[docs/adr/](docs/adr/README.md)** — one record per de
 | [01_Vision](docs/01_Vision.md) | What is this and why? |
 | [02_UseCaseModel](docs/02_UseCaseModel.md) | What can a user do? |
 | [03_SupplementarySpecification](docs/03_SupplementarySpecification.md) | Quality rules (saving, speed, platforms) |
-| [04_Glossary](docs/04_Glossary.md) | What do e1RM, volume, PR mean here? |
+| [04_Glossary](docs/04_Glossary.md) | What do e1RM, weekly sets, PR, QML, VPS mean here? |
 | [05_RiskList](docs/05_RiskList.md) | What could go wrong? |
 | [06_IterationPlan](docs/06_IterationPlan.md) | What's done, what's next |
 | [07_PhasePlan](docs/07_PhasePlan.md) | Rough roadmap |
@@ -186,11 +203,12 @@ Details and reasoning: **[docs/adr/](docs/adr/README.md)** — one record per de
 | [arc42](docs/arc42.md) | Architecture: context, building blocks, deployment, concepts, decisions |
 | [adr/](docs/adr/README.md) | One record per architecture decision (ADR-001 …) |
 | [BACKLOG](docs/BACKLOG.md) | What's next, ranked, with milestones v0.2–v0.6 |
-| [research/feature-research](docs/research/feature-research.md) | What other lifting apps do, what users love and hate |
-| [TROUBLESHOOTING](docs/TROUBLESHOOTING.md) | Symptom → cause → fix |
+| [research/](docs/research/) | Feature research rounds 1–2 ([1](docs/research/feature-research.md), [2](docs/research/feature-research-2.md)) and [UI research](docs/research/ui-research.md) |
 | [DEVELOPING](docs/DEVELOPING.md) | Our git workflow; running on Windows, Android, iPhone |
-| [assets/exercises](assets/exercises/README.md) | Exercise pictures: how-to + muscle diagram per exercise, and how to make more |
 | [RELEASING](docs/RELEASING.md) | CI/CD pipelines and the release routine |
+| [TROUBLESHOOTING](docs/TROUBLESHOOTING.md) | Symptom → cause → fix |
+| [assets/exercises](assets/exercises/README.md) | Exercise pictures and clips, and how to make more |
+| [prototypes/](prototypes/README.md) | Throwaway experiments (clickable 4-tab phone UI) |
 | [question-bank.md](question-bank.md) | Self-review questions with answers |
 
 ---

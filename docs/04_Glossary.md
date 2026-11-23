@@ -70,7 +70,7 @@
 | **Envelope A / B** | The photo key locked with the lock key (A) or the recovery code (B); both stored on the server. | blob | — | — |
 | **Timed set** | A set measured in seconds instead of reps (plank, wall sit, balance hold). | `TimedSet` | 1–600 s | hold |
 | **Streak** | Consecutive weeks with the weekly quest completed; rest days count; paused weeks and rest-token weeks keep it. | derived | — | — |
-| **Body map** | Picture of the body where each muscle group is coloured by its skill level. | UI | — | — |
+| **Body map** | Game picture of the body: each skill's area is shaded by its level (one purple hue, darker = higher; stripes = fading). Not the exercise muscle diagram. | UI | — | — |
 | **Deload** | A planned lighter week after a stall, to recover and resume progress. | planner hint | — | — |
 | **Revision** | Server counter for a user's log; bumps on every successful push. | integer | ≥ 0 | — |
 | **Tombstone** | A record marked `deleted` instead of removed, so deletes sync. | flag | — | — |
@@ -79,7 +79,7 @@
 | **Key pose** *(ADR-024, rejected — prototype only)* | One position of an exercise (e.g. top and bottom of a squat) stored as hip, spine angle and hand/foot targets. The picture animates between key poses. | catalog data | 2–3 per exercise | keyframe |
 | **Inverse kinematics (IK)** *(prototype only)* | Working out a middle joint (knee, elbow) from where a limb starts and where its end must be. | `pose::solveLimb` | target clamped to limb reach | IK |
 | **How-to picture** | Image of the IronLog character doing an exercise: start pose → end pose, side view. One per exercise. | `ironlog-<id>-how.jpg` | checked by eye for form errors | how picture |
-| **Muscle diagram** | Front + back body diagram for an exercise: main muscles red, helper muscles orange, the rest grey. Always shown with the muscle names as text. | `ironlog-<id>-muscles.jpg` | colours from one grey base diagram | muscle map |
+| **Muscle diagram** | Front + back body diagram for an exercise: main muscles dark blue, helper muscles light blue, the rest grey. Not the game's body map. Always shown with the muscle names as text. | `ironlog-<id>-muscles.jpg` | colours from one grey base diagram | muscle map |
 | **Device token** | Long-lived credential that lets a remembered device get a session without a password. Stored hashed. | text | — | — |
 
 ---

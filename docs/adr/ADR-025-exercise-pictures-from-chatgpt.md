@@ -18,7 +18,11 @@ for the muscle picture as an anatomy view, not the character, and for videos.
   (fixed description, same chat for consistency), side view, start pose →
   end pose with an arrow. 1200 × 800 JPEG.
 - **Muscles:** one ChatGPT image per exercise: a flat grey front/back muscle
-  diagram (one shared base), main muscles red, helpers orange.
+  diagram (one shared base), main muscles dark blue, helpers light blue.
+  ChatGPT drew them red/orange; they were recoloured locally to the design
+  system's blue (`#2F5BD0` / `#8FAAF0`) because red vs orange fails the UI
+  research's colour-blind check (`docs/research/ui-research.md`, design
+  system v1). Dark vs light of one hue passes.
 - **Videos:** OpenAI's video tool (Sora) was shut down in March 2026 and
   ChatGPT offers no video option on this account. Short clips are made from
   the two pictures with ffmpeg (start ↔ end pose flip at the exercise's tempo,

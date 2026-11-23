@@ -13,7 +13,7 @@ from PIL import Image, ImageDraw, ImageFont
 W, H = 720, 960
 FONT = "/usr/share/fonts/opentype/inter/Inter-Bold.otf"
 FONT_REG = "/usr/share/fonts/opentype/inter/Inter-Regular.otf"
-INK, MUTED, RED, ORANGE = (27, 29, 33), (74, 78, 87), (226, 33, 33), (245, 140, 30)
+INK, MUTED, RED, ORANGE = (27, 29, 33), (74, 78, 87), (47, 91, 208), (143, 170, 240)   # main / helper: design-system blue (dark / light)
 
 # id: (start label, end label, caption under the end frame)
 STEPS = {

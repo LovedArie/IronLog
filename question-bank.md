@@ -730,7 +730,7 @@ on your own, or to pull from when you *ask* to be quizzed.
 
 **M11 🟢 Which approach did the project finally choose for exercise pictures, and who decided?**
 > ChatGPT-generated images (ADR-025): an anime character how-to picture and
-> a grey muscle diagram with red/orange highlights per exercise. The owner
+> a grey muscle diagram with dark-blue/light-blue highlights per exercise. The owner
 > decided after trying the code-drawn version (ADR-024, rejected).
 
 **M12 🟡 Why are all muscle diagrams coloured from one grey base diagram?**
@@ -751,3 +751,8 @@ on your own, or to pull from when you *ask* to be quizzed.
 > OpenAI shut down its video tool (Sora) in March 2026 and ChatGPT offers no
 > video option on this account; ffmpeg can build clips locally from the two
 > pictures.
+
+**M16 🔴 Spot the issue: main muscles in red, helper muscles in orange. Who can't tell them apart, and what's the fix?**
+> Many colour-blind people (red–green deficiency) see red and orange as
+> nearly the same. The UI research's rule: one hue, light vs dark (here dark
+> blue = main, light blue = helpers), plus the muscle names as text.

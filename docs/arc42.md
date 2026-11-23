@@ -481,7 +481,7 @@ their own per-muscle targets.
 
 Every exercise shows two pictures (ADR-025): a **how-to picture** (the
 IronLog anime character, start pose → end pose) and a **muscle diagram**
-(main muscles red, helpers orange). Both are images made with ChatGPT and
+(main muscles dark blue, helpers light blue). Both are images made with ChatGPT and
 checked by eye; the code-drawn alternative (ADR-024) was rejected.
 
 | Piece | Where | What it does |
