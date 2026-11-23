@@ -35,7 +35,7 @@ jobs:
       - name: Build
         run: cmake --build build --parallel
       - name: Test
-        run: ctest --test-dir build --output-on-failure
+        run: ctest --test-dir build --output-on-failure --timeout 120
 
   linux-qt:
     name: Full build (Linux, Qt 6.4)
@@ -55,7 +55,7 @@ jobs:
       - name: Build
         run: cmake --build build --parallel
       - name: Test
-        run: ctest --test-dir build --output-on-failure
+        run: ctest --test-dir build --output-on-failure --timeout 120
       - name: Smoke test — launch the real app and screenshot it
         run: |
           ./build/IronLog --data "$RUNNER_TEMP/smoke.json" --demo --tab progress \
@@ -102,7 +102,24 @@ jobs:
         run: cmake -S . -B build -G "MinGW Makefiles" -DCMAKE_BUILD_TYPE=Release
       - name: Build
         run: cmake --build build --parallel
+
+      # Evidence, not theory: list every libstdc++-6.dll each shell would
+      # find. Git Bash puts Git's own mingw64\bin early on PATH, and its
+      # libstdc++ is from a different GCC than Qt's MinGW 13.1.
+      - name: Which C++ runtime DLLs are visible?
+        run: |
+          echo "--- Git Bash sees:"; which -a libstdc++-6.dll || true
+      - name: Which C++ runtime DLLs are visible? (PowerShell)
+        shell: pwsh
+        run: |
+          Write-Output "--- PowerShell sees:"
+          where.exe libstdc++-6.dll
+
+      # Tests run from PowerShell, NOT Git Bash: PowerShell's PATH starts
+      # with Qt's MinGW bin (from GITHUB_PATH), so every test .exe loads the
+      # runtime it was built with. Under Git Bash the first test hung: a
+      # Windows "entry point not found" popup that no one can click.
+      # --timeout: a hang now fails in 2 minutes instead of 25.
       - name: Test
-        # Qt's bin (added by install-qt-action) and MinGW's bin are both on
-        # PATH, so the test .exes find their DLLs — no -1073741515 here.
-        run: ctest --test-dir build --output-on-failure
+        shell: pwsh
+        run: ctest --test-dir build --output-on-failure --timeout 120

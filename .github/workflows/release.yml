@@ -56,11 +56,13 @@ jobs:
           MINGW="$(cygpath -u "$IQTA_TOOLS")/mingw1310_64/bin"
           echo "$(cygpath -w "$MINGW")" >> "$GITHUB_PATH"
 
-      - name: Configure, build, test
+      - name: Configure and build
         run: |
           cmake -S . -B build -G "MinGW Makefiles" -DCMAKE_BUILD_TYPE=Release
           cmake --build build --parallel
-          ctest --test-dir build --output-on-failure
+      - name: Test (PowerShell — see ci.yml for why not Git Bash)
+        shell: pwsh
+        run: ctest --test-dir build --output-on-failure --timeout 120
 
       # windeployqt copies every Qt DLL + the platforms/ plugin folder next
       # to the exe; --compiler-runtime adds MinGW's libstdc++ & co. Without
